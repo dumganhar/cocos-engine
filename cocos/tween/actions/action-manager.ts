@@ -379,6 +379,36 @@ export class ActionManager {
         if (element) element.paused = false;
     }
 
+    completeAll (): void {
+        const elements = this._arrayTargets;
+        for (let i = 0, len = elements.length; i < len; ++i) {
+            const element = elements[i];
+            this._completeAllByElement(element);
+        }
+    }
+
+    completeAllByTarget<T> (target: T): void {
+        const element = this._hashTargets.get(target);
+        this._completeAllByElement(element);
+    }
+
+    private _completeAllByElement (element: HashElement | undefined): void {
+        if (element) {
+            const target = element.target;
+            const actions = element.actions;
+            for (let i = 0, len = actions.length; i < len; ++i) {
+                const action = actions[i];
+                action.complete();
+            }
+
+            if (target instanceof Node) {
+                this._unregisterNodeEvent(target);
+            }
+            element.actions.length = 0;
+            this._deleteHashElement(element);
+        }
+    }
+
     /**
      * @en Pauses all running actions, returning a list of targets whose actions were paused.
      * @zh 暂停所有正在运行的动作，返回一个包含了那些动作被暂停了的目标对象的列表。

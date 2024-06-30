@@ -119,6 +119,11 @@ export abstract class ActionInterval extends FiniteTimeAction {
 
     abstract clone (): ActionInterval;
 
+    complete (): void {
+        this._elapsed = this._duration;
+        this.update(1);
+    }
+
     step (dt: number): void {
         if (this._paused || this._speed === 0) return;
         dt *= this._speed;

@@ -132,6 +132,10 @@ export abstract class Action {
         this.target = null;
     }
 
+    complete (): void {
+        // empty
+    }
+
     // called every frame with it's delta time. <br />
     abstract step (dt: number): void;
 

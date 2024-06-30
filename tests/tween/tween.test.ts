@@ -4493,6 +4493,82 @@ test('stopAllByTarget(target)', function () {
     director.unregisterSystem(sys);
 });
 
+test('complete', function () {
+    const sys = new TweenSystem();
+    (TweenSystem.instance as any) = sys;
+    director.registerSystem(TweenSystem.ID, sys, System.Priority.MEDIUM);
+
+    const node = new Node();
+
+    const t = tween(node)
+        .to(1, { position: v3(90, 90, 90) })
+        .repeat(5)
+        .start();
+    
+    t.complete();
+    
+    expect(node.position.equals(v3(90, 90, 90))).toBeTruthy();
+    expect(t.running).toBeFalsy();
+
+    director.unregisterSystem(sys);
+});
+
+test('complete and start', function () {
+    const sys = new TweenSystem();
+    (TweenSystem.instance as any) = sys;
+    director.registerSystem(TweenSystem.ID, sys, System.Priority.MEDIUM);
+
+    const node = new Node();
+
+    const t = tween(node)
+        .to(1, { position: v3(90, 90, 90) })
+        .repeat(5)
+        .start();
+    
+    t.complete();
+    
+    expect(node.position.equals(v3(90, 90, 90))).toBeTruthy();
+    expect(t.running).toBeFalsy();
+
+    node.setPosition(Vec3.ZERO);
+    t.start();
+
+    runFrames(1); // Start
+    expect(node.position.equals(v3(0, 0, 0))).toBeTruthy();
+
+    runFrames(20);
+    expect(node.position.equals(v3(30, 30, 30))).toBeTruthy();
+
+    runFrames(40);
+    expect(node.position.equals(v3(90, 90, 90))).toBeTruthy();
+
+    director.unregisterSystem(sys);
+});
+
+test('completeAllByTarget', function () {
+    const sys = new TweenSystem();
+    (TweenSystem.instance as any) = sys;
+    director.registerSystem(TweenSystem.ID, sys, System.Priority.MEDIUM);
+
+    const node = new Node();
+
+    const t = tween(node)
+        .to(1, { position: v3(90, 90, 90) })
+        .start();
+
+    const t2 = tween(node)
+        .to(1, { scale: v3(9, 9, 9) })
+        .start();
+    
+    Tween.completeAllByTarget(node);
+    
+    expect(node.position.equals(v3(90, 90, 90))).toBeTruthy();
+    expect(t.running).toBeFalsy();
+    expect(t2.running).toBeFalsy();
+
+    director.unregisterSystem(sys);
+});
+
 test('update destroyed node', function () {
     const sys = new TweenSystem();
     (TweenSystem.instance as any) = sys;

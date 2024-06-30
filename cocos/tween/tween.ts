@@ -348,6 +348,14 @@ export class Tween<T extends object = any> {
         return this;
     }
 
+    complete (): Tween<T> {
+        if (this._finalAction) {
+            this._finalAction.complete();
+            this.stop();
+        }
+        return this;
+    }
+
     /**
      * @en Pause the tween instance.
      * @zh 暂停此缓动实例。
@@ -819,6 +827,18 @@ export class Tween<T extends object = any> {
      */
     static resumeAllByTarget<U extends object = any> (target: U): void {
         TweenSystem.instance.ActionManager.resumeTarget(target);
+    }
+
+    static completeAll (): void {
+        TweenSystem.instance.ActionManager.completeAll();
+    }
+
+    static completeAllByTag (tag: number): void {
+        //
+    }
+
+    static completeAllByTarget<U extends object = any> (target: U): void {
+        TweenSystem.instance.ActionManager.completeAllByTarget(target);
     }
 
     private _union (updateWorkerTarget: boolean): Sequence | null {
