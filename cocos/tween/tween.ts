@@ -35,6 +35,7 @@ import { IInternalTweenOption, TweenAction } from './tween-action';
 import { SetAction } from './set-action';
 import { legacyCC } from '../core/global-exports';
 import { Node } from '../scene-graph';
+import './springs';
 
 // https://medium.com/dailyjs/typescript-create-a-condition-based-subset-types-9d902cea5b8c
 type FlagExcludedType<Base, Type> = { [Key in keyof Base]: Base[Key] extends Type ? never : Key };
@@ -73,7 +74,7 @@ export interface ITweenCustomProperty<Value> {
 type KeyPartial<T, K extends keyof T> = { [P in K]?: (T[P] | (() => T[P]) | ITweenCustomProperty<T[P]> | StringToNumberOrNever<T[P]>) };
 type OmitType<Base, Type> = KeyPartial<Base, AllowedNames<Base, Type>>;
 // eslint-disable-next-line @typescript-eslint/ban-types
-type ConstructorType<T> = OmitType<T, Function>;
+export type ConstructorType<T> = OmitType<T, Function>; //TODO: rename
 
 type TweenWithNodeTargetOrUnknown<T> = T extends Node ? Tween<T> : unknown;
 
