@@ -162,7 +162,7 @@ jobs:
             const fs = require('fs');
             fs.writeFileSync('pr.txt', process.env.PR_NUMBER);
             fs.writeFileSync('comment.txt', `@${process.env.PR_AUTHOR}, Please check the result of \`run test cases\`:
-            - Test Platform: PR-Test
+            - Test Platform: PR-Test-win
             - Editor Version: ${process.env.EDITOR_VERSION}
             - Task Result: ${process.env.TASK_STATUS}
             - Task URL: https://cctest.cocos.org/#/reportview/PR-TEST/${process.env.JOB_ID}/-1
