@@ -25,7 +25,7 @@
 import { TrackEntryListeners } from './track-entry-listeners';
 import { vfmtPosUvColor4B, vfmtPosUvTwoColor4B, getAttributeStride } from '../2d/renderer/vertex-format';
 
-import spine from './lib/spine-core.js';
+import spine from './lib/spine-core';
 import { SkeletonData } from './skeleton-data';
 import { warn } from '../core/platform/debug';
 

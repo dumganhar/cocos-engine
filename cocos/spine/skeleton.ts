@@ -38,7 +38,7 @@ import { legacyCC } from '../core/global-exports';
 import { SkeletonSystem } from './skeleton-system';
 import { RenderEntity, RenderEntityType } from '../2d/renderer/render-entity';
 import { AttachUtil } from './attach-util';
-import spine from './lib/spine-core.js';
+import spine from './lib/spine-core';
 import { VertexEffectDelegate } from './vertex-effect-delegate';
 import SkeletonCache, { AnimationCache, AnimationFrame, SkeletonCacheItemInfo } from './skeleton-cache';
 import { TrackEntryListeners } from './track-entry-listeners';
@@ -62,7 +62,7 @@ export const timeScale = 1.0;
  * @en Enum for animation cache mode type.
  * @zh Spine 动画缓存类型。
  */
-export enum SpineAnimationCacheMode {
+enum SpineAnimationCacheMode {
     /**
      * @en Unset mode.
      * @zh 未设置模式。
@@ -86,6 +86,8 @@ export enum SpineAnimationCacheMode {
 }
 ccenum(SpineAnimationCacheMode);
 
+export { SpineAnimationCacheMode as  AnimationCacheMode };
+
 interface AnimationItem {
     animationName: string;
     loop: boolean;
@@ -103,10 +105,12 @@ ccenum(DefaultSkinsEnum);
 /**
  * @engineInternal
  */
-export enum SpineDefaultAnimsEnum {
+enum SpineDefaultAnimsEnum {
     '<None>' = 0
 }
 ccenum(SpineDefaultAnimsEnum);
+
+export { SpineDefaultAnimsEnum as DefaultAnimsEnum };
 
 /**
  * @engineInternal

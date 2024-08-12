@@ -23,8 +23,8 @@
 */
 
 import { Label, HorizontalTextAlignment, VerticalTextAlignment } from '../2d/components/label';
-import codec from '../../external/compression/ZipUtils.js';
-import zlib from '../../external/compression/zlib.min.js';
+import codec from '../../external/compression/ZipUtils';
+import zlib from '../../external/compression/zlib.min';
 import { SAXParser } from '../asset/asset-manager/plist-parser';
 import {
     GID, MixedGID, Orientation, PropertiesInfo, RenderOrder, StaggerAxis, StaggerIndex, TiledAnimation, TiledAnimationType,
@@ -103,15 +103,15 @@ function getPropertyList (node: Element, map?: PropertiesInfo): PropertiesInfo {
         const name = element.getAttribute('name');
         const type = element.getAttribute('type') || 'string';
 
-        let value = element.getAttribute('value');
+        let value: any = element.getAttribute('value');
         if (type === 'int') {
-            value = parseInt(value);
+            value = parseInt(value as string);
         } else if (type === 'float') {
-            value = parseFloat(value);
+            value = parseFloat(value as string);
         } else if (type === 'bool') {
             value = value === 'true';
         } else if (type === 'color') {
-            value = strToColor(value);
+            value = strToColor(value as string);
         }
 
         map![name] = value;
@@ -204,8 +204,13 @@ export class TMXMapInfo {
 
     protected _imageLayerSPF: { [key: string]: SpriteFrame } | null = null;
 
-    constructor (tmxFile: string, tsxContentMap: { [key: string]: string }, spfTexturesMap: { [key: string]: SpriteFrame },
-        textureSizes: { [key: string]: Size }, imageLayerTextures: { [key: string]: SpriteFrame }) {
+    constructor (
+        tmxFile: string,
+        tsxContentMap: { [key: string]: string },
+        spfTexturesMap: { [key: string]: SpriteFrame },
+        textureSizes: { [key: string]: Size },
+        imageLayerTextures: { [key: string]: SpriteFrame },
+    ) {
         this.initWithXML(tmxFile, tsxContentMap, spfTexturesMap, textureSizes, imageLayerTextures);
     }
 
@@ -496,8 +501,13 @@ export class TMXMapInfo {
      * @param {Object} spfTextureMap
      * @return {Boolean}
      */
-    initWithXML (tmxString: string, tsxMap: { [key: string]: string }, spfTextureMap: { [key: string]: SpriteFrame },
-        textureSizes: { [key: string]: Size }, imageLayerTextures: { [key: string]: SpriteFrame }): HTMLElement {
+    initWithXML (
+        tmxString: string,
+        tsxMap: { [key: string]: string },
+        spfTextureMap: { [key: string]: SpriteFrame },
+        textureSizes: { [key: string]: Size },
+        imageLayerTextures: { [key: string]: SpriteFrame },
+    ): HTMLElement {
         this._tilesets.length = 0;
         this._layers.length = 0;
         this._imageLayers.length = 0;
@@ -859,7 +869,7 @@ export class TMXMapInfo {
             logID(7218);
             return null;
         }
-        let tiles;
+        let tiles: number[] | Uint32Array | null;
         switch (compression) {
         case 'gzip':
             tiles = codec.unzipBase64AsArray(nodeValue, 4);

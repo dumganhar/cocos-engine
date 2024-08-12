@@ -27,7 +27,7 @@ import { director } from '../game/director';
 import { System } from '../core';
 import { Skeleton } from './skeleton';
 import { legacyCC } from '../core/global-exports';
-import spine from './lib/spine-core.js';
+import spine from './lib/spine-core';
 
 export class SkeletonSystem extends System {
     /**
