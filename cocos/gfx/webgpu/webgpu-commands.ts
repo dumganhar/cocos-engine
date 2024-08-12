@@ -1647,22 +1647,27 @@ export function WebGPUCmdFuncCopyBuffersToTexture (
     const regionSize = regions.length;
     for (let i = 0; i < regionSize; ++i) {
         const region = regions[i];
-        const bufferPixelWidth = region.buffStride > 0 ? region.buffStride : region.texExtent.width;
-        const bufferPixelHeight = region.buffTexHeight > 0 ? region.buffTexHeight : region.texExtent.height;
-        const bytesPerRow = FormatSize(dstFormat, region.texExtent.width, 1, 1);
+        const texExtent = region.texExtent;
+        const texExtentWidth = texExtent.width;
+        const texExtentHeight = texExtent.height;
+        const texExtentDepth = texExtent.depth;
+        const baseArrayLayer = region.texSubres.baseArrayLayer;
+        const bufferPixelWidth = region.buffStride > 0 ? region.buffStride : texExtentWidth;
+        const bufferPixelHeight = region.buffTexHeight > 0 ? region.buffTexHeight : texExtentHeight;
+        const bytesPerRow = FormatSize(dstFormat, texExtentWidth, 1, 1);
         const bufferBytesPerRow = FormatSize(dstFormat, bufferPixelWidth, 1, 1);
         const bufferBytesPerImageSlice = FormatSize(dstFormat, bufferPixelWidth, bufferPixelHeight, 1);
-        const bufferBytesPerImageLayer = FormatSize(dstFormat, bufferPixelWidth, bufferPixelHeight, region.texExtent.depth);
-        const targetWidth = region.texExtent.width === 0 ? 0 : alignTo(region.texExtent.width, blockSize.width);
-        const targetHeight = region.texExtent.height === 0 ? 0 : alignTo(region.texExtent.height, blockSize.height);
+        const bufferBytesPerImageLayer = FormatSize(dstFormat, bufferPixelWidth, bufferPixelHeight, texExtentDepth);
+        const targetWidth = texExtentWidth === 0 ? 0 : alignTo(texExtentWidth, blockSize.width);
+        const targetHeight = texExtentHeight === 0 ? 0 : alignTo(texExtentHeight, blockSize.height);
         const imgDataLayout: GPUImageDataLayout = {
             offset: 0,
             bytesPerRow: bufferBytesPerRow,
             rowsPerImage: bufferPixelHeight,
         };
-        const compactInWidth = bufferPixelWidth === region.texExtent.width;
-        for (let l = region.texSubres.baseArrayLayer; l < region.texSubres.layerCount + region.texSubres.baseArrayLayer; l++) {
-            for (let d = region.texOffset.z; d < region.texExtent.depth + region.texOffset.z; d++) {
+        const compactInWidth = bufferPixelWidth === texExtentWidth;
+        for (let l = baseArrayLayer; l < region.texSubres.layerCount + baseArrayLayer; l++) {
+            for (let d = region.texOffset.z; d < texExtentDepth + region.texOffset.z; d++) {
                 if (compactInWidth) {
                     const arrayBuffer: ArrayBufferView | ArrayBufferLike = buffers[i];
                     let buffer: Uint8Array; // buffers and regions are a one-to-one mapping
@@ -1673,7 +1678,7 @@ export function WebGPUCmdFuncCopyBuffersToTexture (
                     }
                     const srcData = new Uint8Array(buffer, buffer.byteOffset
                         + region.buffOffset
-                        + (l - region.texSubres.baseArrayLayer) * bufferBytesPerImageLayer
+                        + (l - baseArrayLayer) * bufferBytesPerImageLayer
                         + (d - region.texOffset.z) * bufferBytesPerImageSlice);
                     const copyTarget = {
                         texture: gpuTexture.gpuTexture!,
@@ -1684,11 +1689,11 @@ export function WebGPUCmdFuncCopyBuffersToTexture (
                             z: l,
                         },
                     };
-                    nativeDevice.queue.writeTexture(copyTarget, srcData, imgDataLayout, [targetWidth, targetHeight, region.texExtent.depth]);
+                    nativeDevice.queue.writeTexture(copyTarget, srcData, imgDataLayout, [targetWidth, targetHeight, texExtentDepth]);
                 } else {
-                    for (let h = region.texOffset.y; h < region.texExtent.height + region.texOffset.y; h += blockSize.height) {
+                    for (let h = region.texOffset.y; h < texExtentHeight + region.texOffset.y; h += blockSize.height) {
                         const srcData = new Uint8Array(buffers[i].buffer, buffers[i].byteOffset
-                            + region.buffOffset + (l - region.texSubres.baseArrayLayer) * bufferBytesPerImageLayer
+                            + region.buffOffset + (l - baseArrayLayer) * bufferBytesPerImageLayer
                             + ((d - region.texOffset.z) * bufferBytesPerImageSlice
                             + (h - region.texOffset.y) / blockSize.height * bufferBytesPerRow));
                         const copyTarget = {
