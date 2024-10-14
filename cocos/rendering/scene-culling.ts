@@ -21,6 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+import { ONLY_2D } from 'internal:constants';
 import { Model } from '../render-scene/scene/model';
 import { Camera, CameraUsage, SkyBoxFlagValue } from '../render-scene/scene/camera';
 import { Vec3, Pool, geometry, cclegacy } from '../core';
@@ -51,6 +52,7 @@ function getRenderObject (model: Model, camera: Camera): IRenderObject {
 }
 
 export function validPunctualLightsCulling (sceneData: PipelineSceneData, camera: Camera): void {
+    if (ONLY_2D) return;
     const validPunctualLights = sceneData.validPunctualLights;
     validPunctualLights.length = 0;
 
@@ -104,6 +106,7 @@ export function validPunctualLightsCulling (sceneData: PipelineSceneData, camera
 }
 
 export function shadowCulling (camera: Camera, sceneData: PipelineSceneData, layer: ShadowLayerVolume): void {
+    if (ONLY_2D) return;
     const scene = camera.scene!;
     const mainLight = scene.mainLight!;
     const csmLayers = sceneData.csmLayers;
@@ -147,6 +150,7 @@ export function shadowCulling (camera: Camera, sceneData: PipelineSceneData, lay
 }
 
 export function sceneCulling (sceneData: PipelineSceneData, pipelineUBO: PipelineUBO, camera: Camera): void {
+    if (ONLY_2D) return;
     const scene = camera.scene!;
     const mainLight = scene.mainLight;
     const shadows = sceneData.shadows;

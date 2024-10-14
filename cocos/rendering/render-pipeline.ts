@@ -24,6 +24,7 @@
 
 import { ccclass, displayOrder, serializable, type } from 'cc.decorator';
 import { systemInfo } from 'pal/system-info';
+import { ONLY_2D } from 'internal:constants';
 import { sceneCulling, validPunctualLightsCulling } from './scene-culling';
 import { Asset } from '../asset/assets/asset';
 import { AccessFlagBit, Attribute, Buffer, BufferInfo, BufferUsageBit, ClearFlagBit, ClearFlags, ColorAttachment, CommandBuffer,
@@ -488,7 +489,9 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent, Pi
             if (camera.scene) {
                 this.emit(PipelineEventType.RENDER_CAMERA_BEGIN, camera);
                 validPunctualLightsCulling(this.pipelineSceneData, camera);
-                sceneCulling(this.pipelineSceneData, this.pipelineUBO, camera);
+                if (!ONLY_2D) {
+                    sceneCulling(this.pipelineSceneData, this.pipelineUBO, camera);
+                }
                 this._pipelineUBO.updateGlobalUBO(camera.window);
                 this._pipelineUBO.updateCameraUBO(camera);
                 for (let j = 0; j < this._flows.length; j++) {

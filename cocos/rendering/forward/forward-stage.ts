@@ -23,6 +23,7 @@
 */
 
 import { ccclass, displayOrder, type, serializable } from 'cc.decorator';
+import { ONLY_2D } from 'internal:constants';
 import { SetIndex } from '../define';
 import { getPhaseID } from '../pass-phase';
 import { renderQueueClearFunc, RenderQueue, convertRenderQueue, renderQueueSortFunc } from '../render-queue';
@@ -114,8 +115,10 @@ export class ForwardStage extends RenderStage {
             this._renderQueues[i] = convertRenderQueue(this.renderQueues[i]);
         }
 
-        this._additiveLightQueue = new RenderAdditiveLightQueue(this._pipeline as ForwardPipeline);
-        this._planarQueue = new PlanarShadowQueue(this._pipeline);
+        if (!ONLY_2D) {
+            this._additiveLightQueue = new RenderAdditiveLightQueue(this._pipeline as ForwardPipeline);
+            this._planarQueue = new PlanarShadowQueue(this._pipeline);
+        }
         this._uiPhase.activate(pipeline);
     }
 
@@ -166,8 +169,11 @@ export class ForwardStage extends RenderStage {
         }
 
         this._instancedQueue.uploadBuffers(cmdBuff);
-        this._additiveLightQueue.gatherLightPasses(camera, cmdBuff);
-        this._planarQueue.gatherShadowPasses(camera, cmdBuff);
+
+        if (!ONLY_2D) {
+            this._additiveLightQueue.gatherLightPasses(camera, cmdBuff);
+            this._planarQueue.gatherShadowPasses(camera, cmdBuff);
+        }
 
         if (camera.clearFlag & ClearFlagBit.COLOR) {
             colors[0].x = camera.clearColor.x;
@@ -196,10 +202,14 @@ export class ForwardStage extends RenderStage {
 
         this._instancedQueue.recordCommandBuffer(device, renderPass, cmdBuff);
 
-        this._additiveLightQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+        if (!ONLY_2D) {
+            this._additiveLightQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+        }
 
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
-        this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+        if (!ONLY_2D) {
+            this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+        }
         this._renderQueues[1].recordCommandBuffer(device, renderPass, cmdBuff);
         camera.geometryRenderer?.render(renderPass, cmdBuff, pipeline.pipelineSceneData);
         this._uiPhase.render(camera, renderPass);

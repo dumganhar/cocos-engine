@@ -260,6 +260,15 @@
             }
         },
         {
+            "test": "context.buildTimeConstants.ONLY_2D",
+            "isVirtualModule": false,
+            "overrides": {
+                "cocos/render-scene/scene/index.ts": "cocos/render-scene/scene/index-2d.ts",
+                "cocos/2d/framework/index.ts": "cocos/2d/framework/index-2d.ts",
+                "cocos/rendering/legacy/index.ts": "cocos/rendering/legacy/index-2d.ts"
+            }
+        },
+        {
             "test": "context.buildTimeConstants.NATIVE",
             "isVirtualModule": false,
             "overrides": {
@@ -696,6 +705,12 @@
             "type": "boolean",
             "value": true,
             "internal": true
+        },
+        "ONLY_2D": {
+            "comment": "only 2d",
+            "type": "boolean",
+            "value": false,
+            "internal": true
         }
     },
 
@@ -718,7 +733,36 @@
     "treeShake": {
         "noSideEffectFiles": [
             "cocos/serialization/instantiate-jit.ts",
-            "cocos/game/splash-screen.ts"
+            "cocos/game/splash-screen.ts",
+            "cocos/3d/assets/mesh.ts",
+            "cocos/render-scene/scene/fog.ts",
+            "cocos/render-scene/scene/ambient.ts",
+            "cocos/render-scene/scene/skybox.ts",
+            "cocos/render-scene/scene/shadows.ts",
+            "cocos/render-scene/scene/light.ts",
+            "cocos/render-scene/scene/csm-layers.ts",
+            "cocos/render-scene/scene/octree.ts",
+            "cocos/render-scene/scene/skin.ts",
+            "cocos/render-scene/scene/post-settings.ts",
+            "cocos/render-scene/scene/reflection-probe.ts",
+            "cocos/render-scene/scene/lod-group.ts",
+            "cocos/render-scene/scene/directional-light.ts",
+            "cocos/render-scene/scene/point-light.ts",
+            "cocos/render-scene/scene/sphere-light.ts",
+            "cocos/render-scene/scene/spot-light.ts",
+            "cocos/render-scene/scene/ranged-directional-light.ts",
+            "cocos/render-scene/scene/model.ts",
+            "cocos/render-scene/scene/submodel.ts",
+            "cocos/rendering/scene-culling.ts",
+            "cocos/rendering/shadow/csm-layers.ts",
+            "cocos/rendering/shadow/shadow-flow.ts",
+            "cocos/rendering/shadow/shadow-stage.ts",
+            "cocos/rendering/shadow/shadow-stage.ts",
+            "cocos/rendering/reflection-probe/reflection-probe-flow.ts",
+            "cocos/rendering/reflection-probe/reflection-probe-stage.ts",
+            "cocos/rendering/render-additive-light-queue.ts",
+            "cocos/rendering/planar-shadow-queue.ts",
+            "cocos/2d/framework/sprite-renderer.ts"
         ]
     }
 }

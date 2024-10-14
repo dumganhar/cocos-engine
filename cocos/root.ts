@@ -22,6 +22,7 @@
  THE SOFTWARE.
 */
 
+import { ONLY_2D } from 'internal:constants';
 import { Pool, cclegacy, warnID, settings, macro, log, errorID, SettingsCategory } from './core';
 import { DebugView } from './rendering/debug-view';
 import { Camera, CameraType, Light, Model, TrackingType } from './render-scene/scene';
@@ -567,6 +568,7 @@ export class Root {
      * @returns The model created
      */
     public createModel<T extends Model> (ModelCtor: typeof Model): T {
+        if (ONLY_2D) return null!;
         let p = this._modelPools$.get(ModelCtor);
         if (!p) {
             this._modelPools$.set(ModelCtor, new Pool((): Model => new ModelCtor(), 10, (obj): void => obj.destroy()));
@@ -583,6 +585,7 @@ export class Root {
      * @param m @en The model to be destroyed @zh 要销毁的模型
      */
     public destroyModel (m: Model): void {
+        if (ONLY_2D) return;
         const p = this._modelPools$.get(m.constructor as Constructor<Model>);
         if (p) {
             p.free(m);
