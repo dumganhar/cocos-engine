@@ -155,8 +155,8 @@ export class Atlas {
      * @zh
      * 从动态图集中删除某张纹理。
      *
-     * @method deleteAtlasTexture
-     * @param texture  the texture that will be removed from the atlas.
+     * @method deleteInnerTexture
+     * @param texture the texture that will be removed from the atlas.
      */
     public deleteInnerTexture (texture: Texture2D): void {
         if (texture && this._innerTextureInfos[texture.getId()]) {

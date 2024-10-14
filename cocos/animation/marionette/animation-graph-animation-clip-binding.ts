@@ -1,9 +1,8 @@
 import { DEBUG } from 'internal:constants';
-import { error, Quat, RealCurve, Vec3, warnID } from '../../core';
+import { Quat, Vec3, warnID } from '../../core';
 import { assertIsTrue } from '../../core/data/utils/asserts';
 import { Node } from '../../scene-graph/node';
 import { additiveSettingsTag, AnimationClip, exoticAnimationTag } from '../animation-clip';
-import { AuxiliaryCurveEntry } from '../auxiliary-curve-entry';
 import { AuxiliaryCurveHandle, TransformHandle } from '../core/animation-handle';
 import { calculateDeltaPose, Pose } from '../core/pose';
 import { createEvalSymbol } from '../define';
@@ -11,6 +10,7 @@ import { ExoticTrsAGEvaluation } from '../exotic-animation/exotic-animation';
 import { isTrsPropertyName, normalizedFollowTag, RuntimeBinding, Track, TrackBinding, trackBindingTag, TrackEval } from '../tracks/track';
 import { UntypedTrack } from '../tracks/untyped-track';
 import { AnimationGraphEvaluationContext } from './animation-graph-context';
+import { RealCurve } from '../../core/curves/curve';
 
 /**
  * This module contains utilities to marry animation clip with animation graph.

@@ -24,7 +24,7 @@
 
 import { EDITOR_NOT_IN_PREVIEW } from 'internal:constants';
 import { CCString, Enum, error } from '../core';
-import SkeletonCache from './skeleton-cache';
+import { SkeletonCache } from './skeleton-cache';
 import { Skeleton } from './skeleton';
 import spine from './lib/spine-core';
 import { ccclass, serializable, type } from '../core/data/decorators';
@@ -129,10 +129,10 @@ export class SkeletonData extends Asset {
      * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
      */
     get _nativeAsset (): ArrayBuffer {
-        return this._buffer!;
+        return this._buffer$!;
     }
     set _nativeAsset (bin: ArrayBuffer) {
-        this._buffer = bin;
+        this._buffer$ = bin;
         this.reset();
     }
     /**
@@ -142,12 +142,12 @@ export class SkeletonData extends Asset {
     @serializable
     protected _atlasText = '';
 
-    private _buffer?: ArrayBuffer;
+    private _buffer$?: ArrayBuffer;
 
-    private _skeletonCache: spine.SkeletonData | null = null;
+    private _skeletonCache$: spine.SkeletonData | null = null;
 
-    private _skinsEnum: { [key: string]: number } | null = null;
-    private _animsEnum: { [key: string]: number } | null = null;
+    private _skinsEnum$: { [key: string]: number } | null = null;
+    private _animsEnum$: { [key: string]: number } | null = null;
 
     constructor () {
         super();
@@ -170,10 +170,10 @@ export class SkeletonData extends Asset {
      * @zh 重置数据。
      */
     public reset (): void {
-        this._skeletonCache = null;
+        this._skeletonCache$ = null;
         if (EDITOR_NOT_IN_PREVIEW) {
-            this._skinsEnum = null;
-            this._animsEnum = null;
+            this._skinsEnum$ = null;
+            this._animsEnum$ = null;
         }
     }
     /**
@@ -183,8 +183,8 @@ export class SkeletonData extends Asset {
      */
     public resetEnums (): void {
         if (EDITOR_NOT_IN_PREVIEW) {
-            this._skinsEnum = null;
-            this._animsEnum = null;
+            this._skinsEnum$ = null;
+            this._animsEnum$ = null;
         }
     }
 
@@ -197,8 +197,8 @@ export class SkeletonData extends Asset {
      *              @zh 值为 false 时，当发生错误时将打印出反馈信息。
      */
     public getRuntimeData (quiet?: boolean): spine.SkeletonData | null {
-        if (this._skeletonCache) {
-            return this._skeletonCache;
+        if (this._skeletonCache$) {
+            return this._skeletonCache$;
         }
 
         if (!(this.textures && this.textures.length > 0) && this.textureNames && this.textureNames.length > 0) {
@@ -209,21 +209,21 @@ export class SkeletonData extends Asset {
         }
         const spData = spine.wasmUtil.querySpineSkeletonDataByUUID(this._uuid);
         if (spData) {
-            this._skeletonCache = spData;
+            this._skeletonCache$ = spData;
         } else if (this._skeletonJson) {
-            this._skeletonCache = spine.wasmUtil.createSpineSkeletonDataWithJson(this.skeletonJsonStr, this._atlasText);
-            spine.wasmUtil.registerSpineSkeletonDataWithUUID(this._skeletonCache, this._uuid);
+            this._skeletonCache$ = spine.wasmUtil.createSpineSkeletonDataWithJson(this.skeletonJsonStr, this._atlasText);
+            spine.wasmUtil.registerSpineSkeletonDataWithUUID(this._skeletonCache$, this._uuid);
         } else {
             const rawData = new Uint8Array(this._nativeAsset);
             const byteSize = rawData.length;
             const ptr = spine.wasmUtil.queryStoreMemory(byteSize);
             const wasmMem = spine.wasmUtil.wasm.HEAPU8.subarray(ptr, ptr + byteSize);
             wasmMem.set(rawData);
-            this._skeletonCache = spine.wasmUtil.createSpineSkeletonDataWithBinary(byteSize, this._atlasText);
-            spine.wasmUtil.registerSpineSkeletonDataWithUUID(this._skeletonCache, this._uuid);
+            this._skeletonCache$ = spine.wasmUtil.createSpineSkeletonDataWithBinary(byteSize, this._atlasText);
+            spine.wasmUtil.registerSpineSkeletonDataWithUUID(this._skeletonCache$, this._uuid);
         }
 
-        return this._skeletonCache;
+        return this._skeletonCache$;
     }
 
     /**
@@ -232,8 +232,8 @@ export class SkeletonData extends Asset {
     public getSkinsEnum (): {
         [key: string]: number;
     } | null {
-        if (this._skinsEnum /* && Object.keys(this._skinsEnum).length > 0 */) {
-            return this._skinsEnum;
+        if (this._skinsEnum$ /* && Object.keys(this._skinsEnum).length > 0 */) {
+            return this._skinsEnum$;
         }
         const sd = this.getRuntimeData(true);
         if (sd) {
@@ -243,7 +243,7 @@ export class SkeletonData extends Asset {
                 const name = skins[i].name;
                 enumDef[name] = i;
             }
-            return this._skinsEnum = Enum(enumDef);
+            return this._skinsEnum$ = Enum(enumDef);
         }
         return null;
     }
@@ -253,8 +253,8 @@ export class SkeletonData extends Asset {
     public getAnimsEnum (): {
         [key: string]: number;
     } | null {
-        if (this._animsEnum && Object.keys(this._animsEnum).length > 1) {
-            return this._animsEnum;
+        if (this._animsEnum$ && Object.keys(this._animsEnum$).length > 1) {
+            return this._animsEnum$;
         }
         const sd = this.getRuntimeData(true);
         if (sd) {
@@ -264,7 +264,7 @@ export class SkeletonData extends Asset {
                 const name = anims[i].name;
                 enumDef[name] = i + 1;
             }
-            return this._animsEnum = Enum(enumDef);
+            return this._animsEnum$ = Enum(enumDef);
         }
         return null;
     }
@@ -273,7 +273,7 @@ export class SkeletonData extends Asset {
      * @zh 销毁 skeleton data。
      */
     public destroy (): boolean {
-        SkeletonCache.sharedCache.destroyCachedAnimations(this._uuid);
+        SkeletonCache.sharedCache$.destroyCachedAnimations$(this._uuid);
         spine.wasmUtil.destroySpineSkeletonDataWithUUID(this._uuid);
         return super.destroy();
     }

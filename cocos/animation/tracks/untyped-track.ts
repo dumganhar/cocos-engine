@@ -23,13 +23,14 @@
 */
 
 import { ccclass, serializable } from 'cc.decorator';
-import { RealCurve, Color, Size, Vec2, Vec3, Vec4, getError } from '../../core';
+import { Color, Size, Vec2, Vec3, Vec4, getError } from '../../core';
 import { CLASS_NAME_PREFIX_ANIM, createEvalSymbol } from '../define';
 import { IValueProxyFactory } from '../value-proxy';
 import { ColorTrack, ColorTrackEval } from './color-track';
 import { SizeTrackEval } from './size-track';
 import { Channel, RealChannel, Track, TrackEval, TrackPath } from './track';
 import { Vec2TrackEval, Vec3TrackEval, Vec4TrackEval, VectorTrack } from './vector-track';
+import { RealCurve } from '../../core/curves/curve';
 
 @ccclass(`${CLASS_NAME_PREFIX_ANIM}UntypedTrackChannel`)
 class UntypedTrackChannel extends Channel<RealCurve> {

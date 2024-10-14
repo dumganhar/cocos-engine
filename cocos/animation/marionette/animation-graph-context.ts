@@ -1136,25 +1136,25 @@ interface ReusableUpdateContext extends AnimationGraphUpdateContext {
 
 export class DeferredPoseStashAllocator implements PoseStashAllocator {
     get allocatedPoseCount (): number {
-        assertIsTrue(this._allocator);
-        return this._allocator.allocatedCount;
+        assertIsTrue(this._allocator$);
+        return this._allocator$.allocatedCount;
     }
 
     /** @internal */
     public _reset (transformCount: number, auxiliaryCurveCount: number): void {
-        this._allocator = new PoseHeapAllocator(transformCount, auxiliaryCurveCount);
+        this._allocator$ = new PoseHeapAllocator(transformCount, auxiliaryCurveCount);
     }
 
     public allocatePose (): Pose {
-        assertIsTrue(this._allocator);
-        const pose = this._allocator.allocatePose();
+        assertIsTrue(this._allocator$);
+        const pose = this._allocator$.allocatePose();
         return pose;
     }
 
     public destroyPose (pose: Pose): void {
-        assertIsTrue(this._allocator);
-        return this._allocator.destroyPose(pose);
+        assertIsTrue(this._allocator$);
+        return this._allocator$.destroyPose(pose);
     }
 
-    private _allocator: PoseHeapAllocator | null = null;
+    private _allocator$: PoseHeapAllocator | null = null;
 }

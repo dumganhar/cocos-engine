@@ -40,38 +40,38 @@ interface ISocketData {
 @ccclass
 export class AnimationManager extends System {
     public get blendState (): LegacyBlendStateBuffer {
-        return this._blendStateBuffer;
+        return this._blendStateBuffer$;
     }
 
     public static ID = 'animation';
-    private _anims = new js.array.MutableForwardIterator<AnimationState>([]);
-    private _crossFades = new js.array.MutableForwardIterator<CrossFade>([]);
-    private _delayEvents: {
+    private _anims$ = new js.array.MutableForwardIterator<AnimationState>([]);
+    private _crossFades$ = new js.array.MutableForwardIterator<CrossFade>([]);
+    private _delayEvents$: {
         fn: (...args: any[]) => void;
         thisArg: any;
         args: any[];
     }[] = [];
-    private _blendStateBuffer: LegacyBlendStateBuffer = new LegacyBlendStateBuffer();
-    private _sockets: ISocketData[] = [];
+    private _blendStateBuffer$: LegacyBlendStateBuffer = new LegacyBlendStateBuffer();
+    private _sockets$: ISocketData[] = [];
 
     public addCrossFade (crossFade: CrossFade): void {
-        const index = this._crossFades.array.indexOf(crossFade);
+        const index = this._crossFades$.array.indexOf(crossFade);
         if (index === -1) {
-            this._crossFades.push(crossFade);
+            this._crossFades$.push(crossFade);
         }
     }
 
     public removeCrossFade (crossFade: CrossFade): void {
-        const index = this._crossFades.array.indexOf(crossFade);
+        const index = this._crossFades$.array.indexOf(crossFade);
         if (index >= 0) {
-            this._crossFades.fastRemoveAt(index);
+            this._crossFades$.fastRemoveAt(index);
         } else {
             errorID(3907);
         }
     }
 
     public update (dt: number): void {
-        const { _delayEvents, _crossFades: crossFadesIter, _sockets } = this;
+        const { _delayEvents$: _delayEvents, _crossFades$: crossFadesIter, _sockets$: _sockets } = this;
 
         { // Update cross fades
             const crossFades = crossFadesIter.array;
@@ -81,7 +81,7 @@ export class AnimationManager extends System {
             }
         }
 
-        const iterator = this._anims;
+        const iterator = this._anims$;
         const array = iterator.array;
         for (iterator.i = 0; iterator.i < array.length; ++iterator.i) {
             const anim = array[iterator.i];
@@ -89,7 +89,7 @@ export class AnimationManager extends System {
                 anim.update(dt);
             }
         }
-        this._blendStateBuffer.apply();
+        this._blendStateBuffer$.apply();
 
         const stamp = director.getTotalFrames();
         for (let i = 0, l = _sockets.length; i < l; i++) {
@@ -109,23 +109,23 @@ export class AnimationManager extends System {
     }
 
     public addAnimation (anim: AnimationState): void {
-        const index = this._anims.array.indexOf(anim);
+        const index = this._anims$.array.indexOf(anim);
         if (index === -1) {
-            this._anims.push(anim);
+            this._anims$.push(anim);
         }
     }
 
     public removeAnimation (anim: AnimationState): void {
-        const index = this._anims.array.indexOf(anim);
+        const index = this._anims$.array.indexOf(anim);
         if (index >= 0) {
-            this._anims.fastRemoveAt(index);
+            this._anims$.fastRemoveAt(index);
         } else {
             errorID(3907);
         }
     }
 
     public pushDelayEvent (fn: (...args: any[]) => void, thisArg: any, args: any[]): void {
-        this._delayEvents.push({
+        this._delayEvents$.push({
             fn,
             thisArg,
             args,
@@ -135,11 +135,11 @@ export class AnimationManager extends System {
     public addSockets (root: Node, sockets: Socket[]): void {
         for (let i = 0; i < sockets.length; ++i) {
             const socket = sockets[i];
-            if (this._sockets.find((s) => s.target === socket.target)) { continue; }
+            if (this._sockets$.find((s) => s.target === socket.target)) { continue; }
             const targetNode = root.getChildByPath(socket.path);
             const transform = socket.target && targetNode && getTransform(targetNode, root);
             if (transform) {
-                this._sockets.push({ target: socket.target!, transform });
+                this._sockets$.push({ target: socket.target!, transform });
             }
         }
     }
@@ -147,12 +147,12 @@ export class AnimationManager extends System {
     public removeSockets (root: Node, sockets: Socket[]): void {
         for (let i = 0; i < sockets.length; ++i) {
             const socketToRemove = sockets[i];
-            for (let j = 0; j < this._sockets.length; ++j) {
-                const socket = this._sockets[j];
+            for (let j = 0; j < this._sockets$.length; ++j) {
+                const socket = this._sockets$[j];
                 if (socket.target ===  socketToRemove.target) {
                     deleteTransform(socket.transform.node);
-                    this._sockets[j] = this._sockets[this._sockets.length - 1];
-                    this._sockets.length--;
+                    this._sockets$[j] = this._sockets$[this._sockets$.length - 1];
+                    this._sockets$.length--;
                     break;
                 }
             }

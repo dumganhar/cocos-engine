@@ -1003,10 +1003,10 @@ export class Label extends UIRenderer {
         if (this._assembler !== assembler) {
             this.destroyRenderData();
             this._assembler = assembler;
-            this.textStyle.reset();
-            this.textLayout.reset();
-            this.textLayoutData.reset();
-            this.textRenderData.reset();
+            this.textStyle.reset$();
+            this.textLayout.reset$();
+            this.textLayoutData.reset$();
+            this.textRenderData.reset$();
         }
 
         if (!this.renderData) {

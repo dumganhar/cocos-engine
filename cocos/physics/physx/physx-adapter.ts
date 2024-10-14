@@ -33,7 +33,7 @@
 import { NativeCodeBundleMode } from '../../misc/webassembly-support';
 import { ensureWasmModuleReady, instantiateWasm } from 'pal/wasm';
 import { EDITOR, TEST, NATIVE_CODE_BUNDLE_MODE } from 'internal:constants';
-import { IQuatLike, IVec3Like, Quat, RecyclePool, Vec3, cclegacy, geometry, sys, Color, error, IVec3 } from '../../core';
+import { IQuatLike, IVec3Like, Quat, RecyclePool, Vec3, cclegacy, sys, Color, error, IVec3 } from '../../core';
 import { shrinkPositions } from '../utils/util';
 import { IRaycastOptions } from '../spec/i-physics-world';
 import { IPhysicsConfig, PhysicsRayResult } from '../framework';
@@ -43,6 +43,7 @@ import { PhysXShape } from './shapes/physx-shape';
 import { PxHitFlag, PxQueryFlag, EFilterDataWord3 } from './physx-enum';
 import { Node } from '../../scene-graph';
 import { game } from '../../game';
+import { geometry } from '../../core/geometry-index';
 
 export let PX = {} as any;
 const globalThis = cclegacy._global;

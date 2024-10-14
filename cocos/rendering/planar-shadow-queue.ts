@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { cclegacy, geometry } from '../core';
+import { cclegacy } from '../core';
 import { isEnableEffect, SetIndex } from './define';
 import { CommandBuffer, Device, RenderPass, Shader } from '../gfx';
 import { PipelineStateManager } from './pipeline-state-manager';
@@ -33,6 +33,7 @@ import { Layers } from '../scene-graph/layers';
 import { PipelineRuntime } from './custom/pipeline';
 import { BatchingSchemes, Pass } from '../render-scene/core/pass';
 import { getPhaseID } from './pass-phase';
+import { geometry } from '../core/geometry-index';
 
 const _ab = new geometry.AABB();
 let _phaseID = getPhaseID('planar-shadow');

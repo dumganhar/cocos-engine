@@ -23,7 +23,7 @@
 */
 
 import CANNON from '@cocos/cannon';
-import { Vec3, Quat, IVec3Like, geometry } from '../../../core';
+import { Vec3, Quat, IVec3Like } from '../../../core';
 import { getWrap, setWrap } from '../../utils/util';
 import { commitShapeUpdates } from '../cannon-util';
 import { PhysicsMaterial } from '../../framework/assets/physics-material';
@@ -33,6 +33,7 @@ import { CannonWorld } from '../cannon-world';
 import { TriggerEventType } from '../../framework/physics-interface';
 import { PhysicsSystem } from '../../framework/physics-system';
 import { Collider, RigidBody } from '../../framework';
+import { geometry } from '../../../core/geometry-index';
 
 const TriggerEventObject = {
     type: 'onTriggerEnter' as TriggerEventType,

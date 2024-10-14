@@ -23,7 +23,7 @@
 */
 
 import { ccclass, displayOrder, type, serializable } from 'cc.decorator';
-import { EDITOR } from 'internal:constants';
+import { EDITOR, ONLY_2D } from 'internal:constants';
 import { RenderPipeline, IRenderPipelineInfo } from '../render-pipeline';
 import { ForwardFlow } from './forward-flow';
 import { RenderTextureConfig } from '../pipeline-serialization';
@@ -69,13 +69,15 @@ export class ForwardPipeline extends RenderPipeline {
         super.initialize(info);
 
         if (this._flows.length === 0) {
-            const shadowFlow = new ShadowFlow();
-            shadowFlow.initialize(ShadowFlow.initInfo);
-            this._flows.push(shadowFlow);
+            if (!ONLY_2D) {
+                const shadowFlow = new ShadowFlow();
+                shadowFlow.initialize(ShadowFlow.initInfo);
+                this._flows.push(shadowFlow);
 
-            const reflectionFlow = new ReflectionProbeFlow();
-            reflectionFlow.initialize(ReflectionProbeFlow.initInfo);
-            this._flows.push(reflectionFlow);
+                const reflectionFlow = new ReflectionProbeFlow();
+                reflectionFlow.initialize(ReflectionProbeFlow.initInfo);
+                this._flows.push(reflectionFlow);
+            }
 
             const forwardFlow = new ForwardFlow();
             forwardFlow.initialize(ForwardFlow.initInfo);

@@ -22,6 +22,7 @@
  THE SOFTWARE.
 */
 
+import { ENABLE_DYNAMIC_ATLAS } from 'internal:constants';
 import { Color } from '../../../core';
 import { IRenderData, RenderData } from '../../renderer/render-data';
 import { IBatcher } from '../../renderer/i-batcher';
@@ -89,7 +90,9 @@ export const sliced: IAssembler = {
         //         sprite._activateMaterial();
         //     }
         // }
-        dynamicAtlasManager.packToDynamicAtlas(sprite, frame);
+        if (ENABLE_DYNAMIC_ATLAS) {
+            dynamicAtlasManager.packToDynamicAtlas(sprite, frame);
+        }
         // TODO update material and uv
         this.updateUVs(sprite); // dirty need
         //this.updateColor(sprite); // dirty need

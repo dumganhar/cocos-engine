@@ -20,6 +20,7 @@
  THE SOFTWARE.
 */
 
+import { ONLY_2D } from 'internal:constants';
 import { Fog } from '../render-scene/scene/fog';
 import { Ambient } from '../render-scene/scene/ambient';
 import { Skybox } from '../render-scene/scene/skybox';
@@ -102,15 +103,15 @@ export class PipelineSceneData {
         this._skinMaterialModel = val;
     }
 
-    public fog: Fog = new Fog();
-    public ambient: Ambient = new Ambient();
-    public skybox: Skybox = new Skybox();
-    public shadows: Shadows = new Shadows();
-    public csmLayers: CSMLayers = new CSMLayers();
-    public octree: Octree = new Octree();
-    public skin: Skin = new Skin();
-    public postSettings: PostSettings = new PostSettings();
-    public lightProbes = legacyCC.internal.LightProbes ? new legacyCC.internal.LightProbes() : null;
+    public declare fog: Fog;
+    public declare ambient: Ambient;
+    public declare skybox: Skybox;
+    public declare shadows: Shadows;
+    public declare csmLayers: CSMLayers;
+    public declare octree: Octree;
+    public declare skin: Skin;
+    public declare postSettings: PostSettings;
+    public declare lightProbes: any;
 
     /**
       * @en The list for valid punctual Lights, only available after the scene culling of the current frame.
@@ -142,6 +143,18 @@ export class PipelineSceneData {
 
     constructor () {
         this._shadingScale = 1.0;
+
+        if (!ONLY_2D) {
+            this.fog = new Fog();
+            this.ambient = new Ambient();
+            this.skybox = new Skybox();
+            this.shadows = new Shadows();
+            this.csmLayers = new CSMLayers();
+            this.octree = new Octree();
+            this.skin = new Skin();
+            this.postSettings = new PostSettings();
+            this.lightProbes = legacyCC.internal.LightProbes ? new legacyCC.internal.LightProbes() : null;
+        }
     }
 
     public activate (device: Device): boolean {
@@ -204,8 +217,10 @@ export class PipelineSceneData {
     }
 
     public destroy (): void {
-        this.shadows.destroy();
-        this.csmLayers.destroy();
+        if (!ONLY_2D) {
+            this.shadows.destroy();
+            this.csmLayers.destroy();
+        }
         this.validPunctualLights.length = 0;
         this._occlusionQueryInputAssembler?.destroy();
         this._occlusionQueryInputAssembler = null;

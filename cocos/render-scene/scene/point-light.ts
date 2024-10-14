@@ -22,8 +22,8 @@
  THE SOFTWARE.
 */
 
-import { cclegacy, geometry, v3, Vec3 } from '../../core';
-import { AABB } from '../../core/geometry';
+import { cclegacy, v3, Vec3 } from '../../core';
+import { geometry } from '../../core/geometry-index';
 import { Light, LightType, nt2lm } from './light';
 
 /**
@@ -107,7 +107,7 @@ export class PointLight extends Light {
     private _luminanceHDR$ = 0;
     private _luminanceLDR$ = 0;
     private _pos: Vec3 = v3();
-    private _aabb: AABB = AABB.create();
+    private _aabb: geometry.AABB = geometry.AABB.create();
 
     constructor () {
         super();
@@ -130,7 +130,7 @@ export class PointLight extends Light {
         if (this._node && (this._node.hasChangedFlags || this._needUpdate$)) {
             this._node.getWorldPosition(this._pos);
             const range = this._range$;
-            AABB.set(this._aabb, this._pos.x, this._pos.y, this._pos.z, range, range, range);
+            geometry.AABB.set(this._aabb, this._pos.x, this._pos.y, this._pos.z, range, range, range);
             this._needUpdate$ = false;
         }
     }

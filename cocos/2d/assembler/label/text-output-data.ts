@@ -23,51 +23,51 @@
 */
 
 import { Texture2D } from '../../../asset/assets';
-import { Rect, Size, Vec2 } from '../../../core';
+import { rect, size, v2 } from '../../../core';
 import { SpriteFrame } from '../../assets';
 import { IRenderData } from './text-processing';
 
 export class TextOutputLayoutData {
     // public parsedStringStyle; // Prepare for merging richtext
     // string after process
-    public parsedString: string[] = [];
+    public parsedString$: string[] = [];
 
     // node part
-    public nodeContentSize = Size.ZERO.clone(); // both
+    public nodeContentSize$ = size(); // both
 
     // Node info
-    public canvasSize = new Size(); // ttf
+    public canvasSize$ = size(); // ttf
 
-    public canvasPadding = new Rect(); // ttf
-    public contentSizeExtend = Size.ZERO.clone(); // ttf
+    public canvasPadding$ = rect(); // ttf
+    public contentSizeExtend$ = size(); // ttf
 
-    public startPosition = Vec2.ZERO.clone(); // ttf
+    public startPosition$ = v2(); // ttf
 
-    public reset (): void {
-        this.parsedString.length = 0;
-        this.nodeContentSize.set(0, 0);
-        this.canvasSize.set();
-        this.canvasPadding.set();
-        this.contentSizeExtend.set();
-        this.startPosition.set();
+    public reset$ (): void {
+        this.parsedString$.length = 0;
+        this.nodeContentSize$.set(0, 0);
+        this.canvasSize$.set();
+        this.canvasPadding$.set();
+        this.contentSizeExtend$.set();
+        this.startPosition$.set();
     }
 }
 
 export class TextOutputRenderData {
     // Process Output
-    public quadCount = 0; // both
-    public vertexBuffer: IRenderData[] = []; // both
-    public texture: Texture2D | SpriteFrame | null = null;  // both
+    public quadCount$ = 0; // both
+    public vertexBuffer$: IRenderData[] = []; // both
+    public texture$: Texture2D | SpriteFrame | null = null;  // both
 
     // anchor
-    public uiTransAnchorX = 0.5; // both
-    public uiTransAnchorY = 0.5; // both
+    public uiTransAnchorX$ = 0.5; // both
+    public uiTransAnchorY$ = 0.5; // both
 
-    public reset (): void {
-        this.quadCount = 0;
-        this.vertexBuffer.length = 0;
-        this.texture = null;
-        this.uiTransAnchorX = 0.5;
-        this.uiTransAnchorY = 0.5;
+    public reset$ (): void {
+        this.quadCount$ = 0;
+        this.vertexBuffer$.length = 0;
+        this.texture$ = null;
+        this.uiTransAnchorX$ = 0.5;
+        this.uiTransAnchorY$ = 0.5;
     }
 }

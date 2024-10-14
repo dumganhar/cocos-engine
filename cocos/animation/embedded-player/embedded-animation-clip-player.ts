@@ -77,44 +77,44 @@ export class EmbeddedAnimationClipPlayable extends EmbeddedPlayable {
 class EmbeddedAnimationClipPlayableState extends EmbeddedPlayableState {
     constructor (animationState: AnimationState) {
         super(true);
-        this._animationState = animationState;
+        this._animationState$ = animationState;
     }
 
     public destroy (): void {
-        this._animationState.destroy();
+        this._animationState$.destroy();
     }
 
     /**
      * Plays the animation state at specified time.
      */
     public play (): void {
-        this._animationState.play();
+        this._animationState$.play();
     }
 
     /**
      * Pause the animation state.
      */
     public pause (): void {
-        this._animationState.pause();
+        this._animationState$.pause();
     }
 
     /**
      * Stops the animation state.
      */
     public stop (): void {
-        this._animationState.stop();
+        this._animationState$.stop();
     }
 
     /**
      * Sets the speed of the animation state.
      */
     public setSpeed (speed: number): void {
-        this._animationState.speed = speed;
+        this._animationState$.speed = speed;
     }
 
     public setTime (time: number): void {
-        this._animationState.time = time;
+        this._animationState$.time = time;
     }
 
-    private _animationState: AnimationState;
+    private _animationState$: AnimationState;
 }

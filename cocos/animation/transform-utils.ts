@@ -22,10 +22,10 @@
  THE SOFTWARE.
 */
 
-import { Mat4 } from '../core';
+import { mat4, Mat4 } from '../core';
 import { Node } from '../scene-graph';
 
-const m4_1 = new Mat4();
+const m4_1 = mat4();
 
 /**
  * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.

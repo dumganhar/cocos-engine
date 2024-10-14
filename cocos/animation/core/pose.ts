@@ -47,11 +47,11 @@ export class TransformFilter {
                 'The number of transforms exceeds the max allowed(2 ** 16)',
             );
         }
-        this._involvedTransforms = new Uint16Array(involvedTransforms);
+        this._involvedTransforms$ = new Uint16Array(involvedTransforms);
     }
 
     get involvedTransforms (): Readonly<Uint16Array> {
-        return this._involvedTransforms as Readonly<Uint16Array>;
+        return this._involvedTransforms$ as Readonly<Uint16Array>;
     }
 
     /**
@@ -89,7 +89,7 @@ export class TransformFilter {
      * this._involvedTransformIntervals = intervals.slice(0, nIntervals * 2);
      * ```
      */
-    private declare _involvedTransforms: Uint16Array;
+    private declare _involvedTransforms$: Uint16Array;
 }
 
 export function blendPoseInto (target: Pose, source: Readonly<Pose>, alpha: number, transformFilter: TransformFilter | undefined = undefined): void {
@@ -211,9 +211,7 @@ const applyDeltaTransformArrayAt = ((): ApplyDeltaTransformArrayAtFunc => {
     };
 })();
 
-export function applyDeltaTransforms (
-    target: TransformArray, delta: TransformArray, alpha: number, transformFilter: TransformFilter | undefined = undefined,
-): void {
+export function applyDeltaTransforms (target: TransformArray, delta: TransformArray, alpha: number, transformFilter: TransformFilter | undefined = undefined): void {
     const nTransforms = target.length;
     assertIsTrue(nTransforms === delta.length);
     if (!transformFilter) {

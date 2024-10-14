@@ -26,7 +26,7 @@
  * @packageDocumentation
  * @module ui-assembler
  */
-
+import { ENABLE_DYNAMIC_ATLAS } from 'internal:constants';
 import { IAssembler } from '../../renderer/base';
 import { IRenderData, RenderData } from '../../renderer/render-data';
 import { IBatcher } from '../../renderer/i-batcher';
@@ -51,8 +51,9 @@ export const simple: IAssembler = {
 
     updateRenderData (sprite: Sprite) {
         const frame = sprite.spriteFrame;
-
-        dynamicAtlasManager.packToDynamicAtlas(sprite, frame);
+        if (ENABLE_DYNAMIC_ATLAS) {
+            dynamicAtlasManager.packToDynamicAtlas(sprite, frame);
+        }
         this.updateUVs(sprite);// dirty need
         //this.updateColor(sprite);// dirty need
 

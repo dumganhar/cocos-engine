@@ -22,11 +22,12 @@
  THE SOFTWARE.
 */
 
-import { Vec3, geometry } from '../../../core';
+import { Vec3 } from '../../../core';
 import { BuiltinShape } from './builtin-shape';
 import { ISphereShape } from '../../spec/i-physics-shape';
 import { maxComponent } from '../../utils/util';
 import { SphereCollider } from '../../../../exports/physics-framework';
+import { geometry } from '../../../core/geometry-index';
 
 const tempMin = new Vec3();
 const tempMax = new Vec3();

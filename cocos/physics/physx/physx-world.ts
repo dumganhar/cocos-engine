@@ -27,7 +27,7 @@ import { IPhysicsWorld, IRaycastOptions } from '../spec/i-physics-world';
 import { PhysicsMaterial, PhysicsRayResult, CollisionEventType, TriggerEventType, CharacterTriggerEventType,
     CharacterControllerContact,
     EPhysicsDrawFlags } from '../framework';
-import { error, RecyclePool, js, IVec3Like, geometry, IQuatLike, Vec3, Quat, Color } from '../../core';
+import { error, RecyclePool, js, IVec3Like, IQuatLike, Vec3, Quat, Color } from '../../core';
 import { IBaseConstraint } from '../spec/i-physics-constraint';
 import { PhysXRigidBody } from './physx-rigid-body';
 import {
@@ -45,6 +45,7 @@ import { Node } from '../../scene-graph';
 import { PhysXCharacterController } from './character-controllers/physx-character-controller';
 import { GeometryRenderer } from '../../rendering/geometry-renderer';
 import { director } from '../../game';
+import { geometry } from '../../core/geometry-index';
 
 const CC_QUAT_0 = new Quat();
 const CC_V3_0 = new Vec3();

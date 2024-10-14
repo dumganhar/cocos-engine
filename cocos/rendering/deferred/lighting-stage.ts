@@ -41,7 +41,7 @@ import { DeferredPipeline } from './deferred-pipeline';
 import { PlanarShadowQueue } from '../planar-shadow-queue';
 import { Material } from '../../asset/assets/material';
 import { PipelineStateManager } from '../pipeline-state-manager';
-import { intersect, Sphere } from '../../core/geometry';
+import intersect from '../../core/geometry/intersect';
 import { Vec3, Vec4 } from '../../core/math';
 import { DeferredPipelineSceneData } from './deferred-pipeline-scene-data';
 import { renderQueueClearFunc, RenderQueue, convertRenderQueue, renderQueueSortFunc } from '../render-queue';
@@ -49,7 +49,7 @@ import { RenderQueueDesc } from '../pipeline-serialization';
 import { UIPhase } from '../ui-phase';
 import { Pass } from '../../render-scene/core/pass';
 import { AABB } from '../../core/geometry/aabb';
-import { geometry } from '../../core';
+import { Sphere } from '../../core/geometry/sphere';
 
 const _v3 = new Vec3();
 const _rangedDirLightBoundingBox = new AABB(0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
@@ -220,7 +220,7 @@ export class LightingStage extends RenderStage {
         for (let i = 0; i < rangedDirLights.length && idx < this._maxDeferredLights; i++, ++idx) {
             const light = rangedDirLights[i];
             AABB.transform(_tmpBoundingBox, _rangedDirLightBoundingBox, light.node!.getWorldMatrix());
-            if (geometry.intersect.aabbFrustum(_tmpBoundingBox, camera.frustum)) {
+            if (intersect.aabbFrustum(_tmpBoundingBox, camera.frustum)) {
                 // UBOForwardLight
                 Vec3.toArray(_vec4Array, light.position);
                 _vec4Array[3] = LightType.RANGED_DIRECTIONAL;

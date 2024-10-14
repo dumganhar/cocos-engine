@@ -25,7 +25,7 @@
 import { BatchingSchemes, Pass } from '../render-scene/core/pass';
 import { Model } from '../render-scene/scene/model';
 import { PipelineStateManager } from './pipeline-state-manager';
-import { Vec3, nextPow2, Mat4, Color, Pool, geometry, cclegacy } from '../core';
+import { Vec3, nextPow2, Mat4, Color, Pool, cclegacy } from '../core';
 import { Device, RenderPass, Buffer, BufferUsageBit, MemoryUsageBit,
     BufferInfo, BufferViewInfo, CommandBuffer, deviceManager } from '../gfx';
 import { RenderInstancedQueue } from './render-instanced-queue';
@@ -46,7 +46,8 @@ import { ShadowType } from '../render-scene/scene/shadows';
 import { GlobalDSManager } from './global-descriptor-set-manager';
 import { PipelineUBO } from './pipeline-ubo';
 import { PipelineRuntime } from './custom/pipeline';
-import { AABB } from '../core/geometry';
+import { AABB } from '../core/geometry/aabb';
+import intersect from '../core/geometry/intersect';
 
 interface IAdditiveLightPass {
     subModel: SubModel;
@@ -67,22 +68,22 @@ const _rangedDirLightBoundingBox = new AABB(0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
 const _tmpBoundingBox = new AABB();
 
 function cullSphereLight (light: SphereLight, model: Model): boolean {
-    return !!(model.worldBounds && !geometry.intersect.aabbWithAABB(model.worldBounds, light.aabb));
+    return !!(model.worldBounds && !intersect.aabbWithAABB(model.worldBounds, light.aabb));
 }
 
 function cullSpotLight (light: SpotLight, model: Model): boolean {
     return !!(model.worldBounds
-        && (!geometry.intersect.aabbWithAABB(model.worldBounds, light.aabb) || !geometry.intersect.aabbFrustum(model.worldBounds, light.frustum)));
+        && (!intersect.aabbWithAABB(model.worldBounds, light.aabb) || !intersect.aabbFrustum(model.worldBounds, light.frustum)));
 }
 
 function cullPointLight (light: PointLight, model: Model): boolean {
-    return !!(model.worldBounds && !geometry.intersect.aabbWithAABB(model.worldBounds, light.aabb));
+    return !!(model.worldBounds && !intersect.aabbWithAABB(model.worldBounds, light.aabb));
 }
 
 function cullRangedDirLight (light: RangedDirectionalLight, model: Model): boolean {
     AABB.transform(_tmpBoundingBox, _rangedDirLightBoundingBox, light.node!.getWorldMatrix());
     return !!(model.worldBounds
-        && (!geometry.intersect.aabbWithAABB(model.worldBounds, _tmpBoundingBox)));
+        && (!intersect.aabbWithAABB(model.worldBounds, _tmpBoundingBox)));
 }
 
 const phaseName = 'forward-add';

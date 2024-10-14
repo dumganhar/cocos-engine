@@ -23,7 +23,7 @@
 */
 
 import { EDITOR, TEST } from 'internal:constants';
-import { binarySearchEpsilon, clamp, lerp, Quat, Vec3, _decorator } from '../../core';
+import { binarySearchEpsilon, lerp, Quat, Vec3, _decorator } from '../../core';
 import { assertIsTrue } from '../../core/data/utils/asserts';
 import { AnimationClipGraphBindingContext } from '../marionette/animation-graph-animation-clip-binding';
 import { TransformHandle } from '../core/animation-handle';
@@ -488,7 +488,7 @@ class SplitInfo {
     public declare postLerpRatio: number;
 
     constructor () {
-        this._reset();
+        this._reset$();
     }
 
     public get keyframesCount (): number {
@@ -505,7 +505,7 @@ class SplitInfo {
     }
 
     public calculate (times: ArrayLike<number>, from: number, to: number): void {
-        this._reset();
+        this._reset$();
 
         if (from > to) {
             return;
@@ -572,7 +572,7 @@ class SplitInfo {
         }
     }
 
-    private _reset (): void {
+    private _reset$ (): void {
         this.preLerpIndex = -1;
         this.preLerpRatio = 0.0;
         this.directKeyframesBegin = 0;
@@ -604,16 +604,16 @@ function binarySearchRatio (values: ArrayLike<number>, value: number): { index: 
 
 class ExoticTrsAnimationEvaluator {
     constructor (nodeAnimations: ExoticNodeAnimation[], binder: Binder) {
-        this._nodeEvaluations = nodeAnimations.map((nodeAnimation) => nodeAnimation.createEvaluator(binder));
+        this._nodeEvaluations$ = nodeAnimations.map((nodeAnimation) => nodeAnimation.createEvaluator(binder));
     }
 
     public evaluate (time: number): void {
-        this._nodeEvaluations.forEach((nodeEvaluator) => {
+        this._nodeEvaluations$.forEach((nodeEvaluator) => {
             nodeEvaluator.evaluate(time);
         });
     }
 
-    private _nodeEvaluations: ExoticNodeAnimationEvaluator[];
+    private _nodeEvaluations$: ExoticNodeAnimationEvaluator[];
 }
 
 class ExoticNodeAnimationEvaluator {
@@ -625,56 +625,50 @@ class ExoticNodeAnimationEvaluator {
         binder: Binder,
     ) {
         if (position) {
-            this._position = createExoticTrackEvaluationRecord(
-                position.times, position.values, Vec3, path, 'position', binder,
-            );
+            this._position$ = createExoticTrackEvaluationRecord(position.times, position.values, Vec3, path, 'position', binder);
         }
         if (rotation) {
-            this._rotation = createExoticTrackEvaluationRecord(
-                rotation.times, rotation.values, Quat, path, 'rotation', binder,
-            );
+            this._rotation$ = createExoticTrackEvaluationRecord(rotation.times, rotation.values, Quat, path, 'rotation', binder);
         }
         if (scale) {
-            this._scale = createExoticTrackEvaluationRecord(
-                scale.times, scale.values, Vec3, path, 'scale', binder,
-            );
+            this._scale$ = createExoticTrackEvaluationRecord(scale.times, scale.values, Vec3, path, 'scale', binder);
         }
     }
 
     public evaluate (time: number): void {
-        if (this._position) {
-            const value = this._position.evaluator.evaluate(time);
-            this._position.runtimeBinding.setValue(value);
+        if (this._position$) {
+            const value = this._position$.evaluator.evaluate(time);
+            this._position$.runtimeBinding.setValue(value);
         }
-        if (this._rotation) {
-            const value = this._rotation.evaluator.evaluate(time);
-            this._rotation.runtimeBinding.setValue(value);
+        if (this._rotation$) {
+            const value = this._rotation$.evaluator.evaluate(time);
+            this._rotation$.runtimeBinding.setValue(value);
         }
-        if (this._scale) {
-            const value = this._scale.evaluator.evaluate(time);
-            this._scale.runtimeBinding.setValue(value);
+        if (this._scale$) {
+            const value = this._scale$.evaluator.evaluate(time);
+            this._scale$.runtimeBinding.setValue(value);
         }
     }
 
-    private _position: ExoticTrackEvaluationRecord<Vec3> | null = null;
-    private _rotation: ExoticTrackEvaluationRecord<Quat> | null = null;
-    private _scale: ExoticTrackEvaluationRecord<Vec3> | null = null;
+    private _position$: ExoticTrackEvaluationRecord<Vec3> | null = null;
+    private _rotation$: ExoticTrackEvaluationRecord<Quat> | null = null;
+    private _scale$: ExoticTrackEvaluationRecord<Vec3> | null = null;
 }
 
 class ExoticTrackEvaluator<TValue> {
     constructor (times: FloatArray, values: ExoticTrackValues<TValue>, ValueConstructor: new () => TValue) {
-        this._times = times;
-        this._values = values;
-        this._prevValue = new ValueConstructor();
-        this._nextValue = new ValueConstructor();
-        this._resultValue = new ValueConstructor();
+        this._times$ = times;
+        this._values$ = values;
+        this._prevValue$ = new ValueConstructor();
+        this._nextValue$ = new ValueConstructor();
+        this._resultValue$ = new ValueConstructor();
     }
 
     public evaluate (time: number): TValue {
         const {
-            _times: times,
-            _values: values,
-            _resultValue: resultValue,
+            _times$: times,
+            _values$: values,
+            _resultValue$: resultValue,
         } = this;
 
         const nFrames = times.length;
@@ -683,7 +677,7 @@ class ExoticTrackEvaluator<TValue> {
             return resultValue;
         }
 
-        const inputSampleResult = sampleInput(times, time, this._inputSampleResultCache);
+        const inputSampleResult = sampleInput(times, time, this._inputSampleResultCache$);
         if (inputSampleResult.just) {
             values.get(inputSampleResult.index, resultValue);
         } else {
@@ -691,8 +685,8 @@ class ExoticTrackEvaluator<TValue> {
                 inputSampleResult.index,
                 inputSampleResult.nextIndex,
                 inputSampleResult.ratio,
-                this._prevValue,
-                this._nextValue,
+                this._prevValue$,
+                this._nextValue$,
                 resultValue,
             );
         }
@@ -700,17 +694,17 @@ class ExoticTrackEvaluator<TValue> {
         return resultValue;
     }
 
-    private _times: FloatArray;
-    private _inputSampleResultCache: InputSampleResult = {
+    private _times$: FloatArray;
+    private _inputSampleResultCache$: InputSampleResult = {
         just: false,
         index: -1,
         nextIndex: -1,
         ratio: 0.0,
     };
-    private _values: ExoticTrackValues<TValue>;
-    private _prevValue: TValue;
-    private _nextValue: TValue;
-    private _resultValue: TValue;
+    private _values$: ExoticTrackValues<TValue>;
+    private _prevValue$: TValue;
+    private _nextValue$: TValue;
+    private _resultValue$: TValue;
 }
 
 interface ExoticTrackEvaluationRecord<TValue> {
@@ -723,13 +717,13 @@ interface ExoticTrackEvaluationRecord<TValue> {
  */
 export class ExoticTrsAGEvaluation {
     constructor (nodeAnimations: ExoticNodeAnimation[], context: AnimationClipGraphBindingContext) {
-        this._nodeEvaluations = nodeAnimations.map(
+        this._nodeEvaluations$ = nodeAnimations.map(
             (nodeAnimation) => nodeAnimation.createEvaluatorForAnimationGraph(context),
         ).filter((x) => !!x) as ExoticNodeAnimationAGEvaluation[];
     }
 
     public destroy (): void {
-        const { _nodeEvaluations: nodeEvaluations } = this;
+        const { _nodeEvaluations$: nodeEvaluations } = this;
         const nNodeEvaluations = nodeEvaluations.length;
         for (let iNodeEvaluation = 0; iNodeEvaluation < nNodeEvaluations; ++iNodeEvaluation) {
             nodeEvaluations[iNodeEvaluation].destroy();
@@ -737,14 +731,14 @@ export class ExoticTrsAGEvaluation {
     }
 
     public evaluate (time: number, pose: Pose): void {
-        const { _nodeEvaluations: nodeEvaluations } = this;
+        const { _nodeEvaluations$: nodeEvaluations } = this;
         const nNodeEvaluations = nodeEvaluations.length;
         for (let iNodeEvaluation = 0; iNodeEvaluation < nNodeEvaluations; ++iNodeEvaluation) {
             nodeEvaluations[iNodeEvaluation].evaluate(time, pose);
         }
     }
 
-    private _nodeEvaluations: ExoticNodeAnimationAGEvaluation[];
+    private _nodeEvaluations$: ExoticNodeAnimationAGEvaluation[];
 }
 
 class ExoticNodeAnimationAGEvaluation {
@@ -754,30 +748,30 @@ class ExoticNodeAnimationAGEvaluation {
         rotation: ExoticQuatTrack | null,
         scale: ExoticVec3Track | null,
     ) {
-        this._transformHandle = transformHandle;
+        this._transformHandle$ = transformHandle;
         if (position) {
-            this._position = new ExoticTrackEvaluator(position.times, position.values, Vec3);
+            this._position$ = new ExoticTrackEvaluator(position.times, position.values, Vec3);
         }
         if (rotation) {
-            this._rotation = new ExoticTrackEvaluator(rotation.times, rotation.values, Quat);
+            this._rotation$ = new ExoticTrackEvaluator(rotation.times, rotation.values, Quat);
         }
         if (scale) {
-            this._scale = new ExoticTrackEvaluator(scale.times, scale.values, Vec3);
+            this._scale$ = new ExoticTrackEvaluator(scale.times, scale.values, Vec3);
         }
     }
 
     public destroy (): void {
-        this._transformHandle.destroy();
+        this._transformHandle$.destroy();
     }
 
     public evaluate (time: number, pose: Pose): void {
         const {
-            _transformHandle: {
+            _transformHandle$: {
                 index: transformIndex,
             },
-            _position: position,
-            _rotation: rotation,
-            _scale: scale,
+            _position$: position,
+            _rotation$: rotation,
+            _scale$: scale,
         } = this;
         const {
             transforms: poseTransforms,
@@ -796,10 +790,10 @@ class ExoticNodeAnimationAGEvaluation {
         }
     }
 
-    private _position: ExoticTrackEvaluator<Vec3> | null = null;
-    private _rotation: ExoticTrackEvaluator<Quat> | null = null;
-    private _scale: ExoticTrackEvaluator<Vec3> | null = null;
-    private _transformHandle: TransformHandle;
+    private _position$: ExoticTrackEvaluator<Vec3> | null = null;
+    private _rotation$: ExoticTrackEvaluator<Quat> | null = null;
+    private _scale$: ExoticTrackEvaluator<Vec3> | null = null;
+    private _transformHandle$: TransformHandle;
 }
 
 interface InputSampleResult {

@@ -34,7 +34,7 @@ import { input } from '../input';
 import { Root } from '../root';
 import { Node, NodeEventType, Scene } from '../scene-graph';
 import { ComponentScheduler } from '../scene-graph/component-scheduler';
-import NodeActivator from '../scene-graph/node-activator';
+import { NodeActivator } from '../scene-graph/node-activator';
 import { scalableContainerManager } from '../core/memop/scalable-container';
 import { uiRendererManager } from '../2d/framework/ui-renderer-manager';
 import { assetManager } from '../asset/asset-manager';

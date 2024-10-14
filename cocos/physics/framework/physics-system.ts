@@ -23,7 +23,7 @@
 */
 
 import { EDITOR_NOT_IN_PREVIEW } from 'internal:constants';
-import { Vec3, RecyclePool, Enum, System, cclegacy, settings, geometry, warn, IQuatLike, IVec3Like, SettingsCategory } from '../../core';
+import { Vec3, RecyclePool, Enum, System, cclegacy, settings, warn, IQuatLike, IVec3Like, SettingsCategory } from '../../core';
 import { IPhysicsWorld, IRaycastOptions } from '../spec/i-physics-world';
 import { director, Director, DirectorEvent, game } from '../../game';
 import { PhysicsMaterial } from './assets/physics-material';
@@ -33,6 +33,7 @@ import { CollisionMatrix } from './collision-matrix';
 import { PhysicsGroup } from './physics-enum';
 import { constructDefaultWorld, IWorldInitData, selector } from './physics-selector';
 import { assetManager, builtinResMgr } from '../../asset/asset-manager';
+import { geometry } from '../../core/geometry-index';
 
 cclegacy.internal.PhysicsGroup = PhysicsGroup;
 

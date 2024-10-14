@@ -42,13 +42,13 @@ export class VertexEffectDelegate {
      * @zh Spine 顶点特效对象实例。
      */
     _vertexEffect: spine.VertexEffect;
-    private _interpolation: spine.Interpolation;
-    private _effectType: string;
+    private _interpolation$: spine.Interpolation;
+    private _effectType$: string;
 
     constructor () {
         this._vertexEffect = null!;
-        this._interpolation = null!;
-        this._effectType = 'none';
+        this._interpolation$ = null!;
+        this._effectType$ = 'none';
     }
 
     /**
@@ -57,8 +57,8 @@ export class VertexEffectDelegate {
      */
     clear (): void {
         this._vertexEffect = null!;
-        this._interpolation = null!;
-        this._effectType = 'none';
+        this._interpolation$ = null!;
+        this._effectType$ = 'none';
     }
 
     /**
@@ -69,7 +69,7 @@ export class VertexEffectDelegate {
      * @return {spine.VertexEffect} @en Return a vertex effect type of jitter. @zh 返回一个 jitter 类型的顶点特效对象实例。
      */
     initJitter (jitterX: number, jitterY: number): spine.VertexEffect {
-        this._effectType = 'jitter';
+        this._effectType$ = 'jitter';
         this._vertexEffect = new spine.JitterEffect(jitterX, jitterY);
         return this._vertexEffect;
     }
@@ -83,9 +83,9 @@ export class VertexEffectDelegate {
      * @return {sp.spine.JitterEffect} @en Return a vertex effect type of swirl. @zh 返回一个 swirl 类型的顶点特效对象实例。
      */
     initSwirlWithPow (radius: number, power: number): spine.VertexEffect {
-        this._effectType = 'swirl';
-        this._interpolation = new spine.Pow(power);
-        this._vertexEffect = new spine.SwirlEffect(radius, this._interpolation);
+        this._effectType$ = 'swirl';
+        this._interpolation$ = new spine.Pow(power);
+        this._vertexEffect = new spine.SwirlEffect(radius, this._interpolation$);
         return this._vertexEffect;
     }
 
@@ -98,9 +98,9 @@ export class VertexEffectDelegate {
      * @return {sp.spine.SwirlEffect} @en Return a vertex effect type of swirl. @zh 返回一个 swirl 类型的顶点特效对象实例。
      */
     initSwirlWithPowOut (radius: number, power: number): spine.VertexEffect {
-        this._effectType = 'swirl';
-        this._interpolation = new spine.PowOut(power);
-        this._vertexEffect = new spine.SwirlEffect(radius, this._interpolation);
+        this._effectType$ = 'swirl';
+        this._interpolation$ = new spine.PowOut(power);
+        this._vertexEffect = new spine.SwirlEffect(radius, this._interpolation$);
         return this._vertexEffect;
     }
 
@@ -141,6 +141,6 @@ export class VertexEffectDelegate {
      * @return {String}
      */
     getEffectType (): string {
-        return this._effectType;
+        return this._effectType$;
     }
 }

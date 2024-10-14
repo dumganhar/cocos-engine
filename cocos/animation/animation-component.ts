@@ -71,7 +71,7 @@ export class Animation extends Eventify(Component) {
         // Remove state for old automatic clips.
         for (const clip of this._clips) {
             if (clip) {
-                this._removeStateOfAutomaticClip(clip);
+                this._removeStateOfAutomaticClip$(clip);
             }
         }
         // Create state for new clips.
@@ -157,7 +157,7 @@ export class Animation extends Eventify(Component) {
     /**
      * Whether if `crossFade()` or `play()` has been called before this component starts.
      */
-    private _hasBeenPlayed = false;
+    private _hasBeenPlayed$ = false;
 
     public onLoad (): void {
         this.clips = this._clips;
@@ -168,7 +168,7 @@ export class Animation extends Eventify(Component) {
     }
 
     public start (): void {
-        if (!EDITOR_NOT_IN_PREVIEW && (this.playOnLoad && !this._hasBeenPlayed) && this._defaultClip) {
+        if (!EDITOR_NOT_IN_PREVIEW && (this.playOnLoad && !this._hasBeenPlayed$) && this._defaultClip) {
             this.crossFade(this._defaultClip.name, 0);
         }
     }
@@ -198,7 +198,7 @@ export class Animation extends Eventify(Component) {
      * @param name The name of the animation to be played, if absent, the default clip will be played
      */
     public play (name?: string): void {
-        this._hasBeenPlayed = true;
+        this._hasBeenPlayed$ = true;
         if (!name) {
             if (!this._defaultClip) {
                 return;
@@ -217,7 +217,7 @@ export class Animation extends Eventify(Component) {
      * @param duration The duration of the cross fade, default value is 0.3s
      */
     public crossFade (name: string, duration = 0.3): void {
-        this._hasBeenPlayed = true;
+        this._hasBeenPlayed$ = true;
         const state = this._nameToState[name];
         if (state) {
             this.doPlayOrCrossFade(state, duration);
@@ -391,7 +391,7 @@ export class Animation extends Eventify(Component) {
     public on<TFunction extends (...any) => void> (type: AnimationStateEventType, callback: TFunction, thisArg?: any, once?: boolean): TFunction {
         const ret = super.on(type, callback, thisArg, once);
         if (type === AnimationStateEventType.LASTFRAME) {
-            this._syncAllowLastFrameEvent();
+            this._syncAllowLastFrameEvent$();
         }
         return ret;
     }
@@ -399,7 +399,7 @@ export class Animation extends Eventify(Component) {
     public once<TFunction extends (...any) => void> (type: AnimationStateEventType, callback: TFunction, thisArg?: any): TFunction {
         const ret = super.once(type, callback, thisArg);
         if (type === AnimationStateEventType.LASTFRAME) {
-            this._syncAllowLastFrameEvent();
+            this._syncAllowLastFrameEvent$();
         }
         return ret;
     }
@@ -421,7 +421,7 @@ export class Animation extends Eventify(Component) {
     public off (type: AnimationStateEventType, callback?: (...any) => void, thisArg?: any): void {
         super.off(type, callback, thisArg);
         if (type === AnimationStateEventType.LASTFRAME) {
-            this._syncDisallowLastFrameEvent();
+            this._syncDisallowLastFrameEvent$();
         }
     }
 
@@ -454,7 +454,7 @@ export class Animation extends Eventify(Component) {
         this._crossFade.crossFade(state, duration);
     }
 
-    private _removeStateOfAutomaticClip (clip: AnimationClip): void {
+    private _removeStateOfAutomaticClip$ (clip: AnimationClip): void {
         for (const name in this._nameToState) {
             const state = this._nameToState[name];
             if (equalClips(clip, state.clip)) {
@@ -464,7 +464,7 @@ export class Animation extends Eventify(Component) {
         }
     }
 
-    private _syncAllowLastFrameEvent (): void {
+    private _syncAllowLastFrameEvent$ (): void {
         if (this.hasEventListener(AnimationStateEventType.LASTFRAME)) {
             for (const stateName in this._nameToState) {
                 this._nameToState[stateName].allowLastFrameEvent(true);
@@ -472,7 +472,7 @@ export class Animation extends Eventify(Component) {
         }
     }
 
-    private _syncDisallowLastFrameEvent (): void {
+    private _syncDisallowLastFrameEvent$ (): void {
         if (!this.hasEventListener(AnimationStateEventType.LASTFRAME)) {
             for (const stateName in this._nameToState) {
                 this._nameToState[stateName].allowLastFrameEvent(false);

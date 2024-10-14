@@ -29,7 +29,8 @@ import { Enum, EnumType, ccenum } from '../core/value-types/enum';
 import { Node, NodeEventType } from '../scene-graph';
 import { CCObject, Color, RecyclePool, js } from '../core';
 import { SkeletonData } from './skeleton-data';
-import { Graphics, UIRenderer } from '../2d';
+import { Graphics } from '../2d/components/graphics';
+import { UIRenderer } from '../2d/framework/ui-renderer';
 import { Batcher2D } from '../2d/renderer/batcher-2d';
 import { BlendFactor, BlendOp } from '../gfx';
 import { MaterialInstance } from '../render-scene';
@@ -40,7 +41,7 @@ import { RenderEntity, RenderEntityType } from '../2d/renderer/render-entity';
 import { AttachUtil } from './attach-util';
 import spine from './lib/spine-core';
 import { VertexEffectDelegate } from './vertex-effect-delegate';
-import SkeletonCache, { AnimationCache, AnimationFrame, SkeletonCacheItemInfo } from './skeleton-cache';
+import { SkeletonCache, AnimationCache, AnimationFrame, SkeletonCacheItemInfo } from './skeleton-cache';
 import { TrackEntryListeners } from './track-entry-listeners';
 import { setPropertyEnumType } from '../core/internal-index';
 
@@ -245,7 +246,7 @@ export class Skeleton extends UIRenderer {
     protected _instance: spine.SkeletonInstance | null = null;
     protected _state: spine.AnimationState = null!;
     protected _textures: Texture2D[] = [];
-    private _skeletonInfo: SkeletonCacheItemInfo | null = null;
+    private _skeletonInfo$: SkeletonCacheItemInfo | null = null;
     // Animation name
     protected _animationName = '';
     protected _skinName = '';
@@ -304,13 +305,13 @@ export class Skeleton extends UIRenderer {
     /**
      * @engineInternal
      */
-    public _startSlotIndex;
+    public _startSlotIndex = -1;
     /**
      * @engineInternal
      */
-    public _endSlotIndex;
+    public _endSlotIndex = -1;
 
-    private _slotTextures: Map<number, Texture2D> | null = null;
+    private _slotTextures$: Map<number, Texture2D> | null = null;
 
     _vLength = 0;
     _vBuffer: Uint8Array | null = null;
@@ -318,15 +319,13 @@ export class Skeleton extends UIRenderer {
     _iBuffer: Uint8Array | null = null;
     _model: any;
     _tempColor: TempColor = { r: 0, g: 0, b: 0, a: 0 };
-    private _eventListenerID: number = -1;
+    private _eventListenerID$: number = -1;
 
     constructor () {
         super();
         this._useVertexOpacity = true;
         this._startEntry = { animation: { name: '' }, trackIndex: 0 } as spine.TrackEntry;
         this._endEntry = { animation: { name: '' }, trackIndex: 0 } as spine.TrackEntry;
-        this._startSlotIndex = -1;
-        this._endSlotIndex = -1;
         if (!JSB) {
             this._instance = new spine.SkeletonInstance();
             this._instance.dtRate = this._timeScale * timeScale;
@@ -571,7 +570,7 @@ export class Skeleton extends UIRenderer {
         }
         this._sockets = val;
         this._updateSocketBindings();
-        this.attachUtil.init(this);
+        this.attachUtil.init$(this);
     }
 
     /**
@@ -702,19 +701,19 @@ export class Skeleton extends UIRenderer {
     }
 
     public onDestroy (): void {
-        if (this._eventListenerID > 0) {
-            TrackEntryListeners.removeListener(this._eventListenerID);
-            this._eventListenerID = -1;
+        if (this._eventListenerID$ > 0) {
+            TrackEntryListeners.removeListener$(this._eventListenerID$);
+            this._eventListenerID$ = -1;
         }
         this._drawList.destroy();
         this.destroyRenderData();
         this._cleanMaterialCache();
         this._vBuffer = null;
         this._iBuffer = null;
-        this.attachUtil.reset();
+        this.attachUtil.reset$();
         //this._textures.length = 0;
-        this._slotTextures?.clear();
-        this._slotTextures = null;
+        this._slotTextures$?.clear();
+        this._slotTextures$ = null;
         this._cachedSockets.clear();
         this._socketNodes.clear();
         //if (this._cacheMode == SpineAnimationCacheMode.PRIVATE_CACHE) this._animCache?.destroy();
@@ -780,7 +779,7 @@ export class Skeleton extends UIRenderer {
         this._updateUseTint();
         this._indexBoneSockets();
         this._updateSocketBindings();
-        this.attachUtil.init(this);
+        this.attachUtil.init$(this);
         this._preCacheMode = this._cacheMode;
     }
 
@@ -800,10 +799,10 @@ export class Skeleton extends UIRenderer {
         if (!EDITOR_NOT_IN_PREVIEW) {
             const preSkeletonCache = this._skeletonCache;
             if (this._cacheMode === SpineAnimationCacheMode.SHARED_CACHE) {
-                this._skeletonCache = SkeletonCache.sharedCache;
+                this._skeletonCache = SkeletonCache.sharedCache$;
             } else if (this._cacheMode === SpineAnimationCacheMode.PRIVATE_CACHE) {
                 this._skeletonCache = new SkeletonCache();
-                this._skeletonCache.enablePrivateMode();
+                this._skeletonCache.enablePrivateMode$();
             } else {
                 this._skeletonCache = null;
             }
@@ -816,11 +815,11 @@ export class Skeleton extends UIRenderer {
             if (this.debugBones || this.debugSlots) {
                 warn('Debug bones or slots is invalid in cached mode');
             }
-            const skeletonInfo = this._skeletonCache!.getSkeletonInfo(this._skeletonData!);
-            if (this._skeletonInfo !== skeletonInfo) {
+            const skeletonInfo = this._skeletonCache!.getSkeletonInfo$(this._skeletonData!);
+            if (this._skeletonInfo$ !== skeletonInfo) {
                 this._destroySkeletonInfo(this._skeletonCache);
-                this._skeletonInfo = this._skeletonCache!.createSkeletonInfo(this._skeletonData!);
-                this._skeleton = this._skeletonInfo.skeleton!;
+                this._skeletonInfo$ = this._skeletonCache!.createSkeletonInfo$(this._skeletonData!);
+                this._skeleton = this._skeletonInfo$.skeleton!;
             }
         } else {
             this._skeleton = this._instance!.initSkeleton(skeletonData);
@@ -921,10 +920,10 @@ export class Skeleton extends UIRenderer {
                 warn('Track index can not greater than 0 in cached mode.');
             }
             if (!this._skeletonCache) return null;
-            let cache = this._skeletonCache.getAnimationCache(this._skeletonData!.uuid, name);
+            let cache = this._skeletonCache.getAnimationCache$(this._skeletonData!.uuid, name);
             if (!cache) {
-                cache = this._skeletonCache.initAnimationCache(this.skeletonData!.uuid, this._skeletonData!, name);
-                cache?.setSkin(this._skinName);
+                cache = this._skeletonCache.initAnimationCache$(this.skeletonData!.uuid, this._skeletonData!, name);
+                cache?.setSkin$(this._skinName);
             }
             if (cache) {
                 this._animationName = name;
@@ -933,10 +932,10 @@ export class Skeleton extends UIRenderer {
                 this._playCount = 0;
                 this._animCache = cache;
                 if (this._socketNodes.size > 0) {
-                    this._animCache.enableCacheAttachedInfo();
+                    this._animCache.enableCacheAttachedInfo$();
                 }
-                this._animCache.updateToFrame(0);
-                this._curFrame = this._animCache.frames[0];
+                this._animCache.updateToFrame$(0);
+                this._curFrame = this._animCache.frames$[0];
             }
         } else {
             this._animationName = name;
@@ -1021,7 +1020,7 @@ export class Skeleton extends UIRenderer {
         this._instance!.setSkin(name);
         if (this.isAnimationCached()) {
             if (this._animCache) {
-                this._animCache.setSkin(name);
+                this._animCache.setSkin$(name);
             }
         }
         this._skinName = name;
@@ -1043,9 +1042,9 @@ export class Skeleton extends UIRenderer {
             if (this._isAniComplete) {
                 if (this._animationQueue.length === 0 && !this._headAniInfo) {
                     const frameCache = this._animCache;
-                    if (frameCache && frameCache.isInvalid()) {
-                        frameCache.updateToFrame(0);
-                        const frames = frameCache.frames;
+                    if (frameCache && frameCache.isInvalid$()) {
+                        frameCache.updateToFrame$(0);
+                        const frames = frameCache.frames$;
                         this._curFrame = frames[frames.length - 1];
                     }
                     return;
@@ -1069,10 +1068,10 @@ export class Skeleton extends UIRenderer {
 
     protected _updateCache (dt: number): void {
         const frameCache = this._animCache!;
-        if (!frameCache.isInited()) {
+        if (!frameCache.isInited$()) {
             return;
         }
-        const frames = frameCache.frames;
+        const frames = frameCache.frames$;
         const frameTime = SkeletonCache.FrameTime;
         // Animation Start, the event different from _customMaterial inner event,
         // It has no event object.
@@ -1085,14 +1084,14 @@ export class Skeleton extends UIRenderer {
 
         this._accTime += dt;
         let frameIdx = Math.floor(this._accTime / frameTime);
-        if (!frameCache.isCompleted) {
-            frameCache.updateToFrame(frameIdx);
+        if (!frameCache.isCompleted$) {
+            frameCache.updateToFrame$(frameIdx);
         }
         this._curFrame = frames[frameIdx];
         if (this._curFrame !== undefined) {
-            this.attachUtil.updateSkeletonBones(this._curFrame.boneInfos);
+            this.attachUtil.updateSkeletonBones$(this._curFrame.boneInfos);
         }
-        if (frameCache.isCompleted && frameIdx >= frames.length) {
+        if (frameCache.isCompleted$ && frameIdx >= frames.length) {
             this._playCount++;
             if (this._playTimes > 0 && this._playCount >= this._playTimes) {
                 // set frame to end frame.
@@ -1174,7 +1173,7 @@ export class Skeleton extends UIRenderer {
         if (textureID < CUSTOM_SLOT_TEXTURE_BEGIN) {
             draw.texture = this._textures[textureID];
         } else {
-            const texture = this._slotTextures?.get(textureID);
+            const texture = this._slotTextures$?.get(textureID);
             if (texture) draw.texture = texture;
         }
         draw.indexOffset = indexOffset;
@@ -1320,7 +1319,7 @@ export class Skeleton extends UIRenderer {
      */
     public syncAttachedNode (): void {
         // sync attached node matrix
-        this.attachUtil._syncAttachedNode();
+        this.attachUtil._syncAttachedNode$();
     }
 
     /**
@@ -1402,7 +1401,7 @@ export class Skeleton extends UIRenderer {
     public invalidAnimationCache (): void {
         if (!this.isAnimationCached()) return;
         if (this._skeletonCache) {
-            this._skeletonCache.invalidAnimationCache(this._skeletonData!.uuid);
+            this._skeletonCache.invalidAnimationCache$(this._skeletonData!.uuid);
         }
     }
 
@@ -1701,8 +1700,8 @@ export class Skeleton extends UIRenderer {
     protected _ensureListener (): void {
         if (!this._listener) {
             this._listener = new TrackEntryListeners();
-            this._eventListenerID = TrackEntryListeners.addListener(this._listener);
-            this._instance!.setListener(this._eventListenerID);
+            this._eventListenerID$ = TrackEntryListeners.addListener$(this._listener);
+            this._instance!.setListener(this._eventListenerID$);
         }
     }
 
@@ -1773,7 +1772,7 @@ export class Skeleton extends UIRenderer {
      * @param listener @en Listener for registering callback functions. @zh 监听器对象，可注册回调方法。
      */
     public setTrackStartListener (entry: spine.TrackEntry, listener: TrackListener): void {
-        TrackEntryListeners.getListeners(entry, this._instance!).start = listener;
+        TrackEntryListeners.getListeners$(entry, this._instance!).start = listener;
     }
 
     /**
@@ -1783,7 +1782,7 @@ export class Skeleton extends UIRenderer {
      * @param listener @en Listener for registering callback functions. @zh 监听器对象，可注册回调方法。
      */
     public setTrackInterruptListener (entry: spine.TrackEntry, listener: TrackListener): void {
-        TrackEntryListeners.getListeners(entry, this._instance!).interrupt = listener;
+        TrackEntryListeners.getListeners$(entry, this._instance!).interrupt = listener;
     }
 
     /**
@@ -1793,7 +1792,7 @@ export class Skeleton extends UIRenderer {
      * @param listener @en Listener for registering callback functions. @zh 监听器对象，可注册回调方法。
      */
     public setTrackEndListener (entry: spine.TrackEntry, listener: TrackListener): void {
-        TrackEntryListeners.getListeners(entry, this._instance!).end = listener;
+        TrackEntryListeners.getListeners$(entry, this._instance!).end = listener;
     }
 
     /**
@@ -1803,7 +1802,7 @@ export class Skeleton extends UIRenderer {
      * @param listener @en Listener for registering callback functions. @zh 监听器对象，可注册回调方法。
      */
     public setTrackDisposeListener (entry: spine.TrackEntry, listener: TrackListener): void {
-        TrackEntryListeners.getListeners(entry, this._instance!).dispose = listener;
+        TrackEntryListeners.getListeners$(entry, this._instance!).dispose = listener;
     }
 
     /**
@@ -1819,7 +1818,7 @@ export class Skeleton extends UIRenderer {
             // this._instance.setListener(listenerID, spine.EventType.event);
             // this._listener!.event = listener;
         };
-        TrackEntryListeners.getListeners(entry, this._instance!).complete = onComplete;
+        TrackEntryListeners.getListeners$(entry, this._instance!).complete = onComplete;
     }
 
     /**
@@ -1829,7 +1828,7 @@ export class Skeleton extends UIRenderer {
      * @param listener @en Listener for registering callback functions. @zh 监听器对象，可注册回调方法。
      */
     public setTrackEventListener (entry: spine.TrackEntry, listener: TrackListener|TrackListener2): void {
-        TrackEntryListeners.getListeners(entry, this._instance!).event = listener;
+        TrackEntryListeners.getListeners$(entry, this._instance!).event = listener;
     }
 
     /**
@@ -1862,22 +1861,22 @@ export class Skeleton extends UIRenderer {
         const height = tex2d.height;
         const createNewAttachment = createNew || false;
         this._instance!.resizeSlotRegion(slotName, width, height, createNewAttachment);
-        if (!this._slotTextures) this._slotTextures = new Map<number, Texture2D>();
+        if (!this._slotTextures$) this._slotTextures$ = new Map<number, Texture2D>();
         let textureID = 0;
-        this._slotTextures.forEach((value, key) => {
+        this._slotTextures$.forEach((value, key) => {
             if (value === tex2d) textureID = key;
         });
         if (textureID === 0) {
             textureID = ++_slotTextureID;
-            this._slotTextures.set(textureID, tex2d);
+            this._slotTextures$.set(textureID, tex2d);
         }
         this._instance!.setSlotTexture(slotName, textureID);
     }
 
     private _destroySkeletonInfo (skeletonCache: SkeletonCache | null): void {
-        if (skeletonCache && this._skeletonInfo) {
-            skeletonCache.destroySkeleton(this._skeletonInfo.assetUUID);
-            this._skeletonInfo = null;
+        if (skeletonCache && this._skeletonInfo$) {
+            skeletonCache.destroySkeleton$(this._skeletonInfo$.assetUUID);
+            this._skeletonInfo$ = null;
         }
     }
 

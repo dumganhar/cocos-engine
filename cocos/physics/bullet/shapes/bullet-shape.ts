@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { Vec3, IVec3Like, geometry } from '../../../core';
+import { Vec3, IVec3Like } from '../../../core';
 import { Collider, PhysicsMaterial, PhysicsSystem, RigidBody } from '../../../../exports/physics-framework';
 import { BulletWorld } from '../bullet-world';
 import { EBtSharedBodyDirty } from '../bullet-enum';
@@ -32,6 +32,7 @@ import { BulletSharedBody } from '../bullet-shared-body';
 import { BulletCache, CC_V3_0 } from '../bullet-cache';
 import { bt, EBulletType } from '../instantiated';
 import { EColliderType } from '../../framework';
+import { geometry } from '../../../core/geometry-index';
 
 const v3_0 = CC_V3_0;
 const ccMaterialBooks = {};

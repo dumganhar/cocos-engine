@@ -22,7 +22,8 @@
  THE SOFTWARE.
 */
 
-import { _decorator, RealCurve } from '../../core';
+import { _decorator } from '../../core';
+import { RealCurve } from '../../core/curves/curve';
 import { CLASS_NAME_PREFIX_ANIM, createEvalSymbol } from '../define';
 import { Channel, RealChannel, RuntimeBinding, Track, TrackEval } from './track';
 
@@ -56,8 +57,10 @@ export class RealArrayTrack extends Track {
             this._channels.splice(value);
         } else if (value > nChannels) {
             this._channels.push(
-                ...Array.from({ length: value - nChannels },
-                    (): Channel<RealCurve> => new Channel<RealCurve>(new RealCurve())),
+                ...Array.from(
+                    { length: value - nChannels },
+                    (): Channel<RealCurve> => new Channel<RealCurve>(new RealCurve()),
+                ),
             );
         }
     }
@@ -85,7 +88,7 @@ export class RealArrayTrackEval implements TrackEval<readonly number[]> {
     constructor (
         private _curves: RealCurve[],
     ) {
-        this._result = new Array(_curves.length).fill(0.0);
+        this._result$ = new Array(_curves.length).fill(0.0);
     }
 
     public get requiresDefault (): boolean {
@@ -94,14 +97,14 @@ export class RealArrayTrackEval implements TrackEval<readonly number[]> {
 
     public evaluate (time: number): number[] {
         const {
-            _result: result,
+            _result$: result,
         } = this;
         const nElements = result.length;
         for (let iElement = 0; iElement < nElements; ++iElement) {
             result[iElement] = this._curves[iElement].evaluate(time);
         }
-        return this._result;
+        return this._result$;
     }
 
-    private declare _result: number[];
+    private declare _result$: number[];
 }

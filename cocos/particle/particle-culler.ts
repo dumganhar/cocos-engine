@@ -26,12 +26,13 @@ import { IParticleModule, Particle, PARTICLE_MODULE_ORDER } from './particle';
 import { Node } from '../scene-graph/node';
 import { TransformBit } from '../scene-graph/node-enum';
 import { RenderMode, Space } from './enum';
-import { approx, EPSILON, Mat4, pseudoRandom, Quat, randomRangeInt, Vec3, Vec4, geometry, bits } from '../core';
+import { approx, EPSILON, Mat4, pseudoRandom, Quat, randomRangeInt, Vec3, Vec4, bits } from '../core';
 import { isCurveTwoValues, particleEmitZAxis } from './particle-general-function';
 import { ParticleSystemRendererBase } from './renderer/particle-system-renderer-base';
 import { Mesh } from '../3d';
 import type { ParticleSystem } from './particle-system';
 import { Mode } from './animator/curve-range';
+import { AABB } from '../core/geometry/aabb';
 
 const _nodeMat = new Mat4();
 const _nodeParentInv = new Mat4();
@@ -271,8 +272,8 @@ export class ParticleCuller {
         if (this._processor.getInfo()!.renderMode === RenderMode.Mesh) {
             const mesh: Mesh | null = this._processor.getInfo().mesh;
             if (mesh && mesh.struct.minPosition && mesh.struct.maxPosition) {
-                const meshAABB: geometry.AABB = new geometry.AABB();
-                geometry.AABB.fromPoints(meshAABB, mesh.struct.minPosition, mesh.struct.maxPosition);
+                const meshAABB: AABB = new AABB();
+                AABB.fromPoints(meshAABB, mesh.struct.minPosition, mesh.struct.maxPosition);
                 const meshMax = Math.max(meshAABB.halfExtents.x, meshAABB.halfExtents.y, meshAABB.halfExtents.z);
                 meshSize.set(meshMax, meshMax, meshMax);
             }

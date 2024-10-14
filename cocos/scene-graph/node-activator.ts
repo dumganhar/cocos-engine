@@ -44,16 +44,16 @@ const Deactivating = CCObject.Flags.Deactivating;
 
 // for __preload: used internally, no sort
 class UnsortedInvoker extends LifeCycleInvoker {
-    public add (comp: Component): void {
+    public add$ (comp: Component): void {
         this._zero.array.push(comp);
     }
-    public remove (comp: Component): void {
+    public remove$ (comp: Component): void {
         this._zero.fastRemove(comp);
     }
-    public cancelInactive (flagToClear: number): void {
+    public cancelInactive$ (flagToClear: number): void {
         LifeCycleInvoker.stableRemoveInactive(this._zero, flagToClear);
     }
-    public invoke (): void {
+    public invoke$ (): void {
         this._invoke(this._zero);
         this._zero.array.length = 0;
     }
@@ -128,7 +128,7 @@ function _componentCorrupted (node: Node, comp: Component, index: number): void 
  * @en The class used to perform activating and deactivating operations of node and component.
  * @zh 用于执行节点和组件的激活和停用操作的管理器。
  */
-export default class NodeActivator {
+export class NodeActivator {
     public declare resetComp?: ((comp: Component, didResetToDefault: boolean) => void);
     protected declare _activatingStack: ActivateTask[];
 
@@ -158,7 +158,7 @@ export default class NodeActivator {
                 this._activatingStack.push(task);
 
                 this._activateNodeRecursively(node, task.preload, task.onLoad, task.onEnable);
-                task.preload.invoke();
+                task.preload.invoke$();
                 task.onLoad.invoke();
                 task.onEnable.invoke();
 
@@ -172,7 +172,7 @@ export default class NodeActivator {
             // (this is an inefficient operation but it ensures general case could be implemented in a efficient way)
             const stack = this._activatingStack;
             for (const lastTask of stack) {
-                lastTask.preload.cancelInactive(IsPreloadStarted);
+                lastTask.preload.cancelInactive$(IsPreloadStarted);
                 lastTask.onLoad.cancelInactive(IsOnLoadStarted);
                 lastTask.onEnable.cancelInactive(IsOnEnableCalled);
             }
@@ -197,7 +197,7 @@ export default class NodeActivator {
             comp._objFlags |= IsPreloadStarted;
             if (comp.internalPreload) {
                 if (preloadInvoker) {
-                    preloadInvoker.add(comp);
+                    preloadInvoker.add$(comp);
                 } else {
                     comp.internalPreload();
                 }
@@ -362,7 +362,7 @@ if (EDITOR) {
                 comp._objFlags |= IsPreloadStarted;
                 if (comp.internalPreload) {
                     if (preloadInvoker) {
-                        preloadInvoker.add(comp);
+                        preloadInvoker.add$(comp);
                     } else if (callPreloadInTryCatch) {
                         callPreloadInTryCatch(comp);
                     }

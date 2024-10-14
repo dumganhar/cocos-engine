@@ -32,7 +32,7 @@ import { TriggerEventObject, CollisionEventObject, CC_V3_0, CC_V3_1, CC_V3_2, CC
 import { bullet2CocosVec3, cocos2BulletQuat, cocos2BulletVec3 } from './bullet-utils';
 import { IRaycastOptions, IPhysicsWorld } from '../spec/i-physics-world';
 import { PhysicsRayResult, PhysicsMaterial, CharacterControllerContact, EPhysicsDrawFlags } from '../framework';
-import { error, RecyclePool, Vec3, js, IVec3Like, geometry, IQuatLike, Quat } from '../../core';
+import { error, RecyclePool, Vec3, js, IVec3Like, IQuatLike, Quat } from '../../core';
 import { BulletContactData } from './bullet-contact-data';
 import { BulletConstraint } from './constraints/bullet-constraint';
 import { BulletCharacterController } from './character-controllers/bullet-character-controller';
@@ -41,6 +41,7 @@ import { Node } from '../../scene-graph';
 import { director } from '../../game';
 import { GeometryRenderer } from '../../rendering/geometry-renderer';
 import { importFunc } from './bullet-env';
+import { geometry } from '../../core/geometry-index';
 
 const contactsPool: BulletContactData[] = [];
 const v3_0 = CC_V3_0;

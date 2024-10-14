@@ -80,7 +80,7 @@ export abstract class EmbeddedPlayable {
 
 export abstract class EmbeddedPlayableState {
     constructor (randomAccess: boolean) {
-        this._randomAccess = randomAccess;
+        this._randomAccess$ = randomAccess;
     }
 
     /**
@@ -90,7 +90,7 @@ export abstract class EmbeddedPlayableState {
      * Indicates if this player can be adjusted to any time.
      */
     public get randomAccess (): boolean {
-        return this._randomAccess;
+        return this._randomAccess$;
     }
 
     /**
@@ -137,5 +137,5 @@ export abstract class EmbeddedPlayableState {
     public setTime (_time: number): void {
     }
 
-    private declare _randomAccess: boolean;
+    private declare _randomAccess$: boolean;
 }

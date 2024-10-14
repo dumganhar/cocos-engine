@@ -24,8 +24,7 @@
 
 import { ComponentPath, HierarchyPath, TargetPath } from './target-path';
 import { IValueProxyFactory } from './value-proxy';
-import { easing, QuatCurve, QuatInterpolationMode, RealCurve, RealInterpolationMode, RealKeyframeValue, TangentWeightMode,
-    warnID, Color, Quat, Size, Vec2, Vec3, Vec4, assertIsTrue, EasingMethod, BezierControlPoints, CompactValueTypeArray } from '../core';
+import { easing, warnID, Color, Quat, Size, Vec2, Vec3, Vec4, assertIsTrue, EasingMethod, CompactValueTypeArray } from '../core';
 import { AnimCurve, RatioSampler } from './animation-curve';
 import { Track, TrackPath } from './tracks/track';
 import { UntypedTrack } from './tracks/untyped-track';
@@ -36,6 +35,9 @@ import { VectorTrack } from './tracks/vector-track';
 import { QuatTrack } from './tracks/quat-track';
 import { ObjectTrack } from './tracks/object-track';
 import { SizeTrack } from './tracks/size-track';
+import { RealCurve, RealInterpolationMode, RealKeyframeValue, TangentWeightMode } from '../core/curves/curve';
+import { QuatCurve, QuatInterpolationMode } from '../core/curves/quat-curve';
+import { BezierControlPoints } from '../core/curves';
 
 /**
  * 表示曲线值，曲线值可以是任意类型，但必须符合插值方式的要求。
@@ -151,46 +153,46 @@ export type LegacyRuntimeCurve = Pick<LegacyClipCurve, 'modifiers' | 'valueAdapt
 
 export class AnimationClipLegacyData {
     constructor (duration: number) {
-        this._duration = duration;
+        this._duration$ = duration;
     }
 
     get keys (): number[][] {
-        return this._keys;
+        return this._keys$;
     }
 
     set keys (value) {
-        this._keys = value;
+        this._keys$ = value;
     }
 
     get curves (): LegacyClipCurve[] {
-        return this._curves;
+        return this._curves$;
     }
 
     set curves (value) {
-        this._curves = value;
-        delete this._runtimeCurves;
+        this._curves$ = value;
+        delete this._runtimeCurves$;
     }
 
     get commonTargets (): LegacyCommonTarget[] {
-        return this._commonTargets;
+        return this._commonTargets$;
     }
 
     set commonTargets (value) {
-        this._commonTargets = value;
+        this._commonTargets$ = value;
     }
 
     /**
      * 此动画的数据。
      */
     get data (): Uint8Array | null {
-        return this._data;
+        return this._data$;
     }
 
     public getPropertyCurves (): readonly LegacyRuntimeCurve[] {
-        if (!this._runtimeCurves) {
+        if (!this._runtimeCurves$) {
             this._createPropertyCurves();
         }
-        return this._runtimeCurves!;
+        return this._runtimeCurves$!;
     }
 
     public toTracks (): Track[] {
@@ -441,34 +443,34 @@ export class AnimationClipLegacyData {
         return newTracks;
     }
 
-    private _keys: number[][] = [];
+    private _keys$: number[][] = [];
 
-    private _curves: LegacyClipCurve[] = [];
+    private _curves$: LegacyClipCurve[] = [];
 
-    private _commonTargets: LegacyCommonTarget[] = [];
+    private _commonTargets$: LegacyCommonTarget[] = [];
 
-    private _ratioSamplers: RatioSampler[] = [];
+    private _ratioSamplers$: RatioSampler[] = [];
 
-    private _runtimeCurves?: LegacyRuntimeCurve[];
+    private _runtimeCurves$?: LegacyRuntimeCurve[];
 
-    private _data: Uint8Array | null = null;
+    private _data$: Uint8Array | null = null;
 
-    private _duration: number;
+    private _duration$: number;
 
     protected _createPropertyCurves (): void {
-        this._ratioSamplers = this._keys.map(
+        this._ratioSamplers$ = this._keys$.map(
             (keys) => new RatioSampler(
                 keys.map(
-                    (key) => key / this._duration,
+                    (key) => key / this._duration$,
                 ),
             ),
         );
 
-        this._runtimeCurves = this._curves.map((targetCurve): LegacyRuntimeCurve => ({
-            curve: new AnimCurve(targetCurve.data, this._duration),
+        this._runtimeCurves$ = this._curves$.map((targetCurve): LegacyRuntimeCurve => ({
+            curve: new AnimCurve(targetCurve.data, this._duration$),
             modifiers: targetCurve.modifiers,
             valueAdapter: targetCurve.valueAdapter,
-            sampler: this._ratioSamplers[targetCurve.data.keys],
+            sampler: this._ratioSamplers$[targetCurve.data.keys],
             commonTarget: targetCurve.commonTarget,
         }));
     }
@@ -505,25 +507,25 @@ class LegacyEasingMethodConverter {
                 // but it does in history project(see cocos-creator/3d-tasks/issues/#8468).
                 // This may be a promise breaking BUG between engine & Editor.
                 // Let's capture this case.
-                this._easingMethods = new Array(keyframesCount).fill(null);
+                this._easingMethods$ = new Array(keyframesCount).fill(null);
             } else {
-                this._easingMethods = easingMethods;
+                this._easingMethods$ = easingMethods;
             }
         } else if (easingMethods === undefined) {
             // Same
-            this._easingMethods = new Array(keyframesCount).fill(legacyCurveData.easingMethod);
+            this._easingMethods$ = new Array(keyframesCount).fill(legacyCurveData.easingMethod);
         } else {
             // Compressed as record
-            this._easingMethods = Array.from({ length: keyframesCount }, (_, index) => easingMethods[index] ?? null);
+            this._easingMethods$ = Array.from({ length: keyframesCount }, (_, index) => easingMethods[index] ?? null);
         }
     }
 
     get nil (): boolean {
-        return !this._easingMethods || this._easingMethods.every((easingMethod) => easingMethod === null || easingMethod === undefined);
+        return !this._easingMethods$ || this._easingMethods$.every((easingMethod) => easingMethod === null || easingMethod === undefined);
     }
 
     public convert (curve: RealCurve): void {
-        const { _easingMethods: easingMethods } = this;
+        const { _easingMethods$: easingMethods } = this;
         if (!easingMethods) {
             return;
         }
@@ -563,7 +565,7 @@ class LegacyEasingMethodConverter {
     }
 
     public convertQuatCurve (curve: QuatCurve): void {
-        const { _easingMethods: easingMethods } = this;
+        const { _easingMethods$: easingMethods } = this;
         if (!easingMethods) {
             return;
         }
@@ -595,7 +597,7 @@ class LegacyEasingMethodConverter {
         }
     }
 
-    private _easingMethods: Array<LegacyEasingMethod | null>  | undefined;
+    private _easingMethods$: Array<LegacyEasingMethod | null>  | undefined;
 }
 
 /**

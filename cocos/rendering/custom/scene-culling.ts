@@ -1,6 +1,6 @@
-import { DEBUG } from 'internal:constants';
+import { DEBUG, ONLY_2D } from 'internal:constants';
 import { Vec3, RecyclePool, assert } from '../../core';
-import { Frustum, intersect, AABB } from '../../core/geometry';
+import { AABB } from '../../core/geometry/aabb';
 import { CommandBuffer, Device, Buffer, BufferInfo, BufferViewInfo, MemoryUsageBit, BufferUsageBit } from '../../gfx';
 import { BatchingSchemes, RenderScene } from '../../render-scene';
 import { CSMLevel, Camera, DirectionalLight, Light, LightType, Model, PointLight, ProbeType,
@@ -16,6 +16,8 @@ import { RenderQueue, RenderQueueQuery, instancePool } from './web-pipeline-type
 import { ObjectPool } from './utils';
 import { getUniformBlockSize } from './layout-graph-utils';
 import { WebProgramLibrary } from './web-program-library';
+import { Frustum } from '../../core/geometry/frustum';
+import intersect from '../../core/geometry/intersect';
 
 const vec3Pool = new ObjectPool(() => new Vec3());
 class CullingPools {
@@ -171,6 +173,7 @@ function sceneCulling (
     probe: ReflectionProbe | null,
     models: Array<Model>,
 ): void {
+    if (ONLY_2D) return;
     const skybox = pSceneData.skybox;
     const skyboxModel = skybox.model;
     const visibility = camera.visibility;
@@ -229,6 +232,7 @@ function addRenderObject (
     model: Model,
     queue: RenderQueue,
 ): void {
+    if (ONLY_2D) return;
     const probeQueue = queue.probeQueue;
     if (isDrawProbe) {
         probeQueue.addToProbeQueue(model, phaseLayoutId);
@@ -504,6 +508,7 @@ export class SceneCulling {
     }
 
     private getBuiltinShadowFrustum (pplSceneData: PipelineSceneData, camera: Camera, mainLight: DirectionalLight, level: number): Readonly<Frustum> {
+        if (ONLY_2D) return null!;
         const csmLayers = pplSceneData.csmLayers;
         const csmLevel = mainLight.csmLevel;
         let frustum: Readonly<Frustum>;

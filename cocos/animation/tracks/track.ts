@@ -25,7 +25,7 @@
 import { ccclass, serializable, uniquelyReferenced } from 'cc.decorator';
 import { SUPPORT_JIT } from 'internal:constants';
 import type { Component } from '../../scene-graph/component';
-import { error, ObjectCurve, QuatCurve, RealCurve, errorID, warnID, js } from '../../core';
+import { errorID, warnID, js } from '../../core';
 import { assertIsTrue } from '../../core/data/utils/asserts';
 
 import { Node } from '../../scene-graph';
@@ -35,6 +35,9 @@ import { PoseOutput } from '../pose-output';
 import { ComponentPath, HierarchyPath, isPropertyPath, TargetPath } from '../target-path';
 import { IValueProxyFactory } from '../value-proxy';
 import { Range } from './utils';
+import { RealCurve } from '../../core/curves/curve';
+import { QuatCurve } from '../../core/curves/quat-curve';
+import { ObjectCurve } from '../../core/curves/object-curve';
 
 export const normalizedFollowTag = Symbol('NormalizedFollow');
 
@@ -238,7 +241,7 @@ class TrackPath {
     /**
      * @internal
      */
-    public [parseTrsPathTag] (): { node: string; property: "position" | "scale" | "rotation" | "eulerAngles"; } | null {
+    public [parseTrsPathTag] (): { node: string; property: 'position' | 'scale' | 'rotation' | 'eulerAngles'; } | null {
         const { _paths: paths } = this;
         const nPaths = paths.length;
 
@@ -331,7 +334,7 @@ export class TrackBinding {
 
     private static _animationFunctions = new WeakMap<Constructor, Map<string | number, AnimationFunction>>();
 
-    public parseTrsPath (): { node: string; property: "position" | "scale" | "rotation" | "eulerAngles"; } | null {
+    public parseTrsPath (): { node: string; property: 'position' | 'scale' | 'rotation' | 'eulerAngles'; } | null {
         if (this.proxy) {
             return null;
         } else {
@@ -357,10 +360,10 @@ export class TrackBinding {
             }
             let setValue; let getValue;
             if (SUPPORT_JIT) {
-                let animationFunction = TrackBinding._animationFunctions.get(resultTarget.constructor);
+                let animationFunction = TrackBinding._animationFunctions.get(resultTarget.constructor as Constructor);
                 if (!animationFunction) {
                     animationFunction = new Map();
-                    TrackBinding._animationFunctions.set(resultTarget.constructor, animationFunction);
+                    TrackBinding._animationFunctions.set(resultTarget.constructor as Constructor, animationFunction);
                 }
 
                 let accessor = animationFunction.get(lastPropertyKey);
@@ -607,7 +610,7 @@ export abstract class SingleChannelTrack<TCurve extends Curve> extends Track {
 }
 
 class SingleChannelTrackEval<TCurve extends Curve> implements TrackEval<unknown> {
-    constructor (private _curve: TCurve) {
+    constructor (private _curve$: TCurve) {
     }
 
     public get requiresDefault (): boolean {
@@ -615,6 +618,6 @@ class SingleChannelTrackEval<TCurve extends Curve> implements TrackEval<unknown>
     }
 
     public evaluate (time: number): unknown {
-        return this._curve.evaluate(time);
+        return this._curve$.evaluate(time);
     }
 }

@@ -31,23 +31,23 @@ export class PoseOutput {
     public weight = 0.0;
 
     constructor (pose: Pose) {
-        this._pose = pose;
+        this._pose$ = pose;
     }
 
     public destroy (): void {
-        for (let iBlendStateWriter = 0; iBlendStateWriter < this._blendStateWriters.length; ++iBlendStateWriter) {
-            this._pose.destroyWriter(this._blendStateWriters[iBlendStateWriter]);
+        for (let iBlendStateWriter = 0; iBlendStateWriter < this._blendStateWriters$.length; ++iBlendStateWriter) {
+            this._pose$.destroyWriter(this._blendStateWriters$[iBlendStateWriter]);
         }
-        this._blendStateWriters.length = 0;
+        this._blendStateWriters$.length = 0;
     }
 
     public createPoseWriter (node: Node, property: BlendingPropertyName, constants: boolean): BlendStateWriter<BlendingPropertyName> {
-        const writer = this._pose.createWriter(node, property, this, constants);
-        this._blendStateWriters.push(writer);
+        const writer = this._pose$.createWriter(node, property, this, constants);
+        this._blendStateWriters$.push(writer);
         return writer;
     }
 
-    private _pose: Pose;
+    private _pose$: Pose;
 
-    private _blendStateWriters: BlendStateWriter<any>[] = [];
+    private _blendStateWriters$: BlendStateWriter<any>[] = [];
 }

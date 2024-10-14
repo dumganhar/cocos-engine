@@ -25,7 +25,7 @@
 import type { AnimationClip } from '../../animation/animation-clip';
 import { Mesh } from '../assets/mesh';
 import { Skeleton } from '../assets/skeleton';
-import { geometry, cclegacy } from '../../core';
+import { cclegacy } from '../../core';
 import { BufferUsageBit, MemoryUsageBit, Attribute, DescriptorSet, Buffer, BufferInfo } from '../../gfx';
 import { INST_JOINT_ANIM_INFO, UBOSkinningAnimation, UBOSkinningTexture, UNIFORM_JOINT_TEXTURE_BINDING } from '../../rendering/define';
 import { Node } from '../../scene-graph';
@@ -36,6 +36,7 @@ import { IAnimInfo, IJointTextureHandle } from '../skeletal-animation/skeletal-a
 import { MorphModel } from './morph-model';
 import { jointTextureSamplerInfo } from '../misc/joint-texture-sampler-info';
 import { SubModel } from '../../render-scene/scene';
+import { geometry } from '../../core/geometry-index';
 
 interface IJointsInfo {
     buffer: Buffer | null;

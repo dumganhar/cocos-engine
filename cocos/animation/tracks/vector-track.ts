@@ -23,10 +23,11 @@
 */
 
 import { ccclass, serializable } from 'cc.decorator';
-import { RealCurve, Vec2, Vec3, Vec4 } from '../../core';
+import { Vec2, Vec3, Vec4 } from '../../core';
 import { CLASS_NAME_PREFIX_ANIM, createEvalSymbol } from '../define';
-import { Channel, RealChannel, RuntimeBinding, Track, TrackEval } from './track';
+import { Channel, RealChannel, Track, TrackEval } from './track';
 import { maskIfEmpty } from './utils';
+import { RealCurve } from '../../core/curves/curve';
 
 const CHANNEL_NAMES: ReadonlyArray<string> = ['X', 'Y', 'Z', 'W'];
 
@@ -176,24 +177,24 @@ export class Vec4TrackEval implements TrackEval<Vec4> {
 
     public evaluate (time: number, defaultValue?: Readonly<Vec4>): Vec4 {
         if (defaultValue) {
-            Vec4.copy(this._result, defaultValue);
+            Vec4.copy(this._result$, defaultValue);
         }
 
         if (this._x) {
-            this._result.x = this._x.evaluate(time);
+            this._result$.x = this._x.evaluate(time);
         }
         if (this._y) {
-            this._result.y = this._y.evaluate(time);
+            this._result$.y = this._y.evaluate(time);
         }
         if (this._z) {
-            this._result.z = this._z.evaluate(time);
+            this._result$.z = this._z.evaluate(time);
         }
         if (this._w) {
-            this._result.w = this._w.evaluate(time);
+            this._result$.w = this._w.evaluate(time);
         }
 
-        return this._result;
+        return this._result$;
     }
 
-    private _result: Vec4 = new Vec4();
+    private _result$: Vec4 = new Vec4();
 }

@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { Vec3, RecyclePool, error, js, IVec3Like, geometry, IQuatLike, warnID, Color } from '../../core';
+import { Vec3, RecyclePool, error, js, IVec3Like, IQuatLike, warnID, Color } from '../../core';
 import { PhysicsRayResult } from '../framework/physics-ray-result';
 import { BuiltinSharedBody } from './builtin-shared-body';
 import { BuiltinShape } from './shapes/builtin-shape';
@@ -35,6 +35,7 @@ import { BuiltinRigidBody } from './builtin-rigid-body';
 import { Node } from '../../scene-graph';
 import { GeometryRenderer } from '../../rendering/geometry-renderer';
 import { director } from '../../game';
+import { geometry } from '../../core/geometry-index';
 
 const hitPoint = new Vec3();
 const TriggerEventObject = {

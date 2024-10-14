@@ -124,7 +124,7 @@ export class HtmlTextParser {
         return this._resultObjectArray;
     }
 
-    private _attributeToObject (attribute: string): IHtmlTextParserStack {
+    private _attributeToObject$ (attribute: string): IHtmlTextParserStack {
         attribute = attribute.trim();
 
         const obj: IHtmlTextParserStack = {};
@@ -181,7 +181,7 @@ export class HtmlTextParser {
             tagName = header[0].trim();
             if (tagName.startsWith('img') && tagName[tagName.length - 1] === '/') {
                 header = imageAttrReg.exec(attribute);
-                let tagValue;
+                let tagValue: string;
                 let isValidImageTag = false;
                 while (header) {
                     // skip the invalid tags at first
@@ -259,7 +259,7 @@ export class HtmlTextParser {
             if (attribute) {
                 const outlineAttrReg = /(\s)*color(\s)*=|(\s)*width(\s)*=|(\s)*click(\s)*=|(\s)*param(\s)*=/;
                 header = outlineAttrReg.exec(attribute);
-                let tagValue;
+                let tagValue: string;
                 while (header) {
                     // skip the invalid tags at first
                     attribute = attribute.substring(attribute.indexOf(header[0]));
@@ -390,7 +390,7 @@ export class HtmlTextParser {
     }
 
     private _addToStack (attribute: string): void {
-        const obj = this._attributeToObject(attribute);
+        const obj = this._attributeToObject$(attribute);
 
         if (this._stack.length === 0) {
             this._stack.push(obj);

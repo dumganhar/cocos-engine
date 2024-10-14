@@ -21,18 +21,21 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+import { ONLY_2D } from 'internal:constants';
 import { Model } from '../render-scene/scene/model';
 import { Camera, CameraUsage, SkyBoxFlagValue } from '../render-scene/scene/camera';
-import { Vec3, Pool, geometry, cclegacy } from '../core';
+import { Vec3, Pool, cclegacy } from '../core';
 import { PipelineUBO } from './pipeline-ubo';
 import { IRenderObject, UBOShadowEnum } from './define';
 import { ShadowType, CSMOptimizationMode } from '../render-scene/scene/shadows';
 import { PipelineSceneData } from './pipeline-scene-data';
 import { ShadowLayerVolume } from './shadow/csm-layers';
-import { AABB } from '../core/geometry';
+import { AABB } from '../core/geometry/aabb';
+import { Sphere } from '../core/geometry/sphere';
+import intersect from '../core/geometry/intersect';
 
 const _tempVec3 = new Vec3();
-const _sphere = geometry.Sphere.create(0, 0, 0, 1);
+const _sphere = Sphere.create(0, 0, 0, 1);
 const _rangedDirLightBoundingBox = new AABB(0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
 const _tmpBoundingBox = new AABB();
 
@@ -51,6 +54,7 @@ function getRenderObject (model: Model, camera: Camera): IRenderObject {
 }
 
 export function validPunctualLightsCulling (sceneData: PipelineSceneData, camera: Camera): void {
+    if (ONLY_2D) return;
     const validPunctualLights = sceneData.validPunctualLights;
     validPunctualLights.length = 0;
 
@@ -61,8 +65,8 @@ export function validPunctualLightsCulling (sceneData: PipelineSceneData, camera
             continue;
         }
 
-        geometry.Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
-        if (geometry.intersect.sphereFrustum(_sphere, camera.frustum)) {
+        Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
+        if (intersect.sphereFrustum(_sphere, camera.frustum)) {
             validPunctualLights.push(light);
         }
     }
@@ -73,8 +77,8 @@ export function validPunctualLightsCulling (sceneData: PipelineSceneData, camera
         if (light.baked && !camera.node.scene.globals.disableLightmap) {
             continue;
         }
-        geometry.Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
-        if (geometry.intersect.sphereFrustum(_sphere, camera.frustum)) {
+        Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
+        if (intersect.sphereFrustum(_sphere, camera.frustum)) {
             validPunctualLights.push(light);
         }
     }
@@ -85,8 +89,8 @@ export function validPunctualLightsCulling (sceneData: PipelineSceneData, camera
         if (light.baked) {
             continue;
         }
-        geometry.Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
-        if (geometry.intersect.sphereFrustum(_sphere, camera.frustum)) {
+        Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
+        if (intersect.sphereFrustum(_sphere, camera.frustum)) {
             validPunctualLights.push(light);
         }
     }
@@ -95,7 +99,7 @@ export function validPunctualLightsCulling (sceneData: PipelineSceneData, camera
     for (let i = 0; i < rangedDirLights.length; i++) {
         const light = rangedDirLights[i];
         AABB.transform(_tmpBoundingBox, _rangedDirLightBoundingBox, light.node!.getWorldMatrix());
-        if (geometry.intersect.aabbFrustum(_tmpBoundingBox, camera.frustum)) {
+        if (intersect.aabbFrustum(_tmpBoundingBox, camera.frustum)) {
             validPunctualLights.push(light);
         }
     }
@@ -104,6 +108,7 @@ export function validPunctualLightsCulling (sceneData: PipelineSceneData, camera
 }
 
 export function shadowCulling (camera: Camera, sceneData: PipelineSceneData, layer: ShadowLayerVolume): void {
+    if (ONLY_2D) return;
     const scene = camera.scene!;
     const mainLight = scene.mainLight!;
     const csmLayers = sceneData.csmLayers;
@@ -132,14 +137,14 @@ export function shadowCulling (camera: Camera, sceneData: PipelineSceneData, lay
             csmLayerObjects.fastRemove(i);
             continue;
         }
-        const accurate = geometry.intersect.aabbFrustum(model.worldBounds, dirLightFrustum);
+        const accurate = intersect.aabbFrustum(model.worldBounds, dirLightFrustum);
         if (!accurate) {
             continue;
         }
         dirShadowObjects.push(obj);
         if (layer.level < mainLight.csmLevel) {
             if (mainLight.csmOptimizationMode === CSMOptimizationMode.RemoveDuplicates
-                    && geometry.intersect.aabbFrustumCompletelyInside(model.worldBounds, dirLightFrustum)) {
+                    && intersect.aabbFrustumCompletelyInside(model.worldBounds, dirLightFrustum)) {
                 csmLayerObjects.fastRemove(i);
             }
         }
@@ -147,6 +152,7 @@ export function shadowCulling (camera: Camera, sceneData: PipelineSceneData, lay
 }
 
 export function sceneCulling (sceneData: PipelineSceneData, pipelineUBO: PipelineUBO, camera: Camera): void {
+    if (ONLY_2D) return;
     const scene = camera.scene!;
     const mainLight = scene.mainLight;
     const shadows = sceneData.shadows;
@@ -197,7 +203,7 @@ export function sceneCulling (sceneData: PipelineSceneData, pipelineUBO: Pipelin
             if (model.node && ((visibility & model.node.layer) === model.node.layer)
                  || (visibility & model.visFlags)) {
                 // frustum culling
-                if (model.worldBounds && !geometry.intersect.aabbFrustum(model.worldBounds, camera.frustum)) {
+                if (model.worldBounds && !intersect.aabbFrustum(model.worldBounds, camera.frustum)) {
                     return;
                 }
 

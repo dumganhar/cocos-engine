@@ -24,11 +24,11 @@ export class TransformArray {
 
     constructor (bufferOrLength?: number | ArrayBuffer, byteOffset?: number, length_?: number) {
         if (typeof bufferOrLength === 'undefined') {
-            this._data = new Float64Array();
+            this._data$ = new Float64Array();
         } else if (typeof bufferOrLength === 'number') {
-            this._data = new Float64Array(TRANSFORM_STRIDE_IN_FLOATS * bufferOrLength);
+            this._data$ = new Float64Array(TRANSFORM_STRIDE_IN_FLOATS * bufferOrLength);
         } else {
-            this._data = new Float64Array(
+            this._data$ = new Float64Array(
                 bufferOrLength,
                 byteOffset,
                 typeof length_ === 'number' ? TRANSFORM_STRIDE_IN_FLOATS * length_ : undefined,
@@ -37,24 +37,24 @@ export class TransformArray {
     }
 
     get buffer (): ArrayBufferLike {
-        return this._data.buffer;
+        return this._data$.buffer;
     }
 
     get byteLength (): number {
-        return this._data.byteLength;
+        return this._data$.byteLength;
     }
 
     get byteOffset (): number {
-        return this._data.byteOffset;
+        return this._data$.byteOffset;
     }
 
     get length (): number {
-        return this._data.length / TRANSFORM_STRIDE_IN_FLOATS;
+        return this._data$.length / TRANSFORM_STRIDE_IN_FLOATS;
     }
 
     public getTransform (index: number, out: Transform): Transform {
         const {
-            _data: data,
+            _data$: data,
         } = this;
         const {
             position,
@@ -70,7 +70,7 @@ export class TransformArray {
 
     public getPosition (index: number, out: Vec3): Vec3 {
         const {
-            _data: data,
+            _data$: data,
         } = this;
         const baseOffset = TRANSFORM_STRIDE_IN_FLOATS * index;
         Vec3.fromArray(out, data, baseOffset);
@@ -79,7 +79,7 @@ export class TransformArray {
 
     public getRotation (index: number, out: Quat): Quat {
         const {
-            _data: data,
+            _data$: data,
         } = this;
         const baseOffset = TRANSFORM_STRIDE_IN_FLOATS * index;
         Quat.fromArray(out, data, baseOffset + ROTATION_OFFSET);
@@ -88,7 +88,7 @@ export class TransformArray {
 
     public getScale (index: number, out: Vec3): Vec3 {
         const {
-            _data: data,
+            _data$: data,
         } = this;
         const baseOffset = TRANSFORM_STRIDE_IN_FLOATS * index;
         Vec3.fromArray(out, data, baseOffset + SCALE_OFFSET);
@@ -97,7 +97,7 @@ export class TransformArray {
 
     public setTransform (index: number, value: Readonly<Transform>): void {
         const {
-            _data: data,
+            _data$: data,
         } = this;
         const {
             position,
@@ -112,7 +112,7 @@ export class TransformArray {
 
     public setPosition (index: number, value: Readonly<Vec3>): void {
         const {
-            _data: data,
+            _data$: data,
         } = this;
         const baseOffset = TRANSFORM_STRIDE_IN_FLOATS * index;
         Vec3.toArray(data, value, baseOffset);
@@ -120,7 +120,7 @@ export class TransformArray {
 
     public setRotation (index: number, value: Readonly<Quat>): void {
         const {
-            _data: data,
+            _data$: data,
         } = this;
         const baseOffset = TRANSFORM_STRIDE_IN_FLOATS * index;
         Quat.toArray(data, value, baseOffset + ROTATION_OFFSET);
@@ -128,7 +128,7 @@ export class TransformArray {
 
     public setScale (index: number, value: Readonly<Vec3>): void {
         const {
-            _data: data,
+            _data$: data,
         } = this;
         const baseOffset = TRANSFORM_STRIDE_IN_FLOATS * index;
         Vec3.toArray(data, value, baseOffset + SCALE_OFFSET);
@@ -139,7 +139,7 @@ export class TransformArray {
      * except for the the operating objects are transforms.
      */
     public copyWithin (target: number, start: number, end?: number): void {
-        this._data.copyWithin(
+        this._data$.copyWithin(
             target * TRANSFORM_STRIDE_IN_FLOATS,
             start * TRANSFORM_STRIDE_IN_FLOATS,
             typeof end === 'number' ? end * TRANSFORM_STRIDE_IN_FLOATS : undefined,
@@ -167,7 +167,7 @@ export class TransformArray {
      * Same as `this.fill(Transform.ZERO, start, end)`.
      */
     public fillZero (start?: number, end?: number): void {
-        this._data.fill(
+        this._data$.fill(
             0.0,
             typeof start === 'number' ? start * TRANSFORM_STRIDE_IN_FLOATS : undefined,
             typeof end === 'number' ? end * TRANSFORM_STRIDE_IN_FLOATS : undefined,
@@ -181,8 +181,8 @@ export class TransformArray {
      * - plain array is not allowed.
      */
     public set (transformArray: Readonly<TransformArray>, targetOffset?: number): void {
-        this._data.set(
-            (transformArray as TransformArray)._data,
+        this._data$.set(
+            (transformArray as TransformArray)._data$,
             typeof targetOffset === 'number' ? targetOffset * TRANSFORM_STRIDE_IN_FLOATS : undefined,
         );
     }
@@ -192,7 +192,7 @@ export class TransformArray {
      * except for the the operating objects are transforms.
      */
     public slice (start?: number, end?: number): TransformArray {
-        const dataSliced = this._data.slice(
+        const dataSliced = this._data$.slice(
             typeof start === 'number' ? start * TRANSFORM_STRIDE_IN_FLOATS : undefined,
             typeof end === 'number' ? end * TRANSFORM_STRIDE_IN_FLOATS : undefined,
         );
@@ -212,10 +212,10 @@ export class TransformArray {
     ): void {
         const sizeInFloats = TRANSFORM_STRIDE_IN_FLOATS * size;
 
-        const targetFloats = this._data;
+        const targetFloats = this._data$;
         const targetStartInFloats = TRANSFORM_STRIDE_IN_FLOATS * targetOffset;
 
-        const sourceFloats = (source as TransformArray)._data;
+        const sourceFloats = (source as TransformArray)._data$;
         const sourceStartInFloats = TRANSFORM_STRIDE_IN_FLOATS * sourceOffset;
 
         for (let i = 0; i < sizeInFloats; ++i) {
@@ -223,5 +223,5 @@ export class TransformArray {
         }
     }
 
-    private _data: Float64Array;
+    private _data$: Float64Array;
 }

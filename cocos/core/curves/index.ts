@@ -51,3 +51,5 @@ export type {
 } from './object-curve';
 
 export * from './gradient';
+
+export * from './bezier';

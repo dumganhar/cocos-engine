@@ -1,4 +1,4 @@
-import { RealCurve } from '../core';
+import { RealCurve } from '../core/curves/curve';
 import { ccclass, serializable } from '../core/data/decorators';
 import { CLASS_NAME_PREFIX_ANIM } from './define';
 

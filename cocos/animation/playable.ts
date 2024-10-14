@@ -31,7 +31,7 @@ export class Playable {
      * @default false
      */
     get isPlaying (): boolean {
-        return this._isPlaying;
+        return this._isPlaying$;
     }
 
     /**
@@ -40,7 +40,7 @@ export class Playable {
      * @default false
      */
     get isPaused (): boolean {
-        return this._isPaused;
+        return this._isPaused$;
     }
 
     /**
@@ -51,24 +51,23 @@ export class Playable {
         return !this.isPlaying || this.isPaused;
     }
 
-    private _isPlaying = false;
-    private _isPaused = false;
-    private _stepOnce = false;
+    private _isPlaying$ = false;
+    private _isPaused$ = false;
 
     /**
      * @en Play this animation.
      * @zh 播放动画。
      */
     public play (): void {
-        if (this._isPlaying) {
-            if (this._isPaused) {
-                this._isPaused = false;
+        if (this._isPlaying$) {
+            if (this._isPaused$) {
+                this._isPaused$ = false;
                 this.onResume();
             } else {
                 this.onError(getError(3912));
             }
         } else {
-            this._isPlaying = true;
+            this._isPlaying$ = true;
             this.onPlay();
         }
     }
@@ -78,12 +77,12 @@ export class Playable {
      * @zh 停止动画播放。
      */
     public stop (): void {
-        if (this._isPlaying) {
-            this._isPlaying = false;
+        if (this._isPlaying$) {
+            this._isPlaying$ = false;
             this.onStop();
 
             // need reset pause flag after onStop
-            this._isPaused = false;
+            this._isPaused$ = false;
         }
     }
 
@@ -92,8 +91,8 @@ export class Playable {
      * @zh 暂停动画。
      */
     public pause (): void {
-        if (this._isPlaying && !this._isPaused) {
-            this._isPaused = true;
+        if (this._isPlaying$ && !this._isPaused$) {
+            this._isPaused$ = true;
             this.onPause();
         }
     }
@@ -103,8 +102,8 @@ export class Playable {
      * @zh 重新播放动画。
      */
     public resume (): void {
-        if (this._isPlaying && this._isPaused) {
-            this._isPaused = false;
+        if (this._isPlaying$ && this._isPaused$) {
+            this._isPaused$ = false;
             this.onResume();
         }
     }
@@ -115,8 +114,7 @@ export class Playable {
      */
     public step (): void {
         this.pause();
-        this._stepOnce = true;
-        if (!this._isPlaying) {
+        if (!this._isPlaying$) {
             this.play();
         }
     }

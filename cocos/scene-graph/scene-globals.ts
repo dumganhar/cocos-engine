@@ -25,7 +25,7 @@ import {
     ccclass, visible, type, displayOrder, readOnly, slide, range, rangeStep,
     editable, serializable, rangeMin, tooltip, formerlySerializedAs, displayName,
 } from 'cc.decorator';
-import { BAIDU } from 'internal:constants';
+import { BAIDU, ONLY_2D } from 'internal:constants';
 import { TextureCube } from '../asset/assets/texture-cube';
 import { CCFloat, CCInteger } from '../core/data/utils/attribute';
 import { Color, Quat, Vec3, Vec2, Vec4 } from '../core/math';
@@ -120,6 +120,7 @@ export class AmbientInfo {
      * @zh 编辑器中可配置的天空光照颜色（通过颜色拾取器）
      */
     @visible(() => {
+        if (ONLY_2D) return false;
         const scene = legacyCC.director.getScene();
         const skybox = scene.globals.skybox;
         if (skybox.useIBL && skybox.applyDiffuseMap) {
@@ -131,6 +132,7 @@ export class AmbientInfo {
     @editable
     @tooltip('i18n:ambient.skyLightingColor')
     set skyLightingColor (val: Color) {
+        if (ONLY_2D) return;
         _v4.set(val.x, val.y, val.z, val.w);
         if ((legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR) {
             this._skyColorHDR.set(_v4);
@@ -150,6 +152,7 @@ export class AmbientInfo {
      * @internal
      */
     set skyColor (val: Vec4) {
+        if (ONLY_2D) return;
         if ((legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR) {
             this._skyColorHDR.set(val);
         } else {
@@ -167,6 +170,7 @@ export class AmbientInfo {
     @tooltip('i18n:ambient.skyIllum')
     @range([0, Number.POSITIVE_INFINITY, 100])
     set skyIllum (val: number) {
+        if (ONLY_2D) return;
         if ((legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR) {
             this._skyIllumHDR = val;
         } else {
@@ -188,6 +192,7 @@ export class AmbientInfo {
      * @zh 编辑器中可配置的地面光照颜色（通过颜色拾取器）
      */
     @visible(() => {
+        if (ONLY_2D) return false;
         const scene = legacyCC.director.getScene();
         const skybox = scene.globals.skybox;
         if (skybox.useIBL && skybox.applyDiffuseMap) {
@@ -199,6 +204,7 @@ export class AmbientInfo {
     @editable
     @tooltip('i18n:ambient.groundLightingColor')
     set groundLightingColor (val: Color) {
+        if (ONLY_2D) return;
         _v4.set(val.x, val.y, val.z, val.w);
         if ((legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR) {
             this._groundAlbedoHDR.set(_v4);
@@ -218,6 +224,7 @@ export class AmbientInfo {
      * @internal
      */
     set groundAlbedo (val: Vec4) {
+        if (ONLY_2D) return;
         if ((legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR) {
             this._groundAlbedoHDR.set(val);
         } else {
@@ -231,7 +238,7 @@ export class AmbientInfo {
     protected _skyColorHDR = new Vec4(0.2, 0.5, 0.8, 1.0);
     @serializable
     @formerlySerializedAs('_skyIllum')
-    protected _skyIllumHDR = Ambient.SKY_ILLUM;
+    protected _skyIllumHDR = ONLY_2D ? 0 : Ambient.SKY_ILLUM;
     @serializable
     @formerlySerializedAs('_groundAlbedo')
     protected _groundAlbedoHDR = new Vec4(0.2, 0.2, 0.2, 1.0);
@@ -239,7 +246,7 @@ export class AmbientInfo {
     @serializable
     protected _skyColorLDR = new Vec4(0.2, 0.5, 0.8, 1.0);
     @serializable
-    protected _skyIllumLDR = Ambient.SKY_ILLUM;
+    protected _skyIllumLDR = ONLY_2D ? 0 : Ambient.SKY_ILLUM;
     @serializable
     protected _groundAlbedoLDR = new Vec4(0.2, 0.2, 0.2, 1.0);
 
@@ -251,6 +258,7 @@ export class AmbientInfo {
      * @param resource The ambient configuration object in the render scene
      */
     public activate (resource: Ambient): void {
+        if (ONLY_2D) return;
         this._resource = resource;
         this._resource.initialize(this);
     }
@@ -268,6 +276,7 @@ export class SkyboxInfo {
      * @zh 是否为IBL启用漫反射卷积图？不启用的话将使用默认的半球光照
      */
     set applyDiffuseMap (val) {
+        if (ONLY_2D) return;
         if (this._resource) {
             this._resource.useDiffuseMap = val;
         }
@@ -285,6 +294,7 @@ export class SkyboxInfo {
     @editable
     @tooltip('i18n:skybox.enabled')
     set enabled (val) {
+        if (ONLY_2D) return;
         if (this._enabled === val) return;
         this._enabled = val;
 
@@ -301,9 +311,10 @@ export class SkyboxInfo {
      * @en environment reflection type
      */
     @editable
-    @type(EnvironmentLightingType)
+    @type(ONLY_2D ? 0 : EnvironmentLightingType)
     @tooltip('i18n:skybox.EnvironmentLightingType')
     set envLightingType (val) {
+        if (ONLY_2D) return;
         if (!this.envmap && EnvironmentLightingType.HEMISPHERE_DIFFUSE !== val) {
             this.useIBL = false;
             this.applyDiffuseMap = false;
@@ -331,6 +342,7 @@ export class SkyboxInfo {
      * @zh 是否启用环境光照？
      */
     set useIBL (val) {
+        if (ONLY_2D) return;
         if (this._resource) {
             this._resource.useIBL = val;
         }
@@ -349,6 +361,7 @@ export class SkyboxInfo {
     @editable
     @tooltip('i18n:skybox.useHDR')
     set useHDR (val) {
+        if (ONLY_2D) return;
         (legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR = val;
         this._useHDR = val;
 
@@ -382,6 +395,7 @@ export class SkyboxInfo {
     @type(TextureCube)
     @tooltip('i18n:skybox.envmap')
     set envmap (val) {
+        if (ONLY_2D) return;
         const isHDR = (legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR;
         if (isHDR) {
             this._envmapHDR = val;
@@ -428,6 +442,7 @@ export class SkyboxInfo {
     @slide
     @tooltip('i18n:skybox.rotationAngle')
     set rotationAngle (val: number) {
+        if (ONLY_2D) return;
         this._rotationAngle = val;
         if (this._resource) { this._resource.setRotationAngle(this._rotationAngle); }
     }
@@ -450,6 +465,7 @@ export class SkyboxInfo {
     @type(TextureCube)
     @displayOrder(100)
     set diffuseMap (val: TextureCube | null) {
+        if (ONLY_2D) return;
         const isHDR = (legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR;
         if (isHDR) {
             this._diffuseMapHDR = val;
@@ -485,6 +501,7 @@ export class SkyboxInfo {
     @type(TextureCube)
     @displayOrder(100)
     set reflectionMap (val: TextureCube | null) {
+        if (ONLY_2D) return;
         const isHDR = (legacyCC.director.root as Root).pipeline.pipelineSceneData.isHDR;
         if (isHDR) {
             this._reflectionHDR = val;
@@ -512,6 +529,7 @@ export class SkyboxInfo {
     @type(Material)
     @tooltip('i18n:skybox.material')
     set skyboxMaterial (val: Material | null) {
+        if (ONLY_2D) return;
         this._editableMaterial = val;
         if (this._resource) {
             this._resource.setSkyboxMaterial(this._editableMaterial);
@@ -560,6 +578,7 @@ export class SkyboxInfo {
      * @param resource The skybox configuration object in the render scene
      */
     public activate (resource: Skybox): void {
+        if (ONLY_2D) return;
         this.envLightingType = this._envLightingType;
         this._resource = resource;
         this._resource.initialize(this);
@@ -577,6 +596,7 @@ export class SkyboxInfo {
      * @param val environment map
      */
     public updateEnvMap (val: TextureCube): void {
+        if (ONLY_2D) return;
         if (!val) {
             this.applyDiffuseMap = false;
             this.useIBL = false;
@@ -604,6 +624,7 @@ export class SkyboxInfo {
      * @zh 设置此属性的 pass 索引，如果没有指定，则会设置此属性到所有 pass 上。
      */
     public setMaterialProperty (name: string, val: MaterialPropertyFull | MaterialPropertyFull[], passIdx?: number): void {
+        if (ONLY_2D) return;
         if (!this._resource) return;
         if (this._resource.enabled && this._resource.editableMaterial) {
             this._resource.editableMaterial.setProperty(name, val, passIdx);
@@ -621,7 +642,7 @@ legacyCC.SkyboxInfo = SkyboxInfo;
  */
 @ccclass('cc.FogInfo')
 export class FogInfo {
-    public static FogType = FogType;
+    public static FogType = ONLY_2D ? null : FogType;
 
     /**
      * @zh 是否启用全局雾效
@@ -631,6 +652,7 @@ export class FogInfo {
     @tooltip('i18n:fog.enabled')
     @displayOrder(0)
     set enabled (val: boolean) {
+        if (ONLY_2D) return;
         if (this._enabled === val) return;
         this._enabled = val;
         if (this._resource) {
@@ -653,6 +675,7 @@ export class FogInfo {
     @tooltip('i18n:fog.accurate')
     @displayOrder(0)
     set accurate (val: boolean) {
+        if (ONLY_2D) return;
         if (this._accurate === val) return;
         this._accurate = val;
         if (this._resource) {
@@ -674,6 +697,7 @@ export class FogInfo {
     @editable
     @tooltip('i18n:fog.fogColor')
     set fogColor (val: Readonly<Color>) {
+        if (ONLY_2D) return;
         this._fogColor.set(val);
         if (this._resource) { this._resource.fogColor = this._fogColor; }
     }
@@ -687,7 +711,7 @@ export class FogInfo {
      * @en Global fog type
      */
     @editable
-    @type(FogType)
+    @type(ONLY_2D ? null : FogType)
     @displayOrder(1)
     @tooltip('i18n:fog.type')
     get type (): number {
@@ -695,6 +719,7 @@ export class FogInfo {
     }
 
     set type (val) {
+        if (ONLY_2D) return;
         this._type = val;
         if (this._resource) { this._resource.type = val; }
     }
@@ -704,6 +729,7 @@ export class FogInfo {
      * @en Global fog density
      */
     @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
         return this._type !== FogType.LAYERED && this._type !== FogType.LINEAR;
     })
     @type(CCFloat)
@@ -715,6 +741,7 @@ export class FogInfo {
     }
 
     set fogDensity (val) {
+        if (ONLY_2D) return;
         this._fogDensity = val;
         if (this._resource) { this._resource.fogDensity = val; }
     }
@@ -732,6 +759,7 @@ export class FogInfo {
     }
 
     set fogStart (val) {
+        if (ONLY_2D) return;
         this._fogStart = val;
         if (this._resource) { this._resource.fogStart = val; }
     }
@@ -740,7 +768,10 @@ export class FogInfo {
      * @zh 雾效结束位置，只适用于线性雾
      * @en Global fog end position, only for linear fog
      */
-    @visible(function (this: FogInfo) { return this._type === FogType.LINEAR; })
+    @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
+        return this._type === FogType.LINEAR;
+    })
     @type(CCFloat)
     @rangeStep(0.01)
     @tooltip('i18n:fog.fogEnd')
@@ -749,6 +780,7 @@ export class FogInfo {
     }
 
     set fogEnd (val) {
+        if (ONLY_2D) return;
         this._fogEnd = val;
         if (this._resource) { this._resource.fogEnd = val; }
     }
@@ -757,7 +789,10 @@ export class FogInfo {
      * @zh 雾效衰减
      * @en Global fog attenuation
      */
-    @visible(function (this: FogInfo) { return this._type !== FogType.LINEAR; })
+    @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
+        return this._type !== FogType.LINEAR;
+    })
     @type(CCFloat)
     @rangeMin(0.01)
     @rangeStep(0.01)
@@ -767,6 +802,7 @@ export class FogInfo {
     }
 
     set fogAtten (val) {
+        if (ONLY_2D) return;
         this._fogAtten = val;
         if (this._resource) { this._resource.fogAtten = val; }
     }
@@ -775,7 +811,10 @@ export class FogInfo {
      * @zh 雾效顶部范围，只适用于层级雾
      * @en Global fog top range, only for layered fog
      */
-    @visible(function (this: FogInfo) { return this._type === FogType.LAYERED; })
+    @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
+        return this._type === FogType.LAYERED;
+    })
     @type(CCFloat)
     @rangeStep(0.01)
     @tooltip('i18n:fog.fogTop')
@@ -784,6 +823,7 @@ export class FogInfo {
     }
 
     set fogTop (val) {
+        if (ONLY_2D) return;
         this._fogTop = val;
         if (this._resource) { this._resource.fogTop = val; }
     }
@@ -792,7 +832,10 @@ export class FogInfo {
      * @zh 雾效范围，只适用于层级雾
      * @en Global fog range, only for layered fog
      */
-    @visible(function (this: FogInfo) { return this._type === FogType.LAYERED; })
+    @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
+        return this._type === FogType.LAYERED;
+    })
     @type(CCFloat)
     @rangeStep(0.01)
     @tooltip('i18n:fog.fogRange')
@@ -801,12 +844,13 @@ export class FogInfo {
     }
 
     set fogRange (val) {
+        if (ONLY_2D) return;
         this._fogRange = val;
         if (this._resource) { this._resource.fogRange = val; }
     }
 
     @serializable
-    protected _type = FogType.LINEAR;
+    protected _type = ONLY_2D ? 0 : FogType.LINEAR;
     @serializable
     protected _fogColor = new Color('#C8C8C8');
     @serializable
@@ -833,6 +877,7 @@ export class FogInfo {
      * @param resource The fog configuration object in the render scene
      */
     public activate (resource: Fog): void {
+        if (ONLY_2D) return;
         this._resource = resource;
         this._resource.initialize(this);
         this._resource.activate();
@@ -852,6 +897,7 @@ export class ShadowsInfo {
     @editable
     @tooltip('i18n:shadow.enabled')
     set enabled (val: boolean) {
+        if (ONLY_2D) return;
         if (this._enabled === val) return;
         this._enabled = val;
         if (this._resource) {
@@ -862,6 +908,7 @@ export class ShadowsInfo {
         }
     }
     get enabled (): boolean {
+        if (ONLY_2D) return false;
         if (BAIDU) {
             if (this._type !== ShadowType.Planar) {
                 this._enabled = false;
@@ -876,8 +923,9 @@ export class ShadowsInfo {
      */
     @tooltip('i18n:shadow.type')
     @editable
-    @type(ShadowType)
+    @type(ONLY_2D ? 0 : ShadowType)
     set type (val) {
+        if (ONLY_2D) return;
         this._type = val;
         if (this._resource) { this._resource.type = val; }
     }
@@ -890,8 +938,12 @@ export class ShadowsInfo {
      * @zh 阴影颜色
      */
     @tooltip('i18n:shadow.shadowColor')
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.Planar; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.Planar;
+    })
     set shadowColor (val: Readonly<Color>) {
+        if (ONLY_2D) return;
         this._shadowColor.set(val);
         if (this._resource) { this._resource.shadowColor = val as Color; }
     }
@@ -904,8 +956,12 @@ export class ShadowsInfo {
      * @zh 阴影接收平面的法线
      */
     @tooltip('i18n:shadow.planeDirection')
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.Planar; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.Planar;
+    })
     set planeDirection (val: Readonly<Vec3>) {
+        if (ONLY_2D) return;
         Vec3.copy(this._normal, val);
         if (this._resource) { this._resource.normal = val; }
     }
@@ -920,8 +976,12 @@ export class ShadowsInfo {
     @tooltip('i18n:shadow.planeHeight')
     @editable
     @type(CCFloat)
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.Planar; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.Planar;
+    })
     set planeHeight (val: number) {
+        if (ONLY_2D) return;
         this._distance = val;
         if (this._resource) { this._resource.distance = val; }
     }
@@ -936,8 +996,12 @@ export class ShadowsInfo {
     @tooltip('i18n:shadow.planeBias')
     @editable
     @type(CCFloat)
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.Planar; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.Planar;
+    })
     set planeBias (val: number) {
+        if (ONLY_2D) return;
         this._planeBias = val;
         if (this._resource) { this._resource.planeBias = val; }
     }
@@ -951,8 +1015,12 @@ export class ShadowsInfo {
      */
     @tooltip('i18n:shadow.maxReceived')
     @type(CCInteger)
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.ShadowMap; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.ShadowMap;
+    })
     set maxReceived (val: number) {
+        if (ONLY_2D) return;
         this._maxReceived = val;
         if (this._resource) { this._resource.maxReceived = val; }
     }
@@ -965,9 +1033,13 @@ export class ShadowsInfo {
      * @zh 获取或者设置阴影纹理大小
      */
     @tooltip('i18n:shadow.shadowMapSize')
-    @type(ShadowSize)
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.ShadowMap; })
+    @type(ONLY_2D ? 0 : ShadowSize)
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.ShadowMap;
+    })
     set shadowMapSize (value: number) {
+        if (ONLY_2D) return;
         this._size.set(value, value);
         if (this._resource) {
             this._resource.size.set(value, value);
@@ -981,7 +1053,7 @@ export class ShadowsInfo {
     @serializable
     protected _enabled = false;
     @serializable
-    protected _type = ShadowType.Planar;
+    protected _type = ONLY_2D ? 0 : ShadowType.Planar;
     @serializable
     protected _normal = new Vec3(0, 1, 0);
     @serializable
@@ -1015,6 +1087,7 @@ export class ShadowsInfo {
      * @param resource The shadow configuration object in the render scene
      */
     public activate (resource: Shadows): void {
+        if (ONLY_2D) return;
         this._resource = resource;
         this._resource.initialize(this);
         this._resource.activate();
@@ -1039,6 +1112,7 @@ export class OctreeInfo {
     @editable
     @tooltip('i18n:octree_culling.enabled')
     set enabled (val: boolean) {
+        if (ONLY_2D) return;
         if (this._enabled === val) return;
         this._enabled = val;
         if (this._resource) {
@@ -1058,6 +1132,7 @@ export class OctreeInfo {
     @tooltip('i18n:octree_culling.minPos')
     @displayName('World MinPos')
     set minPos (val: Vec3) {
+        if (ONLY_2D) return;
         this._minPos = val;
         if (this._resource) { this._resource.minPos = val; }
     }
@@ -1074,6 +1149,7 @@ export class OctreeInfo {
     @tooltip('i18n:octree_culling.maxPos')
     @displayName('World MaxPos')
     set maxPos (val: Vec3) {
+        if (ONLY_2D) return;
         this._maxPos = val;
         if (this._resource) { this._resource.maxPos = val; }
     }
@@ -1091,6 +1167,7 @@ export class OctreeInfo {
     @type(CCInteger)
     @tooltip('i18n:octree_culling.depth')
     set depth (val: number) {
+        if (ONLY_2D) return;
         this._depth = val;
         if (this._resource) { this._resource.depth = val; }
     }
@@ -1115,6 +1192,7 @@ export class OctreeInfo {
      * @param resource The octree configuration object in the render scene
      */
     public activate (resource: Octree): void {
+        if (ONLY_2D) return;
         this._resource = resource;
         this._resource.initialize(this);
     }
@@ -1135,6 +1213,7 @@ export class SkinInfo {
     @readOnly
     @tooltip('i18n:skin.enabled')
     set enabled (val: boolean) {
+        if (ONLY_2D) return;
         if (this._enabled === val) return;
         this._enabled = val;
         if (this._resource) {
@@ -1156,6 +1235,7 @@ export class SkinInfo {
     @type(CCFloat)
     @tooltip('i18n:skin.blurRadius')
     set blurRadius (val: number) {
+        if (ONLY_2D) return;
         this._blurRadius = val;
         if (this._resource) { this._resource.blurRadius = val; }
     }
@@ -1173,6 +1253,7 @@ export class SkinInfo {
     @type(CCFloat)
     @tooltip('i18n:skin.sssIntensity')
     set sssIntensity (val: number) {
+        if (ONLY_2D) return;
         this._sssIntensity = val;
         if (this._resource) { this._resource.sssIntensity = val; }
     }
@@ -1195,6 +1276,7 @@ export class SkinInfo {
      * @param resource The skin configuration object in the render scene
      */
     public activate (resource: Skin): void {
+        if (ONLY_2D) return;
         this._resource = resource;
         this._resource.initialize(this);
     }
@@ -1208,9 +1290,10 @@ export class PostSettingsInfo {
      * @en Tone mapping type
      */
     @editable
-    @type(ToneMappingType)
+    @type(ONLY_2D ? null : ToneMappingType)
     @tooltip('i18n:tone_mapping.toneMappingType')
     set toneMappingType (val) {
+        if (ONLY_2D) return;
         this._toneMappingType = val;
         if (this._resource) {
             this._resource.toneMappingType = val;
@@ -1222,11 +1305,12 @@ export class PostSettingsInfo {
     }
 
     @serializable
-    protected _toneMappingType = ToneMappingType.DEFAULT;
+    protected _toneMappingType = ONLY_2D ? 0 : ToneMappingType.DEFAULT;
 
     protected _resource: PostSettings | null = null;
 
     public activate (resource: PostSettings): void {
+        if (ONLY_2D) return;
         this._resource = resource;
         this._resource.initialize(this);
         this._resource.activate();
@@ -1256,6 +1340,7 @@ export class LightProbeInfo {
     @tooltip('i18n:light_probe.giScale')
     @displayName('GIScale')
     set giScale (val: number) {
+        if (ONLY_2D) return;
         if (this._giScale === val) return;
         this._giScale = val;
         if (this._resource) {
@@ -1276,6 +1361,7 @@ export class LightProbeInfo {
     @tooltip('i18n:light_probe.giSamples')
     @displayName('GISamples')
     set giSamples (val: number) {
+        if (ONLY_2D) return;
         if (this._giSamples === val) return;
         this._giSamples = val;
         if (this._resource) {
@@ -1295,6 +1381,7 @@ export class LightProbeInfo {
     @type(CCInteger)
     @tooltip('i18n:light_probe.bounces')
     set bounces (val: number) {
+        if (ONLY_2D) return;
         if (this._bounces === val) return;
         this._bounces = val;
         if (this._resource) {
@@ -1315,6 +1402,7 @@ export class LightProbeInfo {
     @type(CCFloat)
     @tooltip('i18n:light_probe.reduceRinging')
     set reduceRinging (val: number) {
+        if (ONLY_2D) return;
         if (this._reduceRinging === val) return;
         this._reduceRinging = val;
         if (this._resource) {
@@ -1330,6 +1418,7 @@ export class LightProbeInfo {
      * @zh 是否显示光照探针
      */
     set showProbe (val: boolean) {
+        if (ONLY_2D) return;
         if (this._showProbe === val) return;
         this._showProbe = val;
         if (this._resource) {
@@ -1347,6 +1436,7 @@ export class LightProbeInfo {
     @editable
     @tooltip('i18n:light_probe.showWireframe')
     set showWireframe (val: boolean) {
+        if (ONLY_2D) return;
         if (this._showWireframe === val) return;
         this._showWireframe = val;
         if (this._resource) {
@@ -1364,6 +1454,7 @@ export class LightProbeInfo {
     @editable
     @tooltip('i18n:light_probe.showConvex')
     set showConvex (val: boolean) {
+        if (ONLY_2D) return;
         if (this._showConvex === val) return;
         this._showConvex = val;
         if (this._resource) {
@@ -1379,6 +1470,7 @@ export class LightProbeInfo {
      * @zh 光照探针顶点及四面体数据
      */
     set data (val: LightProbesData | null) {
+        if (ONLY_2D) return;
         if (this._data === val) return;
         this._data = val;
         if (this._resource) {
@@ -1398,6 +1490,7 @@ export class LightProbeInfo {
     @type(CCFloat)
     @tooltip('i18n:light_probe.lightProbeSphereVolume')
     set lightProbeSphereVolume (val: number) {
+        if (ONLY_2D) return;
         if (this._lightProbeSphereVolume === val) return;
         this._lightProbeSphereVolume = val;
         if (this._resource) {
@@ -1432,21 +1525,25 @@ export class LightProbeInfo {
     protected _resource: LightProbes | null = null;
 
     public activate (scene: Scene, resource: LightProbes): void {
+        if (ONLY_2D) return;
         this._scene = scene;
         this._resource = resource;
         this._resource.initialize(this);
     }
 
     public onProbeBakeFinished (): void {
+        if (ONLY_2D) return;
         this.onProbeBakingChanged$(this._scene);
     }
 
     public onProbeBakeCleared (): void {
+        if (ONLY_2D) return;
         this.clearSHCoefficients();
         this.onProbeBakingChanged$(this._scene);
     }
 
     private onProbeBakingChanged$ (node: Node | null): void {
+        if (ONLY_2D) return;
         if (!node) {
             return;
         }
@@ -1460,6 +1557,7 @@ export class LightProbeInfo {
     }
 
     public clearSHCoefficients (): void {
+        if (ONLY_2D) return;
         if (!this._data) {
             return;
         }
@@ -1477,6 +1575,7 @@ export class LightProbeInfo {
     }
 
     public addNode (node: Node): boolean {
+        if (ONLY_2D) return false;
         if (!node) {
             return false;
         }
@@ -1493,6 +1592,7 @@ export class LightProbeInfo {
     }
 
     public removeNode (node: Node): boolean {
+        if (ONLY_2D) return false;
         if (!node) {
             return false;
         }
@@ -1508,6 +1608,7 @@ export class LightProbeInfo {
     }
 
     public syncData (node: Node, probes: Vec3[]): void {
+        if (ONLY_2D) return;
         for (let i = 0; i < this._nodes.length; i++) {
             if (this._nodes[i].node === node) {
                 this._nodes[i].probes = probes;
@@ -1517,6 +1618,7 @@ export class LightProbeInfo {
     }
 
     public update (updateTet = true): void {
+        if (ONLY_2D) return;
         if (!cclegacy.internal.LightProbesData) {
             return;
         }
@@ -1561,6 +1663,7 @@ export class LightProbeInfo {
     }
 
     private clearAllSHUBOs$ (): void {
+        if (ONLY_2D) return;
         if (!this._scene) {
             return;
         }
@@ -1577,6 +1680,7 @@ export class LightProbeInfo {
     }
 
     private resetAllTetraIndices$ (): void {
+        if (ONLY_2D) return;
         if (!this._scene) {
             return;
         }
@@ -1605,26 +1709,26 @@ export class SceneGlobals {
      */
     @serializable
     @editable
-    public ambient = new AmbientInfo();
+    public ambient = ONLY_2D ? null! : new AmbientInfo();
     /**
      * @en Scene level shadow related configuration
      * @zh 平面阴影相关配置
      */
     @serializable
     @editable
-    public shadows = new ShadowsInfo();
+    public shadows = ONLY_2D ? null! : new ShadowsInfo();
     /**
      * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
      */
     @serializable
-    public _skybox = new SkyboxInfo();
+    public _skybox = ONLY_2D ? null! : new SkyboxInfo();
     /**
      * @en Global fog configuration
      * @zh 全局雾相关配置
      */
     @editable
     @serializable
-    public fog = new FogInfo();
+    public fog = ONLY_2D ? null! : new FogInfo();
 
     /**
      * @en Skybox related configuration
@@ -1645,7 +1749,7 @@ export class SceneGlobals {
      */
     @editable
     @serializable
-    public octree = new OctreeInfo();
+    public octree = ONLY_2D ? null! : new OctreeInfo();
 
     /**
      * @en Octree related configuration
@@ -1653,7 +1757,7 @@ export class SceneGlobals {
      */
     @editable
     @serializable
-    public skin = new SkinInfo();
+    public skin = ONLY_2D ? null! : new SkinInfo();
 
     /**
      * @en Light probe related configuration
@@ -1661,7 +1765,7 @@ export class SceneGlobals {
      */
     @editable
     @serializable
-    public lightProbeInfo = new LightProbeInfo();
+    public lightProbeInfo = ONLY_2D ? null! : new LightProbeInfo();
 
     /**
      * @en Tone mapping related configuration
@@ -1669,7 +1773,7 @@ export class SceneGlobals {
      */
     @editable
     @serializable
-    public postSettings = new PostSettingsInfo();
+    public postSettings = ONLY_2D ? null! : new PostSettingsInfo();
 
     /**
      * @en bake with stationary main light
@@ -1699,16 +1803,18 @@ export class SceneGlobals {
      */
     public activate (scene: Scene): void {
         const sceneData = (legacyCC.director.root as Root).pipeline.pipelineSceneData;
-        this.skybox.activate(sceneData.skybox);
-        this.ambient.activate(sceneData.ambient);
+        if (!ONLY_2D) {
+            this.skybox.activate(sceneData.skybox);
+            this.ambient.activate(sceneData.ambient);
 
-        this.shadows.activate(sceneData.shadows);
-        this.fog.activate(sceneData.fog);
-        this.octree.activate(sceneData.octree);
-        this.skin.activate(sceneData.skin);
-        this.postSettings.activate(sceneData.postSettings);
-        if (this.lightProbeInfo && sceneData.lightProbes) {
-            this.lightProbeInfo.activate(scene, sceneData.lightProbes as LightProbes);
+            this.shadows.activate(sceneData.shadows);
+            this.fog.activate(sceneData.fog);
+            this.octree.activate(sceneData.octree);
+            this.skin.activate(sceneData.skin);
+            this.postSettings.activate(sceneData.postSettings);
+            if (this.lightProbeInfo && sceneData.lightProbes) {
+                this.lightProbeInfo.activate(scene, sceneData.lightProbes as LightProbes);
+            }
         }
 
         const root = legacyCC.director.root as Root;

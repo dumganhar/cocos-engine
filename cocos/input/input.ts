@@ -24,7 +24,7 @@
  THE SOFTWARE.
 */
 
-import { EDITOR_NOT_IN_PREVIEW, NATIVE } from 'internal:constants';
+import { EDITOR_NOT_IN_PREVIEW, MINIGAME, NATIVE } from 'internal:constants';
 import { AccelerometerInputSource, GamepadInputDevice, HMDInputDevice, HandheldInputDevice, HandleInputDevice, KeyboardInputSource, MouseInputSource, TouchInputSource } from 'pal/input';
 import { touchManager } from '../../pal/input/touch-manager';
 import { EventTarget, error, sys } from '../core';
@@ -138,9 +138,10 @@ export class Input {
     private _mouseInput$ = new MouseInputSource();
     private _keyboardInput$ = new KeyboardInputSource();
     private _accelerometerInput$ = new AccelerometerInputSource();
-    private _handleInput$ = new HandleInputDevice();
-    private _hmdInput$ = new HMDInputDevice();
-    private _handheldInput$ = new HandheldInputDevice();
+
+    private _handleInput$ = MINIGAME ? null : new HandleInputDevice();
+    private _hmdInput$ = MINIGAME ? null : new HMDInputDevice();
+    private _handheldInput$ = MINIGAME ? null : new HandheldInputDevice();
 
     private _eventTouchList$: EventTouch[] = [];
     private _eventMouseList$: EventMouse[] = [];
@@ -160,7 +161,9 @@ export class Input {
         this._registerEvent$();
         this._inputEventDispatcher$ = new InputEventDispatcher(this._eventTarget$);
         this._registerEventDispatcher(this._inputEventDispatcher$);
-        GamepadInputDevice._init();
+        if (!MINIGAME) {
+            GamepadInputDevice._init();
+        }
     }
 
     /**
@@ -417,7 +420,7 @@ export class Input {
             });
         }
 
-        if (sys.hasFeature(sys.Feature.EVENT_GAMEPAD)) {
+        if (!MINIGAME && sys.hasFeature(sys.Feature.EVENT_GAMEPAD)) {
             const eventGamepadList = this._eventGamepadList$;
             GamepadInputDevice._on(InputEventType.GAMEPAD_CHANGE, (event): void => {
                 this._dispatchOrPushEvent$(event, eventGamepadList);
@@ -430,26 +433,26 @@ export class Input {
             });
         }
 
-        if (sys.hasFeature(sys.Feature.EVENT_HANDLE)) {
+        if (!MINIGAME && sys.hasFeature(sys.Feature.EVENT_HANDLE)) {
             const eventHandleList = this._eventHandleList$;
-            this._handleInput$._on(InputEventType.HANDLE_INPUT, (event): void => {
+            this._handleInput$!._on(InputEventType.HANDLE_INPUT, (event): void => {
                 this._dispatchOrPushEvent$(event, eventHandleList);
             });
-            this._handleInput$._on(InputEventType.HANDLE_POSE_INPUT, (event): void => {
+            this._handleInput$!._on(InputEventType.HANDLE_POSE_INPUT, (event): void => {
                 this._dispatchOrPushEvent$(event, eventHandleList);
             });
         }
 
-        if (sys.hasFeature(sys.Feature.EVENT_HMD)) {
+        if (!MINIGAME && sys.hasFeature(sys.Feature.EVENT_HMD)) {
             const eventHMDList = this._eventHMDList$;
-            this._hmdInput$._on(InputEventType.HMD_POSE_INPUT, (event): void => {
+            this._hmdInput$!._on(InputEventType.HMD_POSE_INPUT, (event): void => {
                 this._dispatchOrPushEvent$(event, eventHMDList);
             });
         }
 
-        if (sys.hasFeature(sys.Feature.EVENT_HANDHELD)) {
+        if (!MINIGAME && sys.hasFeature(sys.Feature.EVENT_HANDHELD)) {
             const eventHandheldList = this._eventHandheldList$;
-            this._handheldInput$._on(InputEventType.HANDHELD_POSE_INPUT, (event): void => {
+            this._handheldInput$!._on(InputEventType.HANDHELD_POSE_INPUT, (event): void => {
                 this._dispatchOrPushEvent$(event, eventHandheldList);
             });
         }
