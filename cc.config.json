@@ -732,6 +732,7 @@
 
     "treeShake": {
         "noSideEffectFiles": [
+            "cocos/core/utils/x-deprecated.ts",
             "cocos/serialization/instantiate-jit.ts",
             "cocos/game/splash-screen.ts",
             "cocos/3d/assets/mesh.ts",
@@ -760,9 +761,11 @@
             "cocos/rendering/shadow/shadow-stage.ts",
             "cocos/rendering/reflection-probe/reflection-probe-flow.ts",
             "cocos/rendering/reflection-probe/reflection-probe-stage.ts",
+            "cocos/rendering/render-reflection-probe-queue.ts",
             "cocos/rendering/render-additive-light-queue.ts",
             "cocos/rendering/planar-shadow-queue.ts",
-            "cocos/2d/framework/sprite-renderer.ts"
+            "cocos/2d/framework/sprite-renderer.ts",
+            "cocos/rendering/post-process/components/post-process.ts"
         ]
     }
 }

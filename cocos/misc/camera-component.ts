@@ -23,7 +23,7 @@
  THE SOFTWARE.
 */
 
-import { EDITOR } from 'internal:constants';
+import { EDITOR, ONLY_2D } from 'internal:constants';
 import { ccclass, help, executeInEditMode, menu, tooltip, displayOrder, type, serializable, visible, range, rangeMin } from 'cc.decorator';
 import { RenderTexture } from '../asset/assets/render-texture';
 import { UITransform } from '../2d/framework';
@@ -514,7 +514,7 @@ export class Camera extends Component {
     }
 
     @tooltip('i18n:camera.postprocess')
-    @type(PostProcess)
+    @type(ONLY_2D ? null : PostProcess)
     get postProcess (): PostProcess | null {
         return this._postProcess;
     }

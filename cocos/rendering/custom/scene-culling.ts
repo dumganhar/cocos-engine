@@ -171,6 +171,7 @@ function sceneCulling (
     probe: ReflectionProbe | null,
     models: Array<Model>,
 ): void {
+    if (ONLY_2D) return;
     const skybox = pSceneData.skybox;
     const skyboxModel = skybox.model;
     const visibility = camera.visibility;
@@ -229,6 +230,7 @@ function addRenderObject (
     model: Model,
     queue: RenderQueue,
 ): void {
+    if (ONLY_2D) return;
     const probeQueue = queue.probeQueue;
     if (isDrawProbe) {
         probeQueue.addToProbeQueue(model, phaseLayoutId);

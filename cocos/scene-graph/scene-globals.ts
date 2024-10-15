@@ -120,6 +120,7 @@ export class AmbientInfo {
      * @zh 编辑器中可配置的天空光照颜色（通过颜色拾取器）
      */
     @visible(() => {
+        if (ONLY_2D) return false;
         const scene = legacyCC.director.getScene();
         const skybox = scene.globals.skybox;
         if (skybox.useIBL && skybox.applyDiffuseMap) {
@@ -191,6 +192,7 @@ export class AmbientInfo {
      * @zh 编辑器中可配置的地面光照颜色（通过颜色拾取器）
      */
     @visible(() => {
+        if (ONLY_2D) return false;
         const scene = legacyCC.director.getScene();
         const skybox = scene.globals.skybox;
         if (skybox.useIBL && skybox.applyDiffuseMap) {
@@ -236,7 +238,7 @@ export class AmbientInfo {
     protected _skyColorHDR = new Vec4(0.2, 0.5, 0.8, 1.0);
     @serializable
     @formerlySerializedAs('_skyIllum')
-    protected _skyIllumHDR = Ambient.SKY_ILLUM;
+    protected _skyIllumHDR = ONLY_2D ? 0 : Ambient.SKY_ILLUM;
     @serializable
     @formerlySerializedAs('_groundAlbedo')
     protected _groundAlbedoHDR = new Vec4(0.2, 0.2, 0.2, 1.0);
@@ -244,7 +246,7 @@ export class AmbientInfo {
     @serializable
     protected _skyColorLDR = new Vec4(0.2, 0.5, 0.8, 1.0);
     @serializable
-    protected _skyIllumLDR = Ambient.SKY_ILLUM;
+    protected _skyIllumLDR = ONLY_2D ? 0 : Ambient.SKY_ILLUM;
     @serializable
     protected _groundAlbedoLDR = new Vec4(0.2, 0.2, 0.2, 1.0);
 
@@ -309,9 +311,10 @@ export class SkyboxInfo {
      * @en environment reflection type
      */
     @editable
-    @type(EnvironmentLightingType)
+    @type(ONLY_2D ? 0 : EnvironmentLightingType)
     @tooltip('i18n:skybox.EnvironmentLightingType')
     set envLightingType (val) {
+        if (ONLY_2D) return;
         if (!this.envmap && EnvironmentLightingType.HEMISPHERE_DIFFUSE !== val) {
             this.useIBL = false;
             this.applyDiffuseMap = false;
@@ -621,6 +624,7 @@ export class SkyboxInfo {
      * @zh 设置此属性的 pass 索引，如果没有指定，则会设置此属性到所有 pass 上。
      */
     public setMaterialProperty (name: string, val: MaterialPropertyFull | MaterialPropertyFull[], passIdx?: number): void {
+        if (ONLY_2D) return;
         if (!this._resource) return;
         if (this._resource.enabled && this._resource.editableMaterial) {
             this._resource.editableMaterial.setProperty(name, val, passIdx);
@@ -638,7 +642,7 @@ legacyCC.SkyboxInfo = SkyboxInfo;
  */
 @ccclass('cc.FogInfo')
 export class FogInfo {
-    public static FogType = FogType;
+    public static FogType = ONLY_2D ? null : FogType;
 
     /**
      * @zh 是否启用全局雾效
@@ -707,7 +711,7 @@ export class FogInfo {
      * @en Global fog type
      */
     @editable
-    @type(FogType)
+    @type(ONLY_2D ? null : FogType)
     @displayOrder(1)
     @tooltip('i18n:fog.type')
     get type (): number {
@@ -725,6 +729,7 @@ export class FogInfo {
      * @en Global fog density
      */
     @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
         return this._type !== FogType.LAYERED && this._type !== FogType.LINEAR;
     })
     @type(CCFloat)
@@ -763,7 +768,10 @@ export class FogInfo {
      * @zh 雾效结束位置，只适用于线性雾
      * @en Global fog end position, only for linear fog
      */
-    @visible(function (this: FogInfo) { return this._type === FogType.LINEAR; })
+    @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
+        return this._type === FogType.LINEAR;
+    })
     @type(CCFloat)
     @rangeStep(0.01)
     @tooltip('i18n:fog.fogEnd')
@@ -781,7 +789,10 @@ export class FogInfo {
      * @zh 雾效衰减
      * @en Global fog attenuation
      */
-    @visible(function (this: FogInfo) { return this._type !== FogType.LINEAR; })
+    @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
+        return this._type !== FogType.LINEAR;
+    })
     @type(CCFloat)
     @rangeMin(0.01)
     @rangeStep(0.01)
@@ -800,7 +811,10 @@ export class FogInfo {
      * @zh 雾效顶部范围，只适用于层级雾
      * @en Global fog top range, only for layered fog
      */
-    @visible(function (this: FogInfo) { return this._type === FogType.LAYERED; })
+    @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
+        return this._type === FogType.LAYERED;
+    })
     @type(CCFloat)
     @rangeStep(0.01)
     @tooltip('i18n:fog.fogTop')
@@ -818,7 +832,10 @@ export class FogInfo {
      * @zh 雾效范围，只适用于层级雾
      * @en Global fog range, only for layered fog
      */
-    @visible(function (this: FogInfo) { return this._type === FogType.LAYERED; })
+    @visible(function (this: FogInfo) {
+        if (ONLY_2D) return false;
+        return this._type === FogType.LAYERED;
+    })
     @type(CCFloat)
     @rangeStep(0.01)
     @tooltip('i18n:fog.fogRange')
@@ -833,7 +850,7 @@ export class FogInfo {
     }
 
     @serializable
-    protected _type = FogType.LINEAR;
+    protected _type = ONLY_2D ? 0 : FogType.LINEAR;
     @serializable
     protected _fogColor = new Color('#C8C8C8');
     @serializable
@@ -891,6 +908,7 @@ export class ShadowsInfo {
         }
     }
     get enabled (): boolean {
+        if (ONLY_2D) return false;
         if (BAIDU) {
             if (this._type !== ShadowType.Planar) {
                 this._enabled = false;
@@ -905,7 +923,7 @@ export class ShadowsInfo {
      */
     @tooltip('i18n:shadow.type')
     @editable
-    @type(ShadowType)
+    @type(ONLY_2D ? 0 : ShadowType)
     set type (val) {
         if (ONLY_2D) return;
         this._type = val;
@@ -920,7 +938,10 @@ export class ShadowsInfo {
      * @zh 阴影颜色
      */
     @tooltip('i18n:shadow.shadowColor')
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.Planar; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.Planar;
+    })
     set shadowColor (val: Readonly<Color>) {
         if (ONLY_2D) return;
         this._shadowColor.set(val);
@@ -935,7 +956,10 @@ export class ShadowsInfo {
      * @zh 阴影接收平面的法线
      */
     @tooltip('i18n:shadow.planeDirection')
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.Planar; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.Planar;
+    })
     set planeDirection (val: Readonly<Vec3>) {
         if (ONLY_2D) return;
         Vec3.copy(this._normal, val);
@@ -952,7 +976,10 @@ export class ShadowsInfo {
     @tooltip('i18n:shadow.planeHeight')
     @editable
     @type(CCFloat)
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.Planar; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.Planar;
+    })
     set planeHeight (val: number) {
         if (ONLY_2D) return;
         this._distance = val;
@@ -969,7 +996,10 @@ export class ShadowsInfo {
     @tooltip('i18n:shadow.planeBias')
     @editable
     @type(CCFloat)
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.Planar; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.Planar;
+    })
     set planeBias (val: number) {
         if (ONLY_2D) return;
         this._planeBias = val;
@@ -985,7 +1015,10 @@ export class ShadowsInfo {
      */
     @tooltip('i18n:shadow.maxReceived')
     @type(CCInteger)
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.ShadowMap; })
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.ShadowMap;
+    })
     set maxReceived (val: number) {
         if (ONLY_2D) return;
         this._maxReceived = val;
@@ -1000,8 +1033,11 @@ export class ShadowsInfo {
      * @zh 获取或者设置阴影纹理大小
      */
     @tooltip('i18n:shadow.shadowMapSize')
-    @type(ShadowSize)
-    @visible(function (this: ShadowsInfo) { return this._type === ShadowType.ShadowMap; })
+    @type(ONLY_2D ? 0 : ShadowSize)
+    @visible(function (this: ShadowsInfo) {
+        if (ONLY_2D) return false;
+        return this._type === ShadowType.ShadowMap;
+    })
     set shadowMapSize (value: number) {
         if (ONLY_2D) return;
         this._size.set(value, value);
@@ -1017,7 +1053,7 @@ export class ShadowsInfo {
     @serializable
     protected _enabled = false;
     @serializable
-    protected _type = ShadowType.Planar;
+    protected _type = ONLY_2D ? 0 : ShadowType.Planar;
     @serializable
     protected _normal = new Vec3(0, 1, 0);
     @serializable
@@ -1254,7 +1290,7 @@ export class PostSettingsInfo {
      * @en Tone mapping type
      */
     @editable
-    @type(ToneMappingType)
+    @type(ONLY_2D ? null : ToneMappingType)
     @tooltip('i18n:tone_mapping.toneMappingType')
     set toneMappingType (val) {
         if (ONLY_2D) return;
@@ -1269,7 +1305,7 @@ export class PostSettingsInfo {
     }
 
     @serializable
-    protected _toneMappingType = ToneMappingType.DEFAULT;
+    protected _toneMappingType = ONLY_2D ? 0 : ToneMappingType.DEFAULT;
 
     protected _resource: PostSettings | null = null;
 
@@ -1281,9 +1317,7 @@ export class PostSettingsInfo {
     }
 }
 
-if (!ONLY_2D) {
-    legacyCC.PostSettingsInfo = PostSettingsInfo;
-}
+legacyCC.PostSettingsInfo = PostSettingsInfo;
 
 export interface ILightProbeNode {
     node: Node;

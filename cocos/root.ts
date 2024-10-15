@@ -25,9 +25,10 @@
 import { ONLY_2D } from 'internal:constants';
 import { Pool, cclegacy, warnID, settings, macro, log, errorID, SettingsCategory } from './core';
 import { DebugView } from './rendering/debug-view';
-import { Camera, CameraType, Light, Model, TrackingType } from './render-scene/scene';
+import { Camera, CameraType, TrackingType } from './render-scene/scene/camera';
+import { Model } from './render-scene/scene/model';
 import type { DataPoolManager } from './3d/skeletal-animation/data-pool-manager';
-import { LightType } from './render-scene/scene/light';
+import { Light, LightType } from './render-scene/scene/light';
 import { IRenderSceneInfo, RenderScene } from './render-scene/core/render-scene';
 import { DirectionalLight } from './render-scene/scene/directional-light';
 import { SphereLight } from './render-scene/scene/sphere-light';
@@ -258,7 +259,7 @@ export class Root {
     private _scenes$: RenderScene[] = [];
     private _modelPools$ = new Map<Constructor<Model>, Pool<Model>>();
     private _cameraPool$: Pool<Camera> | null = null;
-    private _lightPools$ = new Map<Constructor<Light>, Pool<Light>>();
+    private _lightPools$ = ONLY_2D ? null : new Map<Constructor<Light>, Pool<Light>>();
     private _debugView$ = new DebugView();
     private _fpsTime$ = 0;
     private _frameCount$ = 0;
@@ -435,8 +436,10 @@ export class Root {
             this._scenes$[i].onGlobalPipelineStateChanged();
         }
 
-        if (this._pipeline$!.pipelineSceneData.skybox.enabled) {
+        if (!ONLY_2D) {
+            if (this._pipeline$!.pipelineSceneData.skybox.enabled) {
             this._pipeline$!.pipelineSceneData.skybox.model!.onGlobalPipelineStateChanged();
+            }
         }
 
         this._pipeline$!.onGlobalPipelineStateChanged();

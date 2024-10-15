@@ -43,7 +43,7 @@ export * from './data';
 export * from './event';
 export * from './platform';
 export * from './scheduler';
-export * from './curves';
+
 export * from './settings';
 export * from './system';
 export * from './algorithm';

@@ -23,4 +23,5 @@
 */
 
 export * from './camera';
-
+export * from './model';
+export * from './submodel';

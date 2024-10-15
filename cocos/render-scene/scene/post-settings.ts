@@ -6,7 +6,7 @@ export const ToneMappingType = Enum({
     LINEAR: 1,
 });
 
-export  class PostSettings {
+export class PostSettings {
     protected _toneMappingType = ToneMappingType.DEFAULT;
     protected _activated = false;
 

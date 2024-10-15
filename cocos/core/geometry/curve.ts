@@ -333,7 +333,7 @@ export class AnimationCurve {
         }
         let left = 0;
         let right = nKeyframes;
-        let mid;
+        let mid: number = 0;
         while (right - left > 1) {
             mid = Math.floor((left + right) / 2);
             if (curve.getKeyframeTime(mid) >= t) {

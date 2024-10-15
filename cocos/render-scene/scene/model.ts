@@ -23,7 +23,7 @@
 */
 
 // Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
-import { EDITOR } from 'internal:constants';
+import { EDITOR, ONLY_2D } from 'internal:constants';
 import { builtinResMgr } from '../../asset/asset-manager/builtin-res-mgr';
 import { Material } from '../../asset/assets/material';
 import { RenderingSubMesh } from '../../asset/assets/rendering-sub-mesh';
@@ -713,7 +713,8 @@ export class Model {
         this._updateStamp = stamp;
 
         this.updateSHUBOs();
-        const forceUpdateUBO = this.node.scene.globals.shadows.enabled && this.node.scene.globals.shadows.type === ShadowType.Planar;
+        const forceUpdateUBO = ONLY_2D ? false
+            : (this.node.scene.globals.shadows.enabled && this.node.scene.globals.shadows.type === ShadowType.Planar);
 
         if (!this._localDataUpdated) { return; }
         this._localDataUpdated = false;
@@ -754,6 +755,7 @@ export class Model {
     }
 
     private isLightProbeAvailable$ (): boolean {
+        if (ONLY_2D) return false;
         if (!this._useLightProbe$) {
             return false;
         }
@@ -771,6 +773,7 @@ export class Model {
     }
 
     private updateSHBuffer$ (): void {
+        if (ONLY_2D) return;
         if (!this._localSHData) {
             return;
         }
@@ -797,6 +800,7 @@ export class Model {
      * @zh 清除模型的球谐 ubo
      */
     public clearSHUBOs (): void {
+        if (ONLY_2D) return;
         if (!this._localSHData) {
             return;
         }
@@ -813,6 +817,7 @@ export class Model {
      * @zh 更新模型的球谐 ubo
      */
     public updateSHUBOs (): void {
+        if (ONLY_2D) return;
         if (!this.isLightProbeAvailable$()) {
             return;
         }
@@ -939,6 +944,7 @@ export class Model {
      * because the lighting map will influence the shader
      */
     public initLightingmap (texture: Texture2D | null, uvParam: Vec4): void {
+        if (ONLY_2D) return;
         this._lightmap$ = texture;
         this._lightmapUVParam$ = uvParam;
     }
@@ -950,6 +956,7 @@ export class Model {
      * @param uvParam uv coordinate
      */
     public updateLightingmap (texture: Texture2D | null, uvParam: Vec4): void {
+        if (ONLY_2D) return;
         Vec4.toArray(this._localData, uvParam, UBOLocalEnum.LIGHTINGMAP_UVPARAM);
         this._localDataUpdated = true;
         this._lightmap$ = texture;
@@ -980,6 +987,7 @@ export class Model {
      * @param texture probe cubemap
      */
     public updateReflectionProbeCubemap (texture: TextureCube | null): void {
+        if (ONLY_2D) return;
         this._localDataUpdated = true;
         this.onMacroPatchesStateChanged();
 
@@ -1008,6 +1016,7 @@ export class Model {
      * @param texture probe cubemap
      */
     public updateReflectionProbeBlendCubemap (texture: TextureCube | null): void {
+        if (ONLY_2D) return;
         this._localDataUpdated = true;
         this.onMacroPatchesStateChanged();
 
@@ -1036,6 +1045,7 @@ export class Model {
      * @param texture planar relflection map
      */
     public updateReflectionProbePlanarMap (texture: Texture | null): void {
+        if (ONLY_2D) return;
         this._localDataUpdated = true;
         this.onMacroPatchesStateChanged();
 
@@ -1069,6 +1079,7 @@ export class Model {
      * @param texture data map
      */
     public updateReflectionProbeDataMap (texture: Texture2D | null): void {
+        if (ONLY_2D) return;
         this._localDataUpdated = true;
         this.onMacroPatchesStateChanged();
 
@@ -1094,6 +1105,7 @@ export class Model {
      * @zh 更新阴影偏移
      */
     public updateLocalShadowBias (): void {
+        if (ONLY_2D) return;
         const sv = this._localData;
         sv[UBOLocalEnum.LOCAL_SHADOW_BIAS + 0] = this._shadowBias;
         sv[UBOLocalEnum.LOCAL_SHADOW_BIAS + 1] = this._shadowNormalBias;
@@ -1105,6 +1117,7 @@ export class Model {
      * @zh 更新物体使用哪个反射探针
      */
     public updateReflectionProbeId  (): void {
+        if (ONLY_2D) return;
         const sv = this._localData;
         sv[UBOLocalEnum.LOCAL_SHADOW_BIAS + 2] = this._reflectionProbeId;
         sv[UBOLocalEnum.LOCAL_SHADOW_BIAS + 3] = this._reflectionProbeBlendId;
@@ -1167,6 +1180,7 @@ export class Model {
      * @param subModelIndex sub model's index
      */
     public getMacroPatches (subModelIndex: number): IMacroPatch[] | null {
+        if (ONLY_2D) return null;
         let patches = this.receiveShadow ? shadowMapPatches : null;
         if (this._lightmap$ != null) {
             if (this.node && this.node.scene && !this.node.scene.globals.disableLightmap) {
@@ -1245,6 +1259,7 @@ export class Model {
     }
 
     protected _initLocalSHDescriptors (subModelIndex: number): void {
+        if (ONLY_2D) return;
         if (!EDITOR && !this._useLightProbe$) {
             return;
         }

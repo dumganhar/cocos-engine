@@ -22,6 +22,7 @@
  THE SOFTWARE.
 */
 
+import { ONLY_2D } from 'internal:constants';
 import { SubModel } from '../render-scene/scene/submodel';
 import { isEnableEffect, SetIndex } from './define';
 import { Device, RenderPass, Shader, CommandBuffer } from '../gfx';

@@ -23,7 +23,7 @@
 */
 
 export { Button } from './button';
-export { EditBox } from './editbox/edit-box';
+
 export { Layout } from './layout';
 export { ProgressBar } from './progress-bar';
 export { ScrollBar } from './scroll-bar';

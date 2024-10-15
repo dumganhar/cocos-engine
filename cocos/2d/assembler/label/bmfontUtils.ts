@@ -56,41 +56,41 @@ export const bmfontUtils = {
         comp: Label,
         trans: UITransform,
     ): void {
-        style.fontSize = comp.fontSize;
-        style.actualFontSize = comp.fontSize;
-        style.originFontSize = _fntConfig ? _fntConfig.fontSize : comp.fontSize;
-        layout.horizontalAlign = comp.horizontalAlign;
-        layout.verticalAlign = comp.verticalAlign;
-        layout.spacingX = comp.spacingX;
+        style.fontSize$ = comp.fontSize;
+        style.actualFontSize$ = comp.fontSize;
+        style.originFontSize$ = _fntConfig ? _fntConfig.fontSize : comp.fontSize;
+        layout.horizontalAlign$ = comp.horizontalAlign;
+        layout.verticalAlign$ = comp.verticalAlign;
+        layout.spacingX$ = comp.spacingX;
         const overflow = comp.overflow;
-        layout.overFlow = overflow;
-        layout.lineHeight = comp.lineHeight;
+        layout.overFlow$ = overflow;
+        layout.lineHeight$ = comp.lineHeight;
 
-        outputLayoutData.nodeContentSize.width = trans.width;
-        outputLayoutData.nodeContentSize.height = trans.height;
+        outputLayoutData.nodeContentSize$.width = trans.width;
+        outputLayoutData.nodeContentSize$.height = trans.height;
 
         // should wrap text
         if (overflow === Overflow.NONE) {
-            layout.wrapping = false;
-            outputLayoutData.nodeContentSize.width += shareLabelInfo.margin * 2;
-            outputLayoutData.nodeContentSize.height += shareLabelInfo.margin * 2;
+            layout.wrapping$ = false;
+            outputLayoutData.nodeContentSize$.width += shareLabelInfo.margin * 2;
+            outputLayoutData.nodeContentSize$.height += shareLabelInfo.margin * 2;
         } else if (overflow === Overflow.RESIZE_HEIGHT) {
-            layout.wrapping = true;
-            outputLayoutData.nodeContentSize.height += shareLabelInfo.margin * 2;
+            layout.wrapping$ = true;
+            outputLayoutData.nodeContentSize$.height += shareLabelInfo.margin * 2;
         } else {
-            layout.wrapping = comp.enableWrapText;
+            layout.wrapping$ = comp.enableWrapText;
         }
-        outputRenderData.uiTransAnchorX = trans.anchorX;
-        outputRenderData.uiTransAnchorY = trans.anchorY;
+        outputRenderData.uiTransAnchorX$ = trans.anchorX;
+        outputRenderData.uiTransAnchorY$ = trans.anchorY;
 
         shareLabelInfo.lineHeight = comp.lineHeight;
         shareLabelInfo.fontSize = comp.fontSize;
 
-        style.spriteFrame = _spriteFrame;
-        style.fntConfig = _fntConfig;
-        style.fontFamily = shareLabelInfo.fontFamily;
+        style.spriteFrame$ = _spriteFrame;
+        style.fntConfig$ = _fntConfig;
+        style.fontFamily$ = shareLabelInfo.fontFamily;
 
-        style.color.set(comp.color);
+        style.color$.set(comp.color);
     },
 
     updateRenderData (comp: Label): void {
@@ -110,20 +110,20 @@ export const bmfontUtils = {
             const layout = comp.textLayout;
             const outputLayoutData = comp.textLayoutData;
             const outputRenderData = comp.textRenderData;
-            style.fontScale = view.getScaleX();
+            style.fontScale$ = view.getScaleX();
             this._updateFontFamily(comp);
 
             this.updateProcessingData(style, layout, outputLayoutData, outputRenderData, comp, _uiTrans);
 
             this._updateLabelInfo(comp);
 
-            style.fontDesc = shareLabelInfo.fontDesc;
+            style.fontDesc$ = shareLabelInfo.fontDesc;
 
             // TextProcessing
-            processing.processingString(true, style, layout, outputLayoutData, comp.string);
+            processing.processingString$(true, style, layout, outputLayoutData, comp.string);
             // generateVertex
-            outputRenderData.quadCount = 0;
-            processing.generateRenderInfo(
+            outputRenderData.quadCount$ = 0;
+            processing.generateRenderInfo$(
                 true,
                 style,
                 layout,
@@ -133,23 +133,23 @@ export const bmfontUtils = {
                 this.generateVertexData,
             );
             let isResized = false;
-            if (renderData.dataLength !== outputRenderData.quadCount) {
+            if (renderData.dataLength !== outputRenderData.quadCount$) {
                 this.resetRenderData(comp);
-                renderData.dataLength = outputRenderData.quadCount;
+                renderData.dataLength = outputRenderData.quadCount$;
                 renderData.resize(renderData.dataLength, renderData.dataLength / 2 * 3);
                 isResized = true;
             }
             const datalist = renderData.data;
-            for (let i = 0, l = outputRenderData.quadCount; i < l; i++) {
-                datalist[i] = outputRenderData.vertexBuffer[i];
+            for (let i = 0, l = outputRenderData.quadCount$; i < l; i++) {
+                datalist[i] = outputRenderData.vertexBuffer$[i];
             }
 
             const indexCount = renderData.indexCount;
             this.createQuadIndices(indexCount);
             renderData.chunk.setIndexBuffer(QUAD_INDICES!);
 
-            _comp.actualFontSize = style.actualFontSize;
-            _uiTrans.setContentSize(outputLayoutData.nodeContentSize);
+            _comp.actualFontSize = style.actualFontSize$;
+            _uiTrans.setContentSize(outputLayoutData.nodeContentSize$);
             this.updateUVs(comp);// dirty need
             // It is reasonable that the '_comp.node._uiProps.colorDirty' interface should be used.
             // But this function is not called when just modifying the opacity.
@@ -228,9 +228,9 @@ export const bmfontUtils = {
         y: number,
     ): void {
         const dataOffset = offset;
-        const scale = style.bmfontScale;
+        const scale = style.bmfontScale$;
 
-        const dataList = outputRenderData.vertexBuffer;
+        const dataList = outputRenderData.vertexBuffer$;
         const texW = spriteFrame.width;
         const texH = spriteFrame.height;
 

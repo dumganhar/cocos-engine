@@ -23,7 +23,7 @@
  THE SOFTWARE.
 */
 
-import './deprecation';
+import './deprecated';
 
 export { Asset } from './asset';
 export { BufferAsset } from './buffer-asset';
