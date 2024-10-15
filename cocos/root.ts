@@ -166,7 +166,7 @@ export class Root {
      * @en The debug view manager for rendering
      * @zh 渲染调试管理器
      */
-    public get debugView (): DebugView {
+    public get debugView (): DebugView | null {
         return this._debugView$;
     }
 
@@ -260,7 +260,7 @@ export class Root {
     private _modelPools$ = new Map<Constructor<Model>, Pool<Model>>();
     private _cameraPool$: Pool<Camera> | null = null;
     private _lightPools$ = ONLY_2D ? null : new Map<Constructor<Light>, Pool<Light>>();
-    private _debugView$ = new DebugView();
+    private _debugView$ = ONLY_2D ? null : new DebugView();
     private _fpsTime$ = 0;
     private _frameCount$ = 0;
     private _fps$ = 0;

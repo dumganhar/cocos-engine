@@ -81,21 +81,24 @@ export class PipelineUBO {
             fv[UBOGlobalEnum.PROBE_INFO_OFFSET] = cclegacy.internal.reflectionProbeManager.getMaxProbeId() + 1;
         }
 
-        const debugView = root.debugView;
         for (let i = 0; i <= 3; i++) {
             fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET + i] = 0.0;
         }
-        if (debugView.isEnabled()) {
-            fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET] = debugView.singleMode as number;
 
-            for (let i = DebugViewCompositeType.DIRECT_DIFFUSE as number; i < (DebugViewCompositeType.MAX_BIT_COUNT as unknown as number); i++) {
-                const offset = i >> 3;
-                const bit = i % 8;
-                fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET + 1 + offset] += (debugView.isCompositeModeEnabled(i) ? 1.0 : 0.0) * (10.0 ** bit);
+        if (!ONLY_2D) {
+            const debugView = root.debugView;
+            if (debugView && debugView.isEnabled()) {
+                fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET] = debugView.singleMode as number;
+
+                for (let i = DebugViewCompositeType.DIRECT_DIFFUSE as number; i < (DebugViewCompositeType.MAX_BIT_COUNT as unknown as number); i++) {
+                    const offset = i >> 3;
+                    const bit = i % 8;
+                    fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET + 1 + offset] += (debugView.isCompositeModeEnabled(i) ? 1.0 : 0.0) * (10.0 ** bit);
+                }
+
+                fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET + 3] += (debugView.lightingWithAlbedo ? 1.0 : 0.0) * (10.0 ** 6.0);
+                fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET + 3] += (debugView.csmLayerColoration ? 1.0 : 0.0) * (10.0 ** 7.0);
             }
-
-            fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET + 3] += (debugView.lightingWithAlbedo ? 1.0 : 0.0) * (10.0 ** 6.0);
-            fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET + 3] += (debugView.csmLayerColoration ? 1.0 : 0.0) * (10.0 ** 7.0);
         }
     }
 
