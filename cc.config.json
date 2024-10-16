@@ -240,7 +240,8 @@
             "modules": []
         }
     },
-    "moduleOverrides": [{
+    "moduleOverrides": [
+        {
             "test": "true",
             "isVirtualModule": true,
             "overrides": {
@@ -711,6 +712,12 @@
             "type": "boolean",
             "value": false,
             "internal": true
+        },
+        "ENABLE_DYNAMIC_ATLAS": {
+            "comment": "Enable dynamic atlas",
+            "type": "boolean",
+            "value": true,
+            "internal": true
         }
     },
 
@@ -741,7 +748,6 @@
             "cocos/render-scene/scene/skybox.ts",
             "cocos/render-scene/scene/shadows.ts",
             "cocos/render-scene/scene/light.ts",
-            "cocos/render-scene/scene/csm-layers.ts",
             "cocos/render-scene/scene/octree.ts",
             "cocos/render-scene/scene/skin.ts",
             "cocos/render-scene/scene/post-settings.ts",
@@ -766,7 +772,20 @@
             "cocos/rendering/render-additive-light-queue.ts",
             "cocos/rendering/planar-shadow-queue.ts",
             "cocos/2d/framework/sprite-renderer.ts",
-            "cocos/rendering/post-process/components/post-process.ts"
+            "cocos/rendering/post-process/components/post-process.ts",
+            "cocos/core/geometry/geometry-native-ext.ts",
+            "cocos/core/geometry/aabb.ts",
+            "cocos/core/geometry/ray.ts",
+            "cocos/core/geometry/plane.ts",
+            "cocos/core/geometry/spline.ts",
+            "cocos/core/geometry/triangle.ts",
+            "cocos/core/geometry/distance.ts",
+            "cocos/2d/utils/dynamic-atlas/atlas-manager.ts",
+            "cocos/2d/utils/dynamic-atlas/atlas.ts",
+            "pal/input/minigame/gamepad-input.ts",
+            "pal/input/minigame/handheld-input.ts",
+            "pal/input/minigame/handle-input.ts",
+            "pal/input/minigame/hmd-input.ts"
         ]
     }
 }
