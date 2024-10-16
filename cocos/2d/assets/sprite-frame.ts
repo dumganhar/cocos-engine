@@ -26,7 +26,7 @@
 */
 
 import { ccclass } from 'cc.decorator';
-import { EDITOR, TEST, BUILD, ONLY_2D } from 'internal:constants';
+import { EDITOR, TEST, BUILD, ONLY_2D, ENABLE_DYNAMIC_ATLAS } from 'internal:constants';
 import { Rect, Size, Vec2, Vec3, Vec4, cclegacy, errorID, warnID, js, v3, mat4, rect, v4, v2, size } from '../../core';
 import { Asset } from '../../asset/assets/asset';
 import { TextureBase } from '../../asset/assets/texture-base';
@@ -934,8 +934,10 @@ export class SpriteFrame extends Asset {
     }
 
     public destroy (): boolean {
-        if (this._packable && dynamicAtlasManager) {
-            dynamicAtlasManager.deleteAtlasSpriteFrame(this);
+        if (ENABLE_DYNAMIC_ATLAS) {
+            if (this._packable && dynamicAtlasManager) {
+                dynamicAtlasManager.deleteAtlasSpriteFrame(this);
+            }
         }
         return super.destroy();
     }
@@ -1265,6 +1267,7 @@ export class SpriteFrame extends Asset {
      * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
      */
     public _checkPackable (): void {
+        if (!ENABLE_DYNAMIC_ATLAS) return;
         const dynamicAtlas = dynamicAtlasManager;
         if (!dynamicAtlas) return;
         const texture = this._texture;

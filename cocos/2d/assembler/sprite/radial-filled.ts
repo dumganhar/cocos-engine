@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { JSB } from 'internal:constants';
+import { ENABLE_DYNAMIC_ATLAS, JSB } from 'internal:constants';
 import { SpriteFrame } from '../../assets';
 import { Mat4, Vec2 } from '../../../core';
 import { IRenderData, RenderData } from '../../renderer/render-data';
@@ -241,7 +241,9 @@ export const radialFilled: IAssembler = {
 
     updateRenderData (sprite: Sprite) {
         const frame = sprite.spriteFrame;
-        dynamicAtlasManager.packToDynamicAtlas(sprite, frame);
+        if (ENABLE_DYNAMIC_ATLAS) {
+            dynamicAtlasManager.packToDynamicAtlas(sprite, frame);
+        }
         // TODO update material and uv
         this.updateUVs(sprite);
 

@@ -22,6 +22,7 @@
  THE SOFTWARE.
 */
 
+import { ENABLE_DYNAMIC_ATLAS } from 'internal:constants';
 import {  Mat4, errorID } from '../../../core';
 import { IRenderData, RenderData } from '../../renderer/render-data';
 import { IBatcher } from '../../renderer/i-batcher';
@@ -41,7 +42,9 @@ const QUAD_INDICES = Uint16Array.from([0, 1, 2, 1, 3, 2]);
 export const barFilled: IAssembler = {
     updateRenderData (sprite: Sprite) {
         const frame = sprite.spriteFrame;
-        dynamicAtlasManager.packToDynamicAtlas(sprite, frame);
+        if (ENABLE_DYNAMIC_ATLAS) {
+            dynamicAtlasManager.packToDynamicAtlas(sprite, frame);
+        }
         // TODO update material and uv
 
         const renderData = sprite.renderData;

@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { JSB } from 'internal:constants';
+import { ENABLE_DYNAMIC_ATLAS, JSB } from 'internal:constants';
 import { IConfig, FontAtlas } from '../../assets/bitmap-font';
 import { SpriteFrame } from '../../assets/sprite-frame';
 import { Rect, errorID } from '../../../core';
@@ -294,7 +294,9 @@ export const bmfontUtils = {
             }
         }
 
-        dynamicAtlasManager.packToDynamicAtlas(comp, _spriteFrame);
+        if (ENABLE_DYNAMIC_ATLAS) {
+            dynamicAtlasManager.packToDynamicAtlas(comp, _spriteFrame);
+        }
         // TODO update material and uv
     },
 
