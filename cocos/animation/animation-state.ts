@@ -129,7 +129,7 @@ export class AnimationState extends Playable {
             this.repeatCount = 1;
         }
 
-        this._clipEventEval?.setWrapMode(value);
+        this._clipEventEval?.setWrapMode$(value);
     }
 
     /**
@@ -476,7 +476,7 @@ export class AnimationState extends Playable {
 
         if (!EDITOR_NOT_IN_PREVIEW) {
             const info = this.getWrappedInfo(time, this._wrappedInfo);
-            this._clipEventEval?.ignore(info.ratio, info.direction);
+            this._clipEventEval?.ignore$(info.ratio, info.direction);
         }
     }
 
@@ -721,7 +721,7 @@ export class AnimationState extends Playable {
     }
 
     private _sampleEvents (wrapInfo: WrappedInfo): void {
-        this._clipEventEval?.sample(
+        this._clipEventEval?.sample$(
             wrapInfo.ratio,
             wrapInfo.direction,
             wrapInfo.iterations,

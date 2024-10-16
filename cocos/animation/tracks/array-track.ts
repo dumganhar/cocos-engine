@@ -88,7 +88,7 @@ export class RealArrayTrackEval implements TrackEval<readonly number[]> {
     constructor (
         private _curves: RealCurve[],
     ) {
-        this._result = new Array(_curves.length).fill(0.0);
+        this._result$ = new Array(_curves.length).fill(0.0);
     }
 
     public get requiresDefault (): boolean {
@@ -97,14 +97,14 @@ export class RealArrayTrackEval implements TrackEval<readonly number[]> {
 
     public evaluate (time: number): number[] {
         const {
-            _result: result,
+            _result$: result,
         } = this;
         const nElements = result.length;
         for (let iElement = 0; iElement < nElements; ++iElement) {
             result[iElement] = this._curves[iElement].evaluate(time);
         }
-        return this._result;
+        return this._result$;
     }
 
-    private declare _result: number[];
+    private declare _result$: number[];
 }

@@ -610,7 +610,7 @@ export abstract class SingleChannelTrack<TCurve extends Curve> extends Track {
 }
 
 class SingleChannelTrackEval<TCurve extends Curve> implements TrackEval<unknown> {
-    constructor (private _curve: TCurve) {
+    constructor (private _curve$: TCurve) {
     }
 
     public get requiresDefault (): boolean {
@@ -618,6 +618,6 @@ class SingleChannelTrackEval<TCurve extends Curve> implements TrackEval<unknown>
     }
 
     public evaluate (time: number): unknown {
-        return this._curve.evaluate(time);
+        return this._curve$.evaluate(time);
     }
 }

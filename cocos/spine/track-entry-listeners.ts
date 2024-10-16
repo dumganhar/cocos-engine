@@ -40,18 +40,19 @@ export class TrackEntryListeners {
     complete?: ((entry: spine.TrackEntry) => void);
     event?: ((entry: spine.TrackEntry, event: spine.Event) => void);
 
-    static getListeners (entry: spine.TrackEntry, instance: spine.SkeletonInstance): spine.AnimationStateListener {
+    static getListeners$ (entry: spine.TrackEntry, instance: spine.SkeletonInstance): spine.AnimationStateListener {
         if (!entry.listener) {
             entry.listener = new TrackEntryListeners() as any;
             const id = ++_track_ID;
             instance.setTrackEntryListener(id, entry);
-            TrackEntryListeners._trackSet.set(id, entry);
+            TrackEntryListeners._trackSet$.set(id, entry);
         }
         return entry.listener;
     }
 
+    // invoked from library_spine.js
     static emitListener (id: number, entry: spine.TrackEntry, event: spine.Event, eventType: spine.EventType): void {
-        const listener = TrackEntryListeners._listenerSet.get(id);
+        const listener = TrackEntryListeners._listenerSet$.get(id);
         if (!listener) return;
         switch (eventType) {
         case spine.EventType.event:
@@ -90,8 +91,9 @@ export class TrackEntryListeners {
         }
     }
 
+    // invoked from library_spine.js
     static emitTrackEntryListener (id: number, entry: spine.TrackEntry, event: spine.Event, eventType: spine.EventType): void {
-        const curTrack = this._trackSet.get(id);
+        const curTrack = this._trackSet$.get(id);
         if (!curTrack) return;
         switch (eventType) {
         case spine.EventType.start:
@@ -113,7 +115,7 @@ export class TrackEntryListeners {
             if (curTrack.listener.dispose) {
                 curTrack.listener.dispose(entry);
             }
-            this._trackSet.delete(id);
+            this._trackSet$.delete(id);
             curTrack.listener = null as any;
             break;
         case spine.EventType.complete:
@@ -132,18 +134,19 @@ export class TrackEntryListeners {
         }
     }
 
-    static addListener (listener: TrackEntryListeners): number {
+    static addListener$ (listener: TrackEntryListeners): number {
         const id = ++_listener_ID;
-        TrackEntryListeners._listenerSet.set(id, listener);
+        TrackEntryListeners._listenerSet$.set(id, listener);
         return id;
     }
 
-    static removeListener (id: number): void {
-        TrackEntryListeners._listenerSet.delete(id);
+    static removeListener$ (id: number): void {
+        TrackEntryListeners._listenerSet$.delete(id);
     }
 
-    private static _listenerSet = new Map<number, TrackEntryListeners>();
-    private static _trackSet = new Map<number, spine.TrackEntry>();
+    private static _listenerSet$ = new Map<number, TrackEntryListeners>();
+    private static _trackSet$ = new Map<number, spine.TrackEntry>();
 }
 
+// invoked from library_spine.js
 globalThis.TrackEntryListeners = TrackEntryListeners;

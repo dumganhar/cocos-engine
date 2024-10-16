@@ -739,6 +739,8 @@
 
     "treeShake": {
         "noSideEffectFiles": [
+            "cocos/sorting/sorting-layers.ts",
+            "cocos/sorting/sorting.ts",
             "cocos/core/utils/x-deprecated.ts",
             "cocos/serialization/instantiate-jit.ts",
             "cocos/game/splash-screen.ts",

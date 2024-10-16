@@ -70,7 +70,7 @@ export class EmbeddedParticleSystemPlayable extends EmbeddedPlayable {
 class EmbeddedParticleSystemPlayableState extends EmbeddedPlayableState {
     constructor (particleSystem: ParticleSystem) {
         super(false);
-        this._particleSystem = particleSystem;
+        this._particleSystem$ = particleSystem;
     }
 
     public destroy (): void {
@@ -81,21 +81,21 @@ class EmbeddedParticleSystemPlayableState extends EmbeddedPlayableState {
      * Plays the particle system from the beginning no matter current time.
      */
     public play (): void {
-        this._particleSystem.play();
+        this._particleSystem$.play();
     }
 
     /**
      * Pause the particle system no matter current time.
      */
     public pause (): void {
-        this._particleSystem.stopEmitting();
+        this._particleSystem$.stopEmitting();
     }
 
     /**
      * Stops the particle system.
      */
     public stop (): void {
-        this._particleSystem.stopEmitting();
+        this._particleSystem$.stopEmitting();
     }
 
     /**
@@ -103,8 +103,8 @@ class EmbeddedParticleSystemPlayableState extends EmbeddedPlayableState {
      * @param speed The speed.
      */
     public setSpeed (speed: number): void {
-        this._particleSystem.simulationSpeed = speed;
+        this._particleSystem$.simulationSpeed = speed;
     }
 
-    private _particleSystem: ParticleSystem;
+    private _particleSystem$: ParticleSystem;
 }

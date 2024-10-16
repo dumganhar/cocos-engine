@@ -33,7 +33,7 @@ import { bezierByTime, BezierControlPoints } from '../core/curves/bezier';
 export class RatioSampler {
     public ratios: number[];
 
-    private _findRatio: (ratios: number[], ratio: number) => number;
+    private _findRatio$: (ratios: number[], ratio: number) => number;
 
     constructor (ratios: number[]) {
         this.ratios = ratios;
@@ -51,11 +51,11 @@ export class RatioSampler {
                 break;
             }
         }
-        this._findRatio = canOptimize ? quickFindIndex : binarySearchEpsilon;
+        this._findRatio$ = canOptimize ? quickFindIndex : binarySearchEpsilon;
     }
 
     public sample (ratio: number): number {
-        return this._findRatio(this.ratios, ratio);
+        return this._findRatio$(this.ratios, ratio);
     }
 }
 cclegacy.RatioSampler = RatioSampler;
@@ -81,22 +81,22 @@ export class AnimCurve {
     /**
      * The values of the keyframes. (y)
      */
-    private _values: legacy.LegacyCurveValue[] = [];
+    private _values$: legacy.LegacyCurveValue[] = [];
 
     /**
      * Lerp function used. If undefined, no lerp is performed.
      */
-    private _lerp: undefined | ((from: any, to: any, t: number, dt: number) => any) = undefined;
+    private _lerp$: undefined | ((from: any, to: any, t: number, dt: number) => any) = undefined;
 
-    private _duration: number;
+    private declare _duration$: number;
 
-    private _array?: any[];
+    private _array$?: any[];
 
     constructor (propertyCurveData: Omit<legacy.LegacyClipCurveData, 'keys'>, duration: number) {
-        this._duration = duration;
+        this._duration$ = duration;
 
         // Install values.
-        this._values = propertyCurveData.values;
+        this._values$ = propertyCurveData.values;
 
         const getCurveType = (easingMethod: legacy.LegacyEasingMethod): legacy.LegacyEasingMethod | null => {
             if (typeof easingMethod === 'string') {
@@ -117,8 +117,9 @@ export class AnimCurve {
         } else if (Array.isArray(propertyCurveData.easingMethods)) {
             this.types = propertyCurveData.easingMethods.map(getCurveType);
         } else if (propertyCurveData.easingMethods !== undefined) {
-            this.types = new Array(this._values.length).fill(null);
+            this.types = new Array(this._values$.length).fill(null);
             for (const index of Object.keys(propertyCurveData.easingMethods)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.types[index] = getCurveType(propertyCurveData.easingMethods[index]);
             }
         } else {
@@ -132,21 +133,21 @@ export class AnimCurve {
 
         // Setup the lerp function.
         if (interpolate) {
-            this._lerp = selectLerpFx(firstValue);
+            this._lerp$ = selectLerpFx(firstValue);
         }
 
         if (propertyCurveData._arrayLength !== undefined) {
-            this._array = new Array(propertyCurveData._arrayLength);
+            this._array$ = new Array(propertyCurveData._arrayLength);
         }
     }
 
     public hasLerp (): boolean {
-        return !!this._lerp;
+        return !!this._lerp$;
     }
 
     public valueAt (index: number): any {
-        if (this._array === undefined) {
-            const value = this._values[index];
+        if (this._array$ === undefined) {
+            const value = this._values$[index];
             if (value && value.getNoLerp) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return value.getNoLerp();
@@ -155,16 +156,16 @@ export class AnimCurve {
                 return value;
             }
         } else {
-            for (let i = 0; i < this._array.length; ++i) {
-                this._array[i] = this._values[this._array.length * index + i];
+            for (let i = 0; i < this._array$.length; ++i) {
+                this._array$[i] = this._values$[this._array$.length * index + i];
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return this._array;
+            return this._array$;
         }
     }
 
     public valueBetween (ratio: number, from: number, fromRatio: number, to: number, toRatio: number): any {
-        if (this._lerp) {
+        if (this._lerp$) {
             const type = this.types ? this.types[from] : this.type;
             const dRatio = (toRatio - fromRatio);
             let ratioBetweenFrames = (ratio - fromRatio) / dRatio;
@@ -172,42 +173,42 @@ export class AnimCurve {
                 ratioBetweenFrames = computeRatioByType(ratioBetweenFrames, type);
             }
 
-            if (this._array === undefined) {
-                const fromVal = this._values[from];
-                const toVal = this._values[to];
-                const value = this._lerp(fromVal, toVal, ratioBetweenFrames, dRatio * this._duration);
+            if (this._array$ === undefined) {
+                const fromVal = this._values$[from];
+                const toVal = this._values$[to];
+                const value = this._lerp$(fromVal, toVal, ratioBetweenFrames, dRatio * this._duration$);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return value;
             } else {
-                for (let i = 0; i < this._array.length; ++i) {
-                    const fromVal = this._values[this._array.length *  from + i];
-                    const toVal = this._values[this._array.length * to + i];
-                    this._array[i] = this._lerp(fromVal, toVal, ratioBetweenFrames, dRatio * this._duration);
+                for (let i = 0; i < this._array$.length; ++i) {
+                    const fromVal = this._values$[this._array$.length *  from + i];
+                    const toVal = this._values$[this._array$.length * to + i];
+                    this._array$[i] = this._lerp$(fromVal, toVal, ratioBetweenFrames, dRatio * this._duration$);
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                return this._array;
+                return this._array$;
             }
-        } else if (this._array === undefined) {
+        } else if (this._array$ === undefined) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.valueAt(from);
         } else {
-            for (let i = 0; i < this._array.length; ++i) {
-                this._array[i] = this._values[this._array.length *  from + i];
+            for (let i = 0; i < this._array$.length; ++i) {
+                this._array$[i] = this._values$[this._array$.length *  from + i];
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return this._array;
+            return this._array$;
         }
     }
 
     public empty (): boolean {
-        return this._values.length === 0;
+        return this._values$.length === 0;
     }
 
     /**
      * Returns if this curve only yields constants.
      */
     public constant (): boolean {
-        return this._values.length === 1;
+        return this._values$.length === 1;
     }
 }
 cclegacy.AnimCurve = AnimCurve;

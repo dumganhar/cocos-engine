@@ -16,34 +16,34 @@ export class Transform {
 
     public static ZERO = Object.freeze(((): Transform => {
         const transform = new Transform();
-        Vec3.copy(transform._position, Vec3.ZERO);
-        Quat.set(transform._rotation, 0.0, 0.0, 0.0, 0.0);
-        Vec3.copy(transform._scale, Vec3.ZERO);
+        Vec3.copy(transform._position$, Vec3.ZERO);
+        Quat.set(transform._rotation$, 0.0, 0.0, 0.0, 0.0);
+        Vec3.copy(transform._scale$, Vec3.ZERO);
         return transform;
     })());
 
     get position (): Readonly<Vec3> {
-        return this._position;
+        return this._position$;
     }
 
     set position (value) {
-        Vec3.copy(this._position, value);
+        Vec3.copy(this._position$, value);
     }
 
     get rotation (): Readonly<Quat> {
-        return this._rotation;
+        return this._rotation$;
     }
 
     set rotation (value) {
-        Quat.copy(this._rotation, value);
+        Quat.copy(this._rotation$, value);
     }
 
     get scale (): Readonly<Vec3> {
-        return this._scale;
+        return this._scale$;
     }
 
     set scale (value) {
-        Vec3.copy(this._scale, value);
+        Vec3.copy(this._scale$, value);
     }
 
     public static clone (src: ReadonlyTransform): Transform {
@@ -53,29 +53,29 @@ export class Transform {
     }
 
     public static setIdentity (out: Transform): Transform {
-        Vec3.copy(out._position, Vec3.ZERO);
-        Quat.copy(out._rotation, Quat.IDENTITY);
-        Vec3.copy(out._scale, Vec3.ONE);
+        Vec3.copy(out._position$, Vec3.ZERO);
+        Quat.copy(out._rotation$, Quat.IDENTITY);
+        Vec3.copy(out._scale$, Vec3.ONE);
         return out;
     }
 
     public static copy (out: Transform, src: ReadonlyTransform): Transform {
-        Vec3.copy(out._position, src._position);
-        Quat.copy(out._rotation, src._rotation);
-        Vec3.copy(out._scale, src._scale);
+        Vec3.copy(out._position$, src._position$);
+        Quat.copy(out._rotation$, src._rotation$);
+        Vec3.copy(out._scale$, src._scale$);
         return out;
     }
 
     public static equals (a: ReadonlyTransform, b: ReadonlyTransform, epsilon?: number): boolean {
-        return Vec3.equals(a._position, b._position, epsilon)
-            && Quat.equals(a._rotation, b._rotation, epsilon)
-            && Vec3.equals(a._scale, b._scale, epsilon);
+        return Vec3.equals(a._position$, b._position$, epsilon)
+            && Quat.equals(a._rotation$, b._rotation$, epsilon)
+            && Vec3.equals(a._scale$, b._scale$, epsilon);
     }
 
-    public static strictEquals (a: ReadonlyTransform, b: ReadonlyTransform):boolean {
-        return Vec3.strictEquals(a._position, b._position)
-            && Quat.strictEquals(a._rotation, b._rotation)
-            && Vec3.strictEquals(a._scale, b._scale);
+    public static strictEquals (a: ReadonlyTransform, b: ReadonlyTransform): boolean {
+        return Vec3.strictEquals(a._position$, b._position$)
+            && Quat.strictEquals(a._rotation$, b._rotation$)
+            && Vec3.strictEquals(a._scale$, b._scale$);
     }
 
     public static lerp (out: Transform, from: ReadonlyTransform, to: ReadonlyTransform, t: number): Transform {
@@ -85,9 +85,9 @@ export class Transform {
         if (t === 1.0) {
             return Transform.copy(out, to);
         }
-        Vec3.lerp(out._position, from._position, to._position, t);
-        Quat.slerp(out._rotation, from._rotation, to._rotation, t);
-        Vec3.lerp(out._scale, from._scale, to._scale, t);
+        Vec3.lerp(out._position$, from._position$, to._position$, t);
+        Quat.slerp(out._rotation$, from._rotation$, to._rotation$, t);
+        Vec3.lerp(out._scale$, from._scale$, to._scale$, t);
         return out;
     }
 
@@ -108,18 +108,18 @@ export class Transform {
         // May reference to https://zhuanlan.zhihu.com/p/119066087
         // for the reason about restrictions on uniform scales.
 
-        const cacheRotation = Quat.multiply(CACHE_QUAT_A, second._rotation, first._rotation);
+        const cacheRotation = Quat.multiply(CACHE_QUAT_A, second._rotation$, first._rotation$);
 
-        const cacheScale = Vec3.multiply(CACHE_VECTOR_A, first._scale, second._scale);
+        const cacheScale = Vec3.multiply(CACHE_VECTOR_A, first._scale$, second._scale$);
 
         // T_p + (R_p * (S_p * T_c))
-        const cachePosition = Vec3.multiply(CACHE_VECTOR_B, first._position, second._scale);
-        Vec3.transformQuat(cachePosition, cachePosition, second._rotation);
-        Vec3.add(cachePosition, cachePosition, second._position);
+        const cachePosition = Vec3.multiply(CACHE_VECTOR_B, first._position$, second._scale$);
+        Vec3.transformQuat(cachePosition, cachePosition, second._rotation$);
+        Vec3.add(cachePosition, cachePosition, second._position$);
 
-        Vec3.copy(out._position, cachePosition);
-        Quat.copy(out._rotation, cacheRotation);
-        Vec3.copy(out._scale, cacheScale);
+        Vec3.copy(out._position$, cachePosition);
+        Quat.copy(out._rotation$, cacheRotation);
+        Vec3.copy(out._scale$, cacheScale);
 
         return out;
     }
@@ -142,17 +142,17 @@ export class Transform {
         const cacheInvRotation = new Quat();
         const cacheInvScale = new Vec3();
         return (out: Transform, first: ReadonlyTransform, second: ReadonlyTransform): Transform => {
-            const invSecondRotation = Quat.invert(cacheInvRotation, second._rotation);
-            const invScale = invScaleOrZero(cacheInvScale, second._scale, EPSILON);
+            const invSecondRotation = Quat.invert(cacheInvRotation, second._rotation$);
+            const invScale = invScaleOrZero(cacheInvScale, second._scale$, EPSILON);
 
             // The inverse process of `T_p + (R_p * (S_p * T_c))`
-            const cachePosition = Vec3.subtract(CACHE_VECTOR_B, first._position, second._position);
+            const cachePosition = Vec3.subtract(CACHE_VECTOR_B, first._position$, second._position$);
             Vec3.transformQuat(cachePosition, cachePosition, invSecondRotation);
             Vec3.multiply(cachePosition, cachePosition, invScale);
 
-            Vec3.copy(out._position, cachePosition);
-            Quat.multiply(out._rotation, invSecondRotation, first._rotation);
-            Vec3.multiply(out._scale, first._scale, invScale);
+            Vec3.copy(out._position$, cachePosition);
+            Quat.multiply(out._rotation$, invSecondRotation, first._rotation$);
+            Vec3.multiply(out._scale$, first._scale$, invScale);
 
             return out;
         };
@@ -165,13 +165,13 @@ export class Transform {
      */
     public static invert (out: Transform, transform: ReadonlyTransform): Transform {
         const {
-            _rotation: invRotation,
-            _scale: invScale,
-            _position: invPosition,
+            _rotation$: invRotation,
+            _scale$: invScale,
+            _position$: invPosition,
         } = out;
 
-        Quat.invert(invRotation, transform._rotation);
-        invScaleOrZero(invScale, transform._scale, EPSILON);
+        Quat.invert(invRotation, transform._rotation$);
+        invScaleOrZero(invScale, transform._scale$, EPSILON);
 
         /**
          * Let $b$ be the inverse of $a$, then for the translation term $T$(Vector), rotation term $Q$(Quaternion), scale term $S$(Vector):
@@ -192,7 +192,7 @@ export class Transform {
          *   - Then rotate by $Q_b$(ie. $Q_a^{-1}$)
 
          */
-        Vec3.negate(invPosition, transform._position);
+        Vec3.negate(invPosition, transform._position$);
         Vec3.multiply(invPosition, invPosition, invScale);
         Vec3.transformQuat(invPosition, invPosition, invRotation);
 
@@ -202,9 +202,9 @@ export class Transform {
     public static fromMatrix (out: Transform, matrix: Readonly<Mat4>): Transform {
         Mat4.toSRT(
             matrix,
-            out._rotation,
-            out._position,
-            out._scale,
+            out._rotation$,
+            out._position$,
+            out._scale$,
         );
         return out;
     }
@@ -212,17 +212,17 @@ export class Transform {
     public static toMatrix (out: Mat4, transform: ReadonlyTransform): Mat4 {
         return Mat4.fromSRT(
             out,
-            transform._rotation,
-            transform._position,
-            transform._scale,
+            transform._rotation$,
+            transform._position$,
+            transform._scale$,
         );
     }
 
-    private readonly _position = new Vec3();
+    private readonly _position$ = new Vec3();
 
-    private readonly _rotation = new Quat();
+    private readonly _rotation$ = new Quat();
 
-    private readonly _scale = Vec3.clone(Vec3.ONE);
+    private readonly _scale$ = Vec3.clone(Vec3.ONE);
 }
 
 /**

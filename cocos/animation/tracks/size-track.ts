@@ -75,31 +75,31 @@ export class SizeTrack extends Track {
 
 export class SizeTrackEval implements TrackEval<Size> {
     constructor (
-        private _width: RealCurve | undefined,
-        private _height: RealCurve | undefined,
+        private _width$: RealCurve | undefined,
+        private _height$: RealCurve | undefined,
     ) {
 
     }
 
     public get requiresDefault (): boolean {
-        return !this._width || !this._height;
+        return !this._width$ || !this._height$;
     }
 
     public evaluate (time: number, defaultValue?: Readonly<Size>): Size {
         if (defaultValue) {
-            this._result.x = defaultValue.x;
-            this._result.y = defaultValue.y;
+            this._result$.x = defaultValue.x;
+            this._result$.y = defaultValue.y;
         }
 
-        if (this._width) {
-            this._result.width = this._width.evaluate(time);
+        if (this._width$) {
+            this._result$.width = this._width$.evaluate(time);
         }
-        if (this._height) {
-            this._result.height = this._height.evaluate(time);
+        if (this._height$) {
+            this._result$.height = this._height$.evaluate(time);
         }
 
-        return this._result;
+        return this._result$;
     }
 
-    private _result: Size = new Size();
+    private _result$: Size = new Size();
 }

@@ -36,56 +36,56 @@ const tempMat4 = new Mat4();
  * @class sp.AttachUtil
  */
 export class AttachUtil {
-    protected _isInitialized = false;
-    protected _skeletonBones: spine.Bone[] | FrameBoneInfo[] | null = null;
-    protected _socketNodes: Map<number, Node> | null = null;
-    private _keysToDelete: number[] = [];
+    protected _isInitialized$ = false;
+    protected _skeletonBones$: spine.Bone[] | FrameBoneInfo[] | null = null;
+    protected _socketNodes$: Map<number, Node> | null = null;
+    private _keysToDelete$: number[] = [];
 
     constructor () {
-        this._isInitialized = false;
+        this._isInitialized$ = false;
     }
 
-    init (skeletonComp: Skeleton): void {
-        this._isInitialized = false;
+    init$ (skeletonComp: Skeleton): void {
+        this._isInitialized$ = false;
         if (!skeletonComp || skeletonComp.socketNodes?.size === 0) return;
-        this._skeletonBones = skeletonComp._skeleton.bones;
-        if (!this._skeletonBones || this._skeletonBones.length < 1) return;
-        this._socketNodes = skeletonComp.socketNodes;
-        if (!this._socketNodes || this._socketNodes.size <= 0) return;
-        this._isInitialized = true;
-        this._syncAttachedNode();
+        this._skeletonBones$ = skeletonComp._skeleton.bones;
+        if (!this._skeletonBones$ || this._skeletonBones$.length < 1) return;
+        this._socketNodes$ = skeletonComp.socketNodes;
+        if (!this._socketNodes$ || this._socketNodes$.size <= 0) return;
+        this._isInitialized$ = true;
+        this._syncAttachedNode$();
     }
 
-    updateSkeletonBones (bones: FrameBoneInfo[]): void {
-        this._skeletonBones = bones;
+    updateSkeletonBones$ (bones: FrameBoneInfo[]): void {
+        this._skeletonBones$ = bones;
     }
 
-    reset (): void {
-        this._isInitialized = false;
-        this._skeletonBones = null;
-        this._socketNodes = null;
-        this._keysToDelete.length = 0;
+    reset$ (): void {
+        this._isInitialized$ = false;
+        this._skeletonBones$ = null;
+        this._socketNodes$ = null;
+        this._keysToDelete$.length = 0;
     }
 
-    _syncAttachedNode (): void {
-        if (!this._isInitialized) return;
-        const socketNodes = this._socketNodes!;
+    _syncAttachedNode$ (): void {
+        if (!this._isInitialized$) return;
+        const socketNodes = this._socketNodes$!;
         for (const [boneIdx, boneNode] of socketNodes) {
             if (!boneNode || !boneNode.isValid) {
-                this._keysToDelete.push(boneIdx);
+                this._keysToDelete$.push(boneIdx);
                 continue;
             }
-            const bone =  this._skeletonBones![boneIdx];
-            if (bone) this.matrixHandle(boneNode, bone);
+            const bone =  this._skeletonBones$![boneIdx];
+            if (bone) this.matrixHandle$(boneNode, bone);
         }
-        if (this._keysToDelete.length <= 0) return;
-        for (const boneIdx of this._keysToDelete) {
+        if (this._keysToDelete$.length <= 0) return;
+        for (const boneIdx of this._keysToDelete$) {
             socketNodes.delete(boneIdx);
         }
-        this._keysToDelete.length = 0;
+        this._keysToDelete$.length = 0;
     }
 
-    matrixHandle (node: Node, bone: any): void {
+    matrixHandle$ (node: Node, bone: any): void {
         const tm = tempMat4;
         tm.m00 = bone.a;
         tm.m01 = bone.c;

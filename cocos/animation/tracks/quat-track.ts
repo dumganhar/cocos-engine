@@ -52,7 +52,7 @@ export class QuatTrack extends SingleChannelTrack<QuatCurve> {
 }
 
 export class QuatTrackEval implements TrackEval<Quat> {
-    constructor (private _curve: QuatCurve) {
+    constructor (private _curve$: QuatCurve) {
 
     }
 
@@ -61,9 +61,9 @@ export class QuatTrackEval implements TrackEval<Quat> {
     }
 
     public evaluate (time: number): Quat {
-        this._curve.evaluate(time, this._result);
-        return this._result;
+        this._curve$.evaluate(time, this._result$);
+        return this._result$;
     }
 
-    private _result: Quat = new Quat();
+    private _result$: Quat = new Quat();
 }

@@ -91,24 +91,24 @@ export class ColorTrackEval implements TrackEval<Color> {
 
     public evaluate (time: number, defaultValue?: Color): Color {
         if (defaultValue) {
-            Color.copy(this._result, defaultValue);
+            Color.copy(this._result$, defaultValue);
         }
 
         if (this._x) {
-            this._result.r = this._x.evaluate(time);
+            this._result$.r = this._x.evaluate(time);
         }
         if (this._y) {
-            this._result.g = this._y.evaluate(time);
+            this._result$.g = this._y.evaluate(time);
         }
         if (this._z) {
-            this._result.b = this._z.evaluate(time);
+            this._result$.b = this._z.evaluate(time);
         }
         if (this._w) {
-            this._result.a = this._w.evaluate(time);
+            this._result$.a = this._w.evaluate(time);
         }
 
-        return this._result;
+        return this._result$;
     }
 
-    private _result: Color = new Color();
+    private _result$: Color = new Color();
 }

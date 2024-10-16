@@ -23,12 +23,11 @@
 */
 
 import { editorExtrasTag, _decorator, EditorExtendable, editable, serializable } from '../../../core';
-import { additiveSettingsTag, AnimationClip } from '../../animation-clip';
+import { AnimationClip } from '../../animation-clip';
 import { cloneAnimationGraphEditorExtrasFrom } from '../animation-graph-editor-extras-clone-helper';
 import { createEval } from '../create-eval';
 import { getMotionRuntimeID, RUNTIME_ID_ENABLED } from '../graph-debug';
 import type { ClipStatus } from '../state-machine/state-machine-eval';
-import type { ReadonlyClipOverrideMap } from '../clip-overriding';
 import { Motion, MotionEval, MotionPort } from './motion';
 import { wrap } from '../../wrap';
 import { Pose } from '../../core/pose';
@@ -150,7 +149,7 @@ class ClipMotionEval implements MotionEval {
         const pose = clipEval.evaluate(clipTime, context);
 
         // Sample frame events.
-        this._frameEventEval?.sample(wrapInfo.ratio, wrapInfo.direction, wrapInfo.iterations);
+        this._frameEventEval?.sample$(wrapInfo.ratio, wrapInfo.direction, wrapInfo.iterations);
 
         // Evaluate embedded players.
         this._clipEmbeddedPlayerEval?.evaluate(clipTime, Math.trunc(wrapInfo.iterations));
@@ -167,7 +166,7 @@ class ClipMotionEval implements MotionEval {
     }
 
     public reenter (): void {
-        this._frameEventEval?.reset();
+        this._frameEventEval?.reset$();
     }
 
     /**
