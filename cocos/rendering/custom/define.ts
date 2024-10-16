@@ -43,13 +43,15 @@ import {
     AttachmentType, LightInfo,
     QueueHint, ResourceResidency, SceneFlags, UpdateFrequency,
 } from './types';
-import { Vec4, geometry, toRadian, cclegacy } from '../../core';
+import { Vec4, toRadian, cclegacy } from '../../core';
 import { RenderWindow } from '../../render-scene/core/render-window';
 import { RenderData, RenderGraph } from './render-graph';
 import { WebPipeline } from './web-pipeline';
 import { DescriptorSetData, LayoutGraphData } from './layout-graph';
-import { AABB } from '../../core/geometry';
+import { AABB } from '../../core/geometry/aabb';
 import { getUBOTypeCount } from './utils';
+import { Sphere } from '../../core/geometry/sphere';
+import intersect from '../../core/geometry/intersect';
 
 const _rangedDirLightBoundingBox = new AABB(0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
 const _tmpBoundingBox = new AABB();
@@ -70,7 +72,7 @@ export function validPunctualLightsCulling (pipeline: BasicPipeline, camera: Cam
     const sceneData = pipeline.pipelineSceneData;
     const validPunctualLights = sceneData.validPunctualLights;
     validPunctualLights.length = 0;
-    const _sphere = geometry.Sphere.create(0, 0, 0, 1);
+    const _sphere = Sphere.create(0, 0, 0, 1);
     const { spotLights } = camera.scene!;
     for (let i = 0; i < spotLights.length; i++) {
         const light = spotLights[i];
@@ -78,8 +80,8 @@ export function validPunctualLightsCulling (pipeline: BasicPipeline, camera: Cam
             continue;
         }
 
-        geometry.Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
-        if (geometry.intersect.sphereFrustum(_sphere, camera.frustum)) {
+        Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
+        if (intersect.sphereFrustum(_sphere, camera.frustum)) {
             validPunctualLights.push(light);
         }
     }
@@ -90,8 +92,8 @@ export function validPunctualLightsCulling (pipeline: BasicPipeline, camera: Cam
         if (light.baked && !camera.node.scene.globals.disableLightmap) {
             continue;
         }
-        geometry.Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
-        if (geometry.intersect.sphereFrustum(_sphere, camera.frustum)) {
+        Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
+        if (intersect.sphereFrustum(_sphere, camera.frustum)) {
             validPunctualLights.push(light);
         }
     }
@@ -102,8 +104,8 @@ export function validPunctualLightsCulling (pipeline: BasicPipeline, camera: Cam
         if (light.baked) {
             continue;
         }
-        geometry.Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
-        if (geometry.intersect.sphereFrustum(_sphere, camera.frustum)) {
+        Sphere.set(_sphere, light.position.x, light.position.y, light.position.z, light.range);
+        if (intersect.sphereFrustum(_sphere, camera.frustum)) {
             validPunctualLights.push(light);
         }
     }
@@ -112,7 +114,7 @@ export function validPunctualLightsCulling (pipeline: BasicPipeline, camera: Cam
     for (let i = 0; i < rangedDirLights.length; i++) {
         const light = rangedDirLights[i];
         AABB.transform(_tmpBoundingBox, _rangedDirLightBoundingBox, light.node!.getWorldMatrix());
-        if (geometry.intersect.aabbFrustum(_tmpBoundingBox, camera.frustum)) {
+        if (intersect.aabbFrustum(_tmpBoundingBox, camera.frustum)) {
             validPunctualLights.push(light);
         }
     }

@@ -27,12 +27,13 @@ import { MeshRenderer } from '../framework/mesh-renderer';
 import { ReflectionProbeType } from './reflection-probe-enum';
 import { ImageAsset, Texture2D } from '../../asset/assets';
 import { Filter, PixelFormat, WrapMode } from '../../asset/assets/asset-enum';
-import { Vec3, geometry, cclegacy } from '../../core';
+import { Vec3, cclegacy } from '../../core';
 import { AABB } from '../../core/geometry';
 import { Texture } from '../../gfx';
 import { Camera, Model } from '../../render-scene/scene';
 import { ProbeType, ReflectionProbe } from '../../render-scene/scene/reflection-probe';
 import { Layers } from '../../scene-graph/layers';
+import { geometry } from '../../core/geometry-index';
 
 const REFLECTION_PROBE_DEFAULT_MASK = Layers.makeMaskExclude([Layers.BitMask.UI_2D, Layers.BitMask.UI_3D, Layers.BitMask.GIZMOS, Layers.BitMask.EDITOR,
     Layers.BitMask.SCENE_GIZMO, Layers.BitMask.PROFILER, Layers.Enum.IGNORE_RAYCAST]);

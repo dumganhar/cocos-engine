@@ -27,11 +27,12 @@ import { Node } from '../scene-graph/node';
 import { AnimationClip } from './animation-clip';
 import { Playable } from './playable';
 import { WrapMode, WrappedInfo } from './types';
-import { cclegacy, debug, geometry, ccenum, assertIsTrue } from '../core';
+import { cclegacy, debug, ccenum, assertIsTrue } from '../core';
 import { AnimationMask } from './marionette/animation-mask';
 import { PoseOutput } from './pose-output';
 import { BlendStateBuffer } from '../3d/skeletal-animation/skeletal-animation-blending';
 import { getGlobalAnimationManager } from './global-animation-manager';
+import { WrapModeMask } from '../core/geometry/curve';
 
 /**
  * @en The event type supported by Animation
@@ -122,7 +123,7 @@ export class AnimationState extends Playable {
         // dynamic change wrapMode will need reset time to 0
         this.time = 0;
 
-        if (value & geometry.WrapModeMask.Loop) {
+        if (value & WrapModeMask.Loop) {
             this.repeatCount = Infinity;
         } else {
             this.repeatCount = 1;
@@ -151,8 +152,8 @@ export class AnimationState extends Playable {
     set repeatCount (value: number) {
         this._repeatCount = value;
 
-        const shouldWrap = this._wrapMode & geometry.WrapModeMask.ShouldWrap;
-        const reverse = (this.wrapMode & geometry.WrapModeMask.Reverse) === geometry.WrapModeMask.Reverse;
+        const shouldWrap = this._wrapMode & WrapModeMask.ShouldWrap;
+        const reverse = (this.wrapMode & WrapModeMask.Reverse) === WrapModeMask.Reverse;
         if (value === Infinity && !shouldWrap && !reverse) {
             this._useSimpleProcess = true;
         } else {
@@ -361,7 +362,7 @@ export class AnimationState extends Playable {
         this._playbackRange.max = clip.duration;
         this._playbackDuration = clip.duration;
 
-        if ((this.wrapMode & geometry.WrapModeMask.Loop) === geometry.WrapModeMask.Loop) {
+        if ((this.wrapMode & WrapModeMask.Loop) === WrapModeMask.Loop) {
             this.repeatCount = Infinity;
         } else {
             this.repeatCount = 1;
@@ -628,7 +629,7 @@ export class AnimationState extends Playable {
         const wrapMode = this.wrapMode;
         let needReverse = false;
 
-        if ((wrapMode & geometry.WrapModeMask.PingPong) === geometry.WrapModeMask.PingPong) {
+        if ((wrapMode & WrapModeMask.PingPong) === WrapModeMask.PingPong) {
             const isEnd = currentIterations - (currentIterations | 0) === 0;
             if (isEnd && (currentIterations > 0)) {
                 currentIterations -= 1;
@@ -639,7 +640,7 @@ export class AnimationState extends Playable {
                 needReverse = !needReverse;
             }
         }
-        if ((wrapMode & geometry.WrapModeMask.Reverse) === geometry.WrapModeMask.Reverse) {
+        if ((wrapMode & WrapModeMask.Reverse) === WrapModeMask.Reverse) {
             needReverse = !needReverse;
         }
         return needReverse;
@@ -691,7 +692,7 @@ export class AnimationState extends Playable {
         }
 
         let needReverse = false;
-        const shouldWrap = this._wrapMode & geometry.WrapModeMask.ShouldWrap;
+        const shouldWrap = this._wrapMode & WrapModeMask.ShouldWrap;
         if (shouldWrap) {
             needReverse = this._needReverse(currentIterations);
         }
@@ -734,7 +735,7 @@ export class AnimationState extends Playable {
         );
     }
 
-    private _emit (type, state): void {
+    private _emit (type: string, state): void {
         if (this._target && this._target.isValid) {
             this._target.emit(type, type, state);
         }

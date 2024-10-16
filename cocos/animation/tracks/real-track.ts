@@ -23,9 +23,9 @@
 */
 
 import { ccclass } from 'cc.decorator';
-import { RealCurve } from '../../core';
 import { CLASS_NAME_PREFIX_ANIM } from '../define';
 import { SingleChannelTrack } from './track';
+import { RealCurve } from '../../core/curves/curve';
 
 /**
  * @en

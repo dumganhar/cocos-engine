@@ -1,4 +1,4 @@
-import { WrapModeMask } from '../core/geometry';
+import { WrapModeMask } from '../core/geometry/curve';
 import { WrapMode, WrappedInfo } from './types';
 
 export function wrap (

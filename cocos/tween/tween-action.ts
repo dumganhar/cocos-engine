@@ -103,10 +103,10 @@ export interface IInternalTweenOption<T extends object> extends ITweenOption<T> 
 }
 
 export class TweenAction<T extends object> extends ActionInterval {
-    private declare _opts: IInternalTweenOption<T>;
-    private declare _props: any;
-    private declare _originProps: any;
-    private _reversed = false;
+    private declare _opts$: IInternalTweenOption<T>;
+    private declare _props$: any;
+    private declare _originProps$: any;
+    private _reversed$ = false;
 
     constructor (duration: number, props: any, opts?: IInternalTweenOption<T>) {
         super();
@@ -132,9 +132,9 @@ export class TweenAction<T extends object> extends ActionInterval {
                 if (!opts.easing) { warnID(1031, easingName); }
             }
         }
-        this._opts = opts;
+        this._opts$ = opts;
 
-        this._props = Object.create(null);
+        this._props$ = Object.create(null);
         for (const name in props) {
             // filtering if
             // - it was not own property
@@ -191,20 +191,20 @@ export class TweenAction<T extends object> extends ActionInterval {
             prop.onStop = value.onStop;
             prop.onComplete = value.onComplete;
             prop.valid = true;
-            this._props[name] = prop;
+            this._props$[name] = prop;
         }
 
-        this._originProps = props;
+        this._originProps$ = props;
         this.initWithDuration(duration);
     }
 
     get relative (): boolean {
-        return !!this._opts.relative;
+        return !!this._opts$.relative;
     }
 
     clone (): TweenAction<T> {
-        const action = new TweenAction(this._duration, this._originProps, this._opts);
-        action._reversed = this._reversed;
+        const action = new TweenAction(this._duration, this._originProps$, this._opts$);
+        action._reversed$ = this._reversed$;
         action.workerTarget = this.workerTarget;
         action._id = this._id;
         this._cloneDecoration(action);
@@ -212,14 +212,14 @@ export class TweenAction<T extends object> extends ActionInterval {
     }
 
     reverse (): TweenAction<T> {
-        if (!this._opts.relative) {
+        if (!this._opts$.relative) {
             warnID(16382);
             return new TweenAction<T>(0, {});
         }
 
-        const action = new TweenAction(this._duration, this._originProps, this._opts);
+        const action = new TweenAction(this._duration, this._originProps$, this._opts$);
         this._cloneDecoration(action);
-        action._reversed = !this._reversed;
+        action._reversed$ = !this._reversed$;
         action.workerTarget = this.workerTarget;
         return action;
     }
@@ -231,9 +231,9 @@ export class TweenAction<T extends object> extends ActionInterval {
 
         const workerTarget = (this.workerTarget ?? this.target) as T;
         if (!workerTarget) return;
-        const relative = !!this._opts.relative;
-        const props = this._props;
-        const reversed = this._reversed;
+        const relative = !!this._opts$.relative;
+        const props = this._props$;
+        const reversed = this._reversed$;
         for (const property in props) {
             const _t: any = workerTarget[property];
             if (_t === undefined) { continue; }
@@ -337,11 +337,11 @@ export class TweenAction<T extends object> extends ActionInterval {
             }
         }
 
-        if (this._opts.onStart) { this._opts.onStart(workerTarget); }
+        if (this._opts$.onStart) { this._opts$.onStart(workerTarget); }
     }
 
     stop (): void {
-        const props = this._props;
+        const props = this._props$;
         for (const name in props) {
             const prop = props[name];
             if (!prop.valid) continue;
@@ -358,10 +358,10 @@ export class TweenAction<T extends object> extends ActionInterval {
         const workerTarget = (this.workerTarget ?? this.target) as T;
         if (!workerTarget) return;
 
-        if (!this._opts) return;
+        if (!this._opts$) return;
 
-        const props = this._props;
-        const opts = this._opts;
+        const props = this._props$;
+        const opts = this._opts$;
 
         let easingTime = t;
         if (typeof opts.easing === 'function') easingTime = opts.easing(t);

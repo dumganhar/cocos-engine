@@ -33,7 +33,8 @@ import { RenderScene } from '../core/render-scene';
 import { Texture2D } from '../../asset/assets/texture-2d';
 import { SubModel } from './submodel';
 import { IMacroPatch } from '../core/pass';
-import { Mat4, Vec3, Vec4, geometry, cclegacy, EPSILON, v3, v4 } from '../../core';
+import { Mat4, Vec3, Vec4, cclegacy, EPSILON, v3, v4 } from '../../core';
+
 import { Attribute, DescriptorSet, Device, Buffer, BufferInfo,
     BufferUsageBit, MemoryUsageBit, Filter, Address, SamplerInfo, deviceManager, Texture } from '../../gfx';
 import {
@@ -47,6 +48,7 @@ import { TextureCube } from '../../asset/assets';
 import { ShadowType } from './shadows';
 import { ProbeType, ReflectionProbe } from './reflection-probe';
 import { ReflectionProbeType } from '../../3d/reflection-probe/reflection-probe-enum';
+import { AABB } from '../../core/geometry/aabb';
 
 const m4_1 = new Mat4();
 
@@ -131,7 +133,7 @@ export class Model {
      * @en The axis-aligned bounding box of the model in the world space
      * @zh 获取世界空间包围盒
      */
-    get worldBounds (): geometry.AABB | null {
+    get worldBounds (): AABB | null {
         return this._worldBounds;
     }
 
@@ -139,7 +141,7 @@ export class Model {
      * @en The axis-aligned bounding box of the model in the model space
      * @zh 获取模型空间包围盒
      */
-    get modelBounds (): geometry.AABB | null {
+    get modelBounds (): AABB | null {
         return this._modelBounds;
     }
 
@@ -411,13 +413,13 @@ export class Model {
      * @en The world axis-aligned bounding box
      * @zh 世界空间包围盒
      */
-    protected _worldBounds: geometry.AABB | null = null;
+    protected _worldBounds: AABB | null = null;
 
     /**
      * @en The model axis-aligned bounding box
      * @zh 模型空间包围盒
      */
-    protected _modelBounds: geometry.AABB | null = null;
+    protected _modelBounds: AABB | null = null;
 
     /**
      * @en Sub models
@@ -855,9 +857,9 @@ export class Model {
      */
     public createBoundingShape (minPos?: Vec3, maxPos?: Vec3): void {
         if (!minPos || !maxPos) { return; }
-        if (!this._modelBounds) { this._modelBounds = geometry.AABB.create(); }
-        if (!this._worldBounds) { this._worldBounds = geometry.AABB.create(); }
-        geometry.AABB.fromPoints(this._modelBounds, minPos, maxPos);
+        if (!this._modelBounds) { this._modelBounds = AABB.create(); }
+        if (!this._worldBounds) { this._worldBounds = AABB.create(); }
+        AABB.fromPoints(this._modelBounds, minPos, maxPos);
         this._worldBounds.copy(this._modelBounds);
     }
 

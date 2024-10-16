@@ -28,7 +28,7 @@ import { EDITOR, EDITOR_NOT_IN_PREVIEW } from 'internal:constants';
 import { Renderer } from '../misc/renderer';
 import { ModelRenderer } from '../misc/model-renderer';
 import { Material } from '../asset/assets/material';
-import { Mat4, pseudoRandom, Quat, randomRangeInt, Vec2, Vec3, CCBoolean, CCFloat, bits, geometry, cclegacy, warn } from '../core';
+import { Mat4, pseudoRandom, Quat, randomRangeInt, Vec2, Vec3, CCBoolean, CCFloat, bits, warn } from '../core';
 import { scene } from '../render-scene';
 import ColorOverLifetimeModule from './animator/color-overtime';
 import CurveRange, { Mode } from './animator/curve-range';
@@ -52,6 +52,8 @@ import { Camera } from '../render-scene/scene';
 import { ParticleCuller } from './particle-culler';
 import { NoiseModule } from './animator/noise-module';
 import { director, DirectorEvent } from '../game/director';
+import { AABB } from '../core/geometry/aabb';
+import intersect from '../core/geometry/intersect';
 
 const _world_mat = new Mat4();
 const _world_rol = new Quat();
@@ -362,7 +364,7 @@ export class ParticleSystem extends ModelRenderer {
         this._renderCulling = value;
         if (value) {
             if (!this._boundingBox) {
-                this._boundingBox = new geometry.AABB();
+                this._boundingBox = new AABB();
                 this._calculateBounding(false);
             }
         }
@@ -782,7 +784,7 @@ export class ParticleSystem extends ModelRenderer {
     private _oldWPos: Vec3;
     private _curWPos: Vec3;
 
-    private _boundingBox: geometry.AABB | null;
+    private _boundingBox: AABB | null;
     private _culler: ParticleCuller | null;
     private _oldPos: Vec3 | null;
     private _curPos: Vec3 | null;
@@ -1125,7 +1127,7 @@ export class ParticleSystem extends ModelRenderer {
                 this._culler = new ParticleCuller(this);
             }
             this._culler.calculatePositions();
-            geometry.AABB.fromPoints(this._boundingBox, this._culler.minPos, this._culler.maxPos);
+            AABB.fromPoints(this._boundingBox, this._culler.minPos, this._culler.maxPos);
             if (forceRefresh) {
                 this.aabbHalfX = this._boundingBox.halfExtents.x;
                 this.aabbHalfY = this._boundingBox.halfExtents.y;
@@ -1168,7 +1170,7 @@ export class ParticleSystem extends ModelRenderer {
             this._isSimulating = true;
         } else {
             if (!this._boundingBox) {
-                this._boundingBox = new geometry.AABB();
+                this._boundingBox = new AABB();
                 this._calculateBounding(false);
             }
 
@@ -1200,11 +1202,11 @@ export class ParticleSystem extends ModelRenderer {
                     const visibility = camera.visibility;
                     if ((visibility & this.node.layer) === this.node.layer) {
                         if (EDITOR_NOT_IN_PREVIEW) {
-                            if (camera.name === 'Editor Camera' && geometry.intersect.aabbFrustum(this._boundingBox, camera.frustum)) {
+                            if (camera.name === 'Editor Camera' && intersect.aabbFrustum(this._boundingBox, camera.frustum)) {
                                 culled = false;
                                 break;
                             }
-                        } else if (geometry.intersect.aabbFrustum(this._boundingBox, camera.frustum)) {
+                        } else if (intersect.aabbFrustum(this._boundingBox, camera.frustum)) {
                             culled = false;
                             break;
                         }

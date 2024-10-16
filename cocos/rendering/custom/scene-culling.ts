@@ -1,6 +1,6 @@
 import { DEBUG, ONLY_2D } from 'internal:constants';
 import { Vec3, RecyclePool, assert } from '../../core';
-import { Frustum, intersect, AABB } from '../../core/geometry';
+import { AABB } from '../../core/geometry/aabb';
 import { CommandBuffer, Device, Buffer, BufferInfo, BufferViewInfo, MemoryUsageBit, BufferUsageBit } from '../../gfx';
 import { BatchingSchemes, RenderScene } from '../../render-scene';
 import { CSMLevel, Camera, DirectionalLight, Light, LightType, Model, PointLight, ProbeType,
@@ -16,6 +16,8 @@ import { RenderQueue, RenderQueueQuery, instancePool } from './web-pipeline-type
 import { ObjectPool } from './utils';
 import { getUniformBlockSize } from './layout-graph-utils';
 import { WebProgramLibrary } from './web-program-library';
+import { Frustum } from '../../core/geometry/frustum';
+import intersect from '../../core/geometry/intersect';
 
 const vec3Pool = new ObjectPool(() => new Vec3());
 class CullingPools {

@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { Mat4, Quat, Vec3, js, geometry } from '../../core';
+import { Mat4, Quat, Vec3, js } from '../../core';
 import { BuiltInWorld } from './builtin-world';
 import { BuiltinObject } from './object/builtin-object';
 import { BuiltinShape } from './shapes/builtin-shape';
@@ -30,6 +30,7 @@ import { Node } from '../../scene-graph';
 import { BuiltinRigidBody } from './builtin-rigid-body';
 import { PhysicsSystem } from '../framework';
 import { PhysicsGroup } from '../framework/physics-enum';
+import intersect from '../../core/geometry/intersect';
 
 const m4_0 = new Mat4();
 const v3_0 = new Vec3();
@@ -121,7 +122,7 @@ export class BuiltinSharedBody extends BuiltinObject {
             for (let j = 0; j < body.shapes.length; j++) {
                 const shapeB = body.shapes[j];
                 if (shapeA.collider.needTriggerEvent || shapeB.collider.needTriggerEvent) {
-                    if (geometry.intersect.resolve(shapeA.worldShape, shapeB.worldShape)) {
+                    if (intersect.resolve(shapeA.worldShape, shapeB.worldShape)) {
                         this.world.shapeArr.push(shapeA);
                         this.world.shapeArr.push(shapeB);
                     }

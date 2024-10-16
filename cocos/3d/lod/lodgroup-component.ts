@@ -23,7 +23,7 @@
 */
 import { EDITOR, JSB } from 'internal:constants';
 import { ccclass, editable, executeInEditMode, menu, serializable, type } from 'cc.decorator';
-import { Vec3, Mat4, geometry, CCInteger, CCFloat, warn, error } from '../../core';
+import { Vec3, Mat4, CCInteger, CCFloat, warn, error } from '../../core';
 import { Node } from '../../scene-graph/node';
 import { Component } from '../../scene-graph/component';
 import { MeshRenderer } from '../framework/mesh-renderer';
@@ -31,6 +31,7 @@ import { Mesh } from '../assets/mesh';
 import { scene } from '../../render-scene';
 import { NodeEventType } from '../../scene-graph/node-event';
 import type { LODData } from '../../render-scene/scene';
+import { geometry } from '../../core/geometry-index';
 
 // Ratio of objects occupying the screen
 const DEFAULT_SCREEN_OCCUPATION: number[] = [0.25, 0.125, 0.01];

@@ -96,6 +96,7 @@ const defineAttrFloat = (kls: Constructor, attr: string): void => {
         enumerable: true,
         get () {
             if (this[cacheKey] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this[cacheKey] = new Float32Array(this._arraybuffer(), desc.fieldOffset, 1);
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -103,6 +104,7 @@ const defineAttrFloat = (kls: Constructor, attr: string): void => {
         },
         set (v: number) {
             if (this[cacheKey] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this[cacheKey] = new Float32Array(this._arraybuffer(), desc.fieldOffset, 1);
             }
             this[cacheKey][0] = v;
@@ -117,6 +119,7 @@ const defineAttrInt = (kls: Constructor, attr: string): void => {
     // __nativeFields__ is defined in jsb_geometry_manual.cpp
     const desc: FieldDesc = (kls as any).__nativeFields__[attr];
     if (!desc) {
+        // eslint-disable-next-line no-console
         console.error(`attr ${attr} not defined in class ${kls.toString()}`);
     }
     const cacheKey = `_$_${attr}`;
@@ -128,6 +131,7 @@ const defineAttrInt = (kls: Constructor, attr: string): void => {
         enumerable: true,
         get () {
             if (this[cacheKey] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this[cacheKey] = new Int32Array(this._arraybuffer(), desc.fieldOffset, 1);
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -135,6 +139,7 @@ const defineAttrInt = (kls: Constructor, attr: string): void => {
         },
         set (v: number) {
             if (this[cacheKey] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this[cacheKey] = new Int32Array(this._arraybuffer(), desc.fieldOffset, 1);
             }
             this[cacheKey][0] = v;

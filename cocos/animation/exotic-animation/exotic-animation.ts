@@ -23,7 +23,7 @@
 */
 
 import { EDITOR, TEST } from 'internal:constants';
-import { binarySearchEpsilon, clamp, lerp, Quat, Vec3, _decorator } from '../../core';
+import { binarySearchEpsilon, lerp, Quat, Vec3, _decorator } from '../../core';
 import { assertIsTrue } from '../../core/data/utils/asserts';
 import { AnimationClipGraphBindingContext } from '../marionette/animation-graph-animation-clip-binding';
 import { TransformHandle } from '../core/animation-handle';
@@ -625,19 +625,13 @@ class ExoticNodeAnimationEvaluator {
         binder: Binder,
     ) {
         if (position) {
-            this._position = createExoticTrackEvaluationRecord(
-                position.times, position.values, Vec3, path, 'position', binder,
-            );
+            this._position = createExoticTrackEvaluationRecord(position.times, position.values, Vec3, path, 'position', binder);
         }
         if (rotation) {
-            this._rotation = createExoticTrackEvaluationRecord(
-                rotation.times, rotation.values, Quat, path, 'rotation', binder,
-            );
+            this._rotation = createExoticTrackEvaluationRecord(rotation.times, rotation.values, Quat, path, 'rotation', binder);
         }
         if (scale) {
-            this._scale = createExoticTrackEvaluationRecord(
-                scale.times, scale.values, Vec3, path, 'scale', binder,
-            );
+            this._scale = createExoticTrackEvaluationRecord(scale.times, scale.values, Vec3, path, 'scale', binder);
         }
     }
 

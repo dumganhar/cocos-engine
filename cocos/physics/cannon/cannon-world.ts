@@ -23,7 +23,7 @@
 */
 
 import CANNON from '@cocos/cannon';
-import { Vec3, RecyclePool, error, js, geometry, IVec3Like, IQuatLike, warnID, Color } from '../../core';
+import { Vec3, RecyclePool, error, js, IVec3Like, IQuatLike, warnID, Color } from '../../core';
 import { fillRaycastResult, toCannonRaycastOptions } from './cannon-util';
 import { CannonConstraint } from './constraints/cannon-constraint';
 import { CannonShape } from './shapes/cannon-shape';
@@ -34,6 +34,7 @@ import { CannonRigidBody } from './cannon-rigid-body';
 import { Node } from '../../scene-graph';
 import { GeometryRenderer } from '../../rendering/geometry-renderer';
 import { director } from '../../game';
+import { geometry } from '../../core/geometry-index';
 
 const aabbTemp = new geometry.AABB();
 const AABB_LINE_COUNT = 12;

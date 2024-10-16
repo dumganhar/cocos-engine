@@ -26,7 +26,6 @@
 import { RUNTIME_BASED } from 'internal:constants';
 import { minigame } from 'pal/minigame';
 import { js } from '../../core';
-import { forEach } from '../../asset/asset-manager/utilities';
 
 export const BASELINE_RATIO = 0.26;
 let _BASELINE_OFFSET = 0;
@@ -58,7 +57,7 @@ export function getBaselineOffset (): number {
 const MAX_CACHE_SIZE = 100;
 
 interface ICacheNode {
-    key: string | null;
+    key: string;
     value: number,
     prev: ICacheNode | null,
     next: ICacheNode | null
@@ -74,18 +73,18 @@ pool.get = function (): ICacheNode {
     };
 };
 
-export class LRUCache {
+class LRUCache {
     private count = 0;
-    private limit = 0;
+    private declare limit: number;
     private datas: Record<string, ICacheNode> = {};
-    private declare head;
-    private declare tail;
+    private head: ICacheNode | null = null;
+    private tail: ICacheNode | null = null;
 
-    constructor (size) {
+    constructor (size: number) {
         this.limit = size;
     }
 
-    public moveToHead (node): void {
+    public moveToHead$ (node: ICacheNode): void {
         node.next = this.head;
         node.prev = null;
         if (this.head) this.head.prev = node;
@@ -95,25 +94,25 @@ export class LRUCache {
         this.datas[node.key] = node;
     }
 
-    public put (key, value): void {
-        const node = pool.get();
-        node!.key = key;
-        node!.value = value;
+    public put$ (key: string, value: number): void {
+        const node = pool.get()!;
+        node.key = key;
+        node.value = value;
 
         if (this.count >= this.limit) {
-            const discard = this.tail;
+            const discard = this.tail!;
             delete this.datas[discard.key];
             this.count--;
-            this.tail = discard.prev;
+            this.tail = discard.prev!;
             this.tail.next = null;
             discard.prev = null;
             discard.next = null;
             pool.put(discard);
         }
-        this.moveToHead(node);
+        this.moveToHead$(node);
     }
 
-    public remove (node): void {
+    public remove$ (node: ICacheNode): void {
         if (node.prev) {
             node.prev.next = node.next;
         } else {
@@ -128,30 +127,30 @@ export class LRUCache {
         this.count--;
     }
 
-    public get (key): number | null {
+    public get$ (key: string): number | null {
         const node = this.datas[key];
         if (node) {
-            this.remove(node);
-            this.moveToHead(node);
+            this.remove$(node);
+            this.moveToHead$(node);
             return node.value;
         }
         return null;
     }
 
-    public clear (): void {
+    public clear$ (): void {
         this.count = 0;
         this.datas = {};
         this.head = null;
         this.tail = null;
     }
 
-    public has (key): boolean {
+    public has$ (key: string): boolean {
         return !!this.datas[key];
     }
 
-    public delete (key): void {
+    public delete$ (key: string): void {
         const node = this.datas[key];
-        this.remove(node);
+        this.remove$(node);
     }
 }
 
@@ -203,14 +202,14 @@ export function isUnicodeSpace (ch: string): boolean {
 export function safeMeasureText (ctx: CanvasRenderingContext2D, string: string, desc?: string): number {
     const font = desc || ctx.font;
     const key = `${font}\uD83C\uDFAE${string}`;
-    const cache = measureCache.get(key);
+    const cache = measureCache.get$(key);
     if (cache !== null) {
         return cache;
     }
 
     const metric = ctx.measureText(string);
     const width = metric && metric.width || 0;
-    measureCache.put(key, width);
+    measureCache.put$(key, width);
 
     return width;
 }
@@ -299,7 +298,7 @@ export function getSymbolCodeAt (str: string, index: number): string  {
     return `${charCodes}`;
 }
 
-function getSymbolStartIndex (targetString, index): number {
+function getSymbolStartIndex (targetString: string, index: number): number {
     if (index >= targetString.length) {
         return targetString.length;
     }
@@ -332,7 +331,7 @@ function getSymbolStartIndex (targetString, index): number {
     return startCheckIndex;
 }
 
-function getSymbolEndIndex (targetString, index): number {
+function getSymbolEndIndex (targetString: string, index: number): number {
     let newEndIndex = index;
     let endCheckIndex = index;
     let endChar = targetString[endCheckIndex];
@@ -379,7 +378,7 @@ function getSymbolEndIndex (targetString, index): number {
 // _safeSubstring(a, 0, 4) === '😉🚗'
 // _safeSubstring(a, 0, 1) === _safeSubstring(a, 0, 2) === '😉'
 // _safeSubstring(a, 2, 3) === _safeSubstring(a, 2, 4) === '🚗'
-function _safeSubstring (targetString, startIndex, endIndex?): string {
+function _safeSubstring (targetString: string, startIndex: number, endIndex?: number): string {
     let newStartIndex = getSymbolStartIndex(targetString, startIndex);
     if (newStartIndex < startIndex) {
         newStartIndex = getSymbolEndIndex(targetString, startIndex) + 1;
@@ -396,32 +395,32 @@ function _safeSubstring (targetString, startIndex, endIndex?): string {
             newEndIndex += 1;
         }
     }
-    return targetString.substring(newStartIndex, newEndIndex) as string;
+    return targetString.substring(newStartIndex, newEndIndex);
 }
 
 /**
 * @engineInternal
 */
-export function isEnglishWordPartAtFirst (stringToken: string): boolean {
+export function isEnglishWordPartAtFirst$ (stringToken: string): boolean {
     return FIRST_ENGLISH_REG.test(stringToken);
 }
 /**
 * @engineInternal
 */
-export function isEnglishWordPartAtLast (stringToken: string): boolean {
+export function isEnglishWordPartAtLast$ (stringToken: string): boolean {
     return LAST_ENGLISH_REG.test(stringToken);
 }
 /**
 * @engineInternal
 */
-export function getEnglishWordPartAtFirst (stringToken: string): RegExpExecArray | null {
+export function getEnglishWordPartAtFirst$ (stringToken: string): RegExpExecArray | null {
     const result = FIRST_ENGLISH_REG.exec(stringToken);
     return result;
 }
 /**
 * @engineInternal
 */
-export function getEnglishWordPartAtLast (stringToken: string): RegExpExecArray | null {
+export function getEnglishWordPartAtLast$ (stringToken: string): RegExpExecArray | null {
     const result = LAST_ENGLISH_REG.exec(stringToken);
     return result;
 }

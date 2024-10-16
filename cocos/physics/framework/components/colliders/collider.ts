@@ -25,7 +25,7 @@
 
 import { ccclass, tooltip, displayOrder, displayName, readOnly, type, serializable } from 'cc.decorator';
 import { EDITOR } from 'internal:constants';
-import { Eventify, Vec3, error, geometry } from '../../../../core';
+import { Eventify, Vec3, error } from '../../../../core';
 import { CharacterTriggerEventType, CollisionEventType, TriggerEventType } from '../../physics-interface';
 import { RigidBody } from '../rigid-body';
 import { PhysicsMaterial } from '../../assets/physics-material';
@@ -33,6 +33,7 @@ import { Component, Node } from '../../../../scene-graph';
 import { IBaseShape } from '../../../spec/i-physics-shape';
 import { EColliderType, EAxisDirection } from '../../physics-enum';
 import { selector, createShape } from '../../physics-selector';
+import { geometry } from '../../../../core/geometry-index';
 
 type Callback = (...args: any[]) => any;
 

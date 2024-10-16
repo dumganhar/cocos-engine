@@ -157,7 +157,7 @@ const rayAABB = (function (): (ray: Ray, aabb: AABB) => number {
     };
 }());
 
-function rayAABB2 (ray: Ray, min: IVec3Like, max: IVec3Like): number {
+export function rayAABB2 (ray: Ray, min: IVec3Like, max: IVec3Like): number {
     const o = ray.o; const d = ray.d;
     const ix = 1 / d.x; const iy = 1 / d.y; const iz = 1 / d.z;
     const t1 = (min.x - o.x) * ix;

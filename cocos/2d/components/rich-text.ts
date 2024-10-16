@@ -40,8 +40,8 @@ import {
     fragmentText,
     isUnicodeCJK,
     isUnicodeSpace,
-    getEnglishWordPartAtFirst,
-    getEnglishWordPartAtLast,
+    getEnglishWordPartAtFirst$,
+    getEnglishWordPartAtLast$,
     getSymbolAt,
 } from '../utils/text-utils';
 
@@ -672,7 +672,7 @@ export class RichText extends Component {
         let curWordStep = 1;
         while (leftTryTimes && curStart < text.length) {
             while (leftTryTimes && curStringSize.x < sizeForOnePart) {
-                const nextPartExec = getEnglishWordPartAtFirst(leftString);
+                const nextPartExec = getEnglishWordPartAtFirst$(leftString);
                 // add a character, unless there is a complete word at the beginning of the next line
                 if (nextPartExec && nextPartExec.length > 0) {
                     curWordStep = nextPartExec[0].length;
@@ -699,7 +699,7 @@ export class RichText extends Component {
 
             // consider there is a part of a word at the end of this line, it should be moved to the next line
             if (curString.length >= 2) {
-                const lastWordExec = getEnglishWordPartAtLast(curString);
+                const lastWordExec = getEnglishWordPartAtLast$(curString);
                 if (lastWordExec && lastWordExec.length > 0
                     // to avoid endless loop when there is only one word in this line
                     && curString !== lastWordExec[0]) {

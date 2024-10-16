@@ -80,18 +80,18 @@ export class AudioSource extends Component {
     @serializable
     protected _volume = 1;
 
-    private _cachedCurrentTime = -1;
+    private _cachedCurrentTime$ = -1;
 
     // An operation queue to store the operations before loading the AudioPlayer.
-    private _operationsBeforeLoading: AudioOperationInfo[] = [];
-    private _isLoaded = false;
+    private _operationsBeforeLoading$: AudioOperationInfo[] = [];
+    private _isLoaded$ = false;
 
-    private _lastSetClip: AudioClip | null = null;
+    private _lastSetClip$: AudioClip | null = null;
 
-    private _resetPlayer (): void {
+    private _resetPlayer$ (): void {
         if (this._player) {
             audioManager.removePlaying(this._player);
-            this._unregisterListener();
+            this._unregisterListener$();
             this._player.destroy();
             this._player = null;
         }
@@ -109,19 +109,19 @@ export class AudioSource extends Component {
             return;
         }
         this._clip = val;
-        this._syncPlayer();
+        this._syncPlayer$();
     }
     get clip (): AudioClip | null {
         return this._clip;
     }
-    private _syncPlayer (): void {
+    private _syncPlayer$ (): void {
         const clip = this._clip;
-        if (this._lastSetClip === clip) {
+        if (this._lastSetClip$ === clip) {
             return;
         }
         if (!clip) {
-            this._lastSetClip = null;
-            this._resetPlayer();
+            this._lastSetClip$ = null;
+            this._resetPlayer$();
             return;
         }
         if (!clip._nativeAsset) {
@@ -132,22 +132,22 @@ export class AudioSource extends Component {
         // The state of _isloaded cannot be modified if clip is the wrong argument.
         // Because load is an asynchronous function, if it is called multiple times with the same arguments.
         // It may cause an illegal state change
-        this._isLoaded = false;
-        this._lastSetClip = clip;
-        this._operationsBeforeLoading.length = 0;
+        this._isLoaded$ = false;
+        this._lastSetClip$ = clip;
+        this._operationsBeforeLoading$.length = 0;
         AudioPlayer.load(clip._nativeAsset.url, {
             audioLoadMode: clip.loadMode,
         }).then((player) => {
-            if (this._lastSetClip !== clip) {
+            if (this._lastSetClip$ !== clip) {
                 // In case the developers set AudioSource.clip concurrently,
                 // we should choose the last one player of AudioClip set to AudioSource.clip
                 // instead of the last loaded one.
                 player.destroy();
                 return;
             }
-            this._isLoaded = true;
+            this._isLoaded$ = true;
             // clear old player
-            this._resetPlayer();
+            this._resetPlayer$();
             this._player = player;
             this._syncStates();
             this.node?.emit(_LOADED_EVENT);
@@ -155,7 +155,7 @@ export class AudioSource extends Component {
         }).catch((e) => {});
     }
 
-    private _registerListener (): void {
+    private _registerListener$ (): void {
         if (!this._hasRegisterListener && this._player) {
             const player = this._player;
             player.onEnded(() => {
@@ -174,7 +174,7 @@ export class AudioSource extends Component {
         }
     }
 
-    private _unregisterListener (): void {
+    private _unregisterListener$ (): void {
         if (this._player && this._hasRegisterListener) {
             this._player.offEnded();
             this._player.offInterruptionBegin();
@@ -244,7 +244,7 @@ export class AudioSource extends Component {
     }
 
     public onLoad (): void {
-        this._syncPlayer();
+        this._syncPlayer$();
     }
 
     public onEnable (): void {
@@ -255,7 +255,7 @@ export class AudioSource extends Component {
     }
 
     public onDisable (): void {
-        const rootNode = this._getRootNode();
+        const rootNode = this._getRootNode$();
         if (rootNode?._persistNode) {
             return;
         }
@@ -328,7 +328,7 @@ export class AudioSource extends Component {
         });
     }
 
-    private _getRootNode (): Node | null | undefined {
+    private _getRootNode$ (): Node | null | undefined {
         let currentNode = this.node as Node | undefined | null;
         let currentGrandparentNode = currentNode?.parent?.parent;
         while (currentGrandparentNode) {
@@ -360,11 +360,11 @@ export class AudioSource extends Component {
      * - 直接播放音频，引擎会在下一次发生用户交互时自动播放。
      */
     public play (): void {
-        if (!this._isLoaded && this.clip) {
-            this._operationsBeforeLoading.push({ op: AudioOperationType.PLAY, params: null });
+        if (!this._isLoaded$ && this.clip) {
+            this._operationsBeforeLoading$.push({ op: AudioOperationType.PLAY, params: null });
             return;
         }
-        this._registerListener();
+        this._registerListener$();
         audioManager.discardOnePlayingIfNeeded();
         // Replay if the audio is playing
         if (this.state === AudioState.PLAYING) {
@@ -389,8 +389,8 @@ export class AudioSource extends Component {
      * 暂停播放。
      */
     public pause (): void {
-        if (!this._isLoaded && this.clip) {
-            this._operationsBeforeLoading.push({ op: AudioOperationType.PAUSE, params: null });
+        if (!this._isLoaded$ && this.clip) {
+            this._operationsBeforeLoading$.push({ op: AudioOperationType.PAUSE, params: null });
             return;
         }
         // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -404,8 +404,8 @@ export class AudioSource extends Component {
      * 停止播放。
      */
     public stop (): void {
-        if (!this._isLoaded && this.clip) {
-            this._operationsBeforeLoading.push({ op: AudioOperationType.STOP, params: null });
+        if (!this._isLoaded$ && this.clip) {
+            this._operationsBeforeLoading$.push({ op: AudioOperationType.STOP, params: null });
             return;
         }
         if (this._player) {
@@ -451,18 +451,18 @@ export class AudioSource extends Component {
         if (this._player) {
             this._player.loop = this._loop;
             this._player.volume = this._volume;
-            this._operationsBeforeLoading.forEach((opInfo): void => {
+            this._operationsBeforeLoading$.forEach((opInfo): void => {
                 if (opInfo.op === AudioOperationType.SEEK) {
-                    this._cachedCurrentTime = (opInfo.params && opInfo.params[0]) as number;
+                    this._cachedCurrentTime$ = (opInfo.params && opInfo.params[0]) as number;
                     if (this._player) {
                         // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        this._player.seek(this._cachedCurrentTime).catch((e): void => {});
+                        this._player.seek(this._cachedCurrentTime$).catch((e): void => {});
                     }
                 } else {
                     this[opInfo.op]?.();
                 }
             });
-            this._operationsBeforeLoading.length = 0;
+            this._operationsBeforeLoading$.length = 0;
         }
     }
 
@@ -476,13 +476,13 @@ export class AudioSource extends Component {
     set currentTime (num: number) {
         if (Number.isNaN(num)) { warn('illegal audio time!'); return; }
         num = clamp(num, 0, this.duration);
-        if (!this._isLoaded && this.clip) {
-            this._operationsBeforeLoading.push({ op: AudioOperationType.SEEK, params: [num] });
+        if (!this._isLoaded$ && this.clip) {
+            this._operationsBeforeLoading$.push({ op: AudioOperationType.SEEK, params: [num] });
             return;
         }
-        this._cachedCurrentTime = num;
+        this._cachedCurrentTime$ = num;
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        this._player?.seek(this._cachedCurrentTime).catch((e): void => {});
+        this._player?.seek(this._cachedCurrentTime$).catch((e): void => {});
     }
 
     /**
@@ -492,7 +492,7 @@ export class AudioSource extends Component {
      * 以秒为单位获取当前播放时间。
      */
     get currentTime (): number {
-        return this._player ? this._player.currentTime : (this._cachedCurrentTime < 0 ? 0 : this._cachedCurrentTime);
+        return this._player ? this._player.currentTime : (this._cachedCurrentTime$ < 0 ? 0 : this._cachedCurrentTime$);
     }
 
     /**

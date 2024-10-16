@@ -40,7 +40,7 @@ export { AABB } from './aabb';
 export { OBB } from './obb';
 export { Capsule } from './capsule';
 export { Frustum } from './frustum';
-
+export { Keyframe, AnimationCurve, WrapModeMask, OptimizedKey, evalOptCurve } from './curve';
 export { SplineMode, Spline } from './spline';
 export * from './spec';
 export * from './deprecated-3.0.0';

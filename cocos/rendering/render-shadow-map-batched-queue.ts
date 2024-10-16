@@ -31,12 +31,13 @@ import { Pass, BatchingSchemes } from '../render-scene/core/pass';
 import { RenderInstancedQueue } from './render-instanced-queue';
 import { ShadowType } from '../render-scene/scene/shadows';
 import { Light, LightType } from '../render-scene/scene/light';
-import { cclegacy, geometry } from '../core';
+import { cclegacy } from '../core';
 import { Model } from '../render-scene/scene/model';
 import { Camera, DirectionalLight, SpotLight } from '../render-scene/scene';
 import { shadowCulling } from './scene-culling';
 import { PipelineRuntime } from './custom/pipeline';
 import type { ShadowLayerVolume } from './shadow/csm-layers';
+import intersect from '../core/geometry/intersect';
 
 let _phaseID = getPhaseID('shadow-caster');
 function getShadowPassIndex (subModel: SubModel): number {
@@ -106,7 +107,7 @@ export class RenderShadowMapBatchedQueue {
                         const model = ro.model;
                         if (model.worldBounds) {
                             if (((visibility & model.node.layer) !== model.node.layer)
-                            || !geometry.intersect.aabbFrustum(model.worldBounds, spotLight.frustum)) { continue; }
+                            || !intersect.aabbFrustum(model.worldBounds, spotLight.frustum)) { continue; }
                         }
 
                         this.add(model, level);

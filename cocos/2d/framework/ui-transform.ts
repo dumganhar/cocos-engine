@@ -25,11 +25,12 @@
 import { ccclass, help, executeInEditMode, executionOrder, menu, tooltip, displayOrder, serializable, disallowMultiple } from 'cc.decorator';
 import { EDITOR } from 'internal:constants';
 import { Component, Node } from '../../scene-graph';
-import { Mat4, Rect, Size, Vec2, Vec3, geometry, warnID, visibleRect, approx, EPSILON } from '../../core';
+import { Mat4, Rect, Size, Vec2, Vec3, warnID, visibleRect, approx, EPSILON } from '../../core';
 import { director, DirectorEvent } from '../../game/director';
 import { NodeEventType } from '../../scene-graph/node-event';
 import { IMask } from '../../scene-graph/node-event-processor';
 import { Mask } from '../components/mask';
+import { AABB } from '../../core/geometry/aabb';
 
 const _vec2a = new Vec2();
 const _vec2b = new Vec2();
@@ -715,7 +716,7 @@ export class UITransform extends Component {
      * @param out @en The out object of aabb bounding box of the node in world space.  @zh 输出节点在世界空间下的 aabb 包围盒。
      * @returns @en The aabb bounding box of the node in world space. @zh 节点在世界空间下的 aabb 包围盒。
      */
-    public getComputeAABB (out?: geometry.AABB): geometry.AABB {
+    public getComputeAABB (out?: AABB): AABB {
         const width = this._contentSize.width;
         const height = this._contentSize.height;
         _rect.set(
@@ -732,10 +733,10 @@ export class UITransform extends Component {
         const h = _rect.height / 2;
         const l = 0.001;
         if (out != null) {
-            geometry.AABB.set(out, px, py, pz, w, h, l);
+            AABB.set(out, px, py, pz, w, h, l);
             return out;
         } else {
-            return new geometry.AABB(px, py, pz, w, h, l);
+            return new AABB(px, py, pz, w, h, l);
         }
     }
 

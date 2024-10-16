@@ -26,8 +26,8 @@ import { ccclass, serializable } from 'cc.decorator';
 import { DEBUG } from 'internal:constants';
 import { Asset } from '../asset/assets/asset';
 import { SpriteFrame } from '../2d/assets/sprite-frame';
-import { errorID, warnID, cclegacy, js, geometry, approx, clamp, Mat4, Quat,
-    Vec3, murmurhash2_32_gc, binarySearchEpsilon, assertIsTrue, RealCurve,
+import { errorID, warnID, cclegacy, js, approx, clamp, Mat4, Quat,
+    Vec3, murmurhash2_32_gc, binarySearchEpsilon, assertIsTrue,
 } from '../core';
 import { SkelAnimDataHub } from '../3d/skeletal-animation/skeletal-animation-data-hub';
 import { WrapMode as AnimationWrapMode, WrapMode } from './types';
@@ -48,6 +48,8 @@ import { EmbeddedPlayableState, EmbeddedPlayer } from './embedded-player/embedde
 import { AuxiliaryCurveEntry } from './auxiliary-curve-entry';
 import { removeIf } from '../core/utils/array';
 import { invokeComponentMethodsEngagedInAnimationEvent } from './event/event-emitter';
+import { RealCurve } from '../core/curves/curve';
+import { geometry } from '../core/geometry-index';
 
 export declare namespace AnimationClip {
     export interface IEvent {

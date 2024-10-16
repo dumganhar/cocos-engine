@@ -24,10 +24,12 @@
 
 import { ccclass } from 'cc.decorator';
 import { EDITOR } from 'internal:constants';
-import { lerp, RealCurve, CCClass, geometry, Enum, approx, EPSILON } from '../../core';
+import { lerp, CCClass, Enum, approx, EPSILON } from '../../core';
 import { PixelFormat, Filter, WrapMode } from '../../asset/assets/asset-enum';
 import { Texture2D, ImageAsset } from '../../asset/assets';
 import { setPropertyEnumType } from '../../core/internal-index';
+import { constructLegacyCurveAndConvert } from '../../core/geometry/curve';
+import { RealCurve } from '../../core/curves/curve';
 
 const setClassAttr = CCClass.Attr.setClassAttr;
 
@@ -91,11 +93,11 @@ export default class CurveRange  {
         case Mode.TwoConstants:
             break;
         case Mode.Curve:
-            if (!this.spline) this.spline = geometry.constructLegacyCurveAndConvert();
+            if (!this.spline) this.spline = constructLegacyCurveAndConvert();
             break;
         case Mode.TwoCurves:
-            if (!this.splineMax) this.splineMax = geometry.constructLegacyCurveAndConvert();
-            if (!this.splineMin) this.splineMin = geometry.constructLegacyCurveAndConvert();
+            if (!this.splineMax) this.splineMax = constructLegacyCurveAndConvert();
+            if (!this.splineMin) this.splineMin = constructLegacyCurveAndConvert();
             break;
         default:
             break;

@@ -34,7 +34,8 @@ import { ProbeType, ReflectionProbe } from '../render-scene/scene/reflection-pro
 import { Camera, SkyBoxFlagValue } from '../render-scene/scene/camera';
 import { PipelineRuntime } from './custom/pipeline';
 import { RenderInstancedQueue } from './render-instanced-queue';
-import { cclegacy, geometry } from '../core';
+import { cclegacy } from '../core';
+import intersect from '../core/geometry/intersect';
 
 const CC_USE_RGBE_OUTPUT = 'CC_USE_RGBE_OUTPUT';
 let _phaseID = getPhaseID('default');
@@ -103,10 +104,10 @@ export class RenderReflectionProbeQueue {
             }
             if (model.enabled && model.worldBounds && model.bakeToReflectionProbe) {
                 if (probe.probeType === ProbeType.CUBE) {
-                    if (geometry.intersect.aabbWithAABB(model.worldBounds, probe.boundingBox!)) {
+                    if (intersect.aabbWithAABB(model.worldBounds, probe.boundingBox!)) {
                         this.add(model);
                     }
-                } else if (geometry.intersect.aabbFrustum(model.worldBounds, probe.camera.frustum)) {
+                } else if (intersect.aabbFrustum(model.worldBounds, probe.camera.frustum)) {
                     this.add(model);
                 }
             }

@@ -22,7 +22,8 @@
  THE SOFTWARE.
 */
 
-import { ccenum, geometry } from '../core';
+import { ccenum } from '../core';
+import { WrapModeMask } from '../core/geometry/curve';
 
 /**
  * 动画使用的循环模式。
@@ -31,37 +32,37 @@ export enum WrapMode {
     /**
      * 向 Animation Component 或者 AnimationClip 查找 wrapMode
      */
-    Default = geometry.WrapModeMask.Default,
+    Default = WrapModeMask.Default,
 
     /**
      * 动画只播放一遍
      */
-    Normal = geometry.WrapModeMask.Normal,
+    Normal = WrapModeMask.Normal,
 
     /**
      * 从最后一帧或结束位置开始反向播放，到第一帧或开始位置停止
      */
-    Reverse = geometry.WrapModeMask.Reverse,
+    Reverse = WrapModeMask.Reverse,
 
     /**
      * 循环播放
      */
-    Loop = geometry.WrapModeMask.Loop,
+    Loop = WrapModeMask.Loop,
 
     /**
      * 反向循环播放
      */
-    LoopReverse = geometry.WrapModeMask.Loop | geometry.WrapModeMask.Reverse,
+    LoopReverse = WrapModeMask.Loop | WrapModeMask.Reverse,
 
     /**
      * 从第一帧播放到最后一帧，然后反向播放回第一帧，到第一帧后再正向播放，如此循环
      */
-    PingPong = geometry.WrapModeMask.PingPong,
+    PingPong = WrapModeMask.PingPong,
 
     /**
      * 从最后一帧开始反向播放，其他同 PingPong
      */
-    PingPongReverse = geometry.WrapModeMask.PingPong | geometry.WrapModeMask.Reverse,
+    PingPongReverse = WrapModeMask.PingPong | WrapModeMask.Reverse,
 }
 
 ccenum(WrapMode);

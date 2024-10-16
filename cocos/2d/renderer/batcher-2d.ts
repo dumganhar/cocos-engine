@@ -23,7 +23,7 @@
 */
 
 import { DEBUG, JSB } from 'internal:constants';
-import { Camera, Model } from '../../render-scene/scene';
+import { Camera } from '../../render-scene/scene/camera';
 import type { UIStaticBatch } from '../components/ui-static-batch';
 import { Material } from '../../asset/assets/material';
 import { RenderRoot2D, UIRenderer } from '../framework';
@@ -46,10 +46,10 @@ import { BaseRenderData, MeshRenderData } from './render-data';
 import { UIMeshRenderer } from '../components/ui-mesh-renderer';
 import { NativeBatcher2d } from './native-2d';
 import { MeshBuffer } from './mesh-buffer';
-import { scene } from '../../render-scene';
 import { builtinResMgr } from '../../asset/asset-manager';
 import { RenderingSubMesh } from '../../asset/assets';
 import { IAssembler } from './base';
+import { Model } from '../../render-scene/scene/model';
 
 const _dsInfo = new DescriptorSetInfo(null!);
 const m4_1 = new Mat4();
@@ -879,7 +879,7 @@ export class Batcher2D implements IBatcher {
         if (!this._maskClearModel) {
             this._maskClearMtl = builtinResMgr.get<Material>('default-clear-stencil');
 
-            this._maskClearModel = cclegacy.director.root.createModel(scene.Model);
+            this._maskClearModel = cclegacy.director.root.createModel(Model);
             const stride = getAttributeStride(vfmt);
             const gfxDevice: Device = deviceManager.gfxDevice;
             const vertexBuffer = gfxDevice.createBuffer(new BufferInfo(

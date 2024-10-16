@@ -26,7 +26,7 @@ import { Material } from '../../asset/assets/material';
 import { RenderingSubMesh } from '../../asset/assets/rendering-sub-mesh';
 import { Mesh } from '../assets/mesh';
 import { Skeleton } from '../assets/skeleton';
-import { geometry, Mat4, Vec3, warnID } from '../../core';
+import { Mat4, Vec3, warnID } from '../../core';
 import { BufferUsageBit, MemoryUsageBit, DescriptorSet, Buffer, BufferInfo, Attribute, FormatFeatureBit, Format } from '../../gfx';
 import { UBOSkinning, UNIFORM_REALTIME_JOINT_TEXTURE_BINDING } from '../../rendering/define';
 import { Node } from '../../scene-graph/node';
@@ -39,6 +39,7 @@ import { director } from '../../game';
 import { Filter, PixelFormat, WrapMode } from '../../asset/assets/asset-enum';
 import { Texture2D, ImageAsset } from '../../asset/assets';
 import { SubModel } from '../../render-scene/scene';
+import { geometry } from '../../core/geometry-index';
 
 const uniformPatches: IMacroPatch[] = [
     { name: 'CC_USE_SKINNING', value: true },

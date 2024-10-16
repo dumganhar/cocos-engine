@@ -235,7 +235,7 @@ class CallbackTimer {
         this._target$ = null;
     }
 
-    public initWithCallback (scheduler: Scheduler, callback: CallbackType, target: ISchedulable, seconds: number, repeat: number, delay: number): boolean {
+    public initWithCallback$ (scheduler: Scheduler, callback: CallbackType, target: ISchedulable, seconds: number, repeat: number, delay: number): boolean {
         this._lock$ = false;
         this._scheduler$ = scheduler;
         this._target$ = target;
@@ -257,14 +257,14 @@ class CallbackTimer {
      * @en returns interval of timer in seconds.
      * @zh 返回计时器的时间间隔, 以秒为单位。
      */
-    public getInterval (): number {
+    public getInterval$ (): number {
         return this._interval$;
     }
     /**
      * @en Set interval in seconds.
      * @zh 以秒为单位设置时间间隔。
      */
-    public setInterval (interval: number): void {
+    public setInterval$ (interval: number): void {
         this._interval$ = interval;
     }
 
@@ -275,7 +275,7 @@ class CallbackTimer {
      * @en delta time. The unit is seconds.
      * @zh 更新间隔时间, 单位是秒。
      */
-    public update (dt: number): void {
+    public update$ (dt: number): void {
         if (this._elapsed$ === -1) {
             this._elapsed$ = 0;
             this._timesExecuted$ = 0;
@@ -283,37 +283,37 @@ class CallbackTimer {
             this._elapsed$ += dt;
             if (this._runForever$ && !this._useDelay$) { // standard timer usage
                 if (this._elapsed$ >= this._interval$) {
-                    this.trigger();
+                    this.trigger$();
                     this._elapsed$ = 0;
                 }
             } else { // advanced usage
                 if (this._useDelay$) {
                     if (this._elapsed$ >= this._delay$) {
-                        this.trigger();
+                        this.trigger$();
 
                         this._elapsed$ -= this._delay$;
                         this._timesExecuted$ += 1;
                         this._useDelay$ = false;
                     }
                 } else if (this._elapsed$ >= this._interval$) {
-                    this.trigger();
+                    this.trigger$();
 
                     this._elapsed$ = 0;
                     this._timesExecuted$ += 1;
                 }
 
                 if (this._callback$ && !this._runForever$ && this._timesExecuted$ > this._repeat$) {
-                    this.cancel();
+                    this.cancel$();
                 }
             }
         }
     }
 
-    public getCallback (): CallbackType | null | undefined {
+    public getCallback$ (): CallbackType | null | undefined {
         return this._callback$;
     }
 
-    public trigger (): void {
+    public trigger$ (): void {
         if (this._target$ && this._callback$) {
             this._lock$ = true;
             this._callback$.call(this._target$, this._elapsed$);
@@ -321,7 +321,7 @@ class CallbackTimer {
         }
     }
 
-    public cancel (): void {
+    public cancel$ (): void {
         if (this._scheduler$ && this._callback$ && this._target$) {
             this._scheduler$.unscheduleForTimer(this, this._target$);
         }
@@ -480,7 +480,7 @@ export class Scheduler extends System {
                     elt.currentTimer$ = elt.timers$[elt.timerIndex$];
                     elt.currentTimerSalvaged$ = false;
 
-                    elt.currentTimer$.update(dt);
+                    elt.currentTimer$.update$(dt);
                     elt.currentTimer$ = null;
                 }
             }
@@ -620,16 +620,16 @@ export class Scheduler extends System {
         } else {
             for (i = 0; i < element.timers$.length; ++i) {
                 timer = element.timers$[i];
-                if (timer && callback === timer.getCallback()) {
-                    logID(1507, timer.getInterval(), interval);
-                    timer.setInterval(interval);
+                if (timer && callback === timer.getCallback$()) {
+                    logID(1507, timer.getInterval$(), interval);
+                    timer.setInterval$(interval);
                     return;
                 }
             }
         }
 
         timer = CallbackTimer.get();
-        timer.initWithCallback(this, callback, target, interval, repeat ?? 0, delay ?? 0);
+        timer.initWithCallback$(this, callback, target, interval, repeat ?? 0, delay ?? 0);
         element.timers$.push(timer);
 
         if (this._currentTarget$ === element && this._currentTargetSalvaged$) {
@@ -726,7 +726,7 @@ export class Scheduler extends System {
             }
             for (let i = 0, li = timers.length; i < li; i++) {
                 const timer = timers[i];
-                if (callback === timer.getCallback()) {
+                if (callback === timer.getCallback$()) {
                     if ((timer === element.currentTimer$) && (!element.currentTimerSalvaged$)) {
                         element.currentTimerSalvaged$ = true;
                     }
@@ -959,7 +959,7 @@ export class Scheduler extends System {
 
             for (let i = 0; i < timers.length; ++i) {
                 const timer =  timers[i];
-                if (callback === timer.getCallback()) {
+                if (callback === timer.getCallback$()) {
                     return true;
                 }
             }

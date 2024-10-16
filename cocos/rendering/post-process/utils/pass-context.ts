@@ -7,11 +7,14 @@ import { Camera, SkyBoxFlagValue } from '../../../render-scene/scene';
 import { Material } from '../../../asset/assets';
 import { PostProcess } from '../components';
 import { getRenderArea } from '../../custom/define';
-import { Vec4, geometry } from '../../../core';
+import { Vec4 } from '../../../core';
+import { Sphere } from '../../../core/geometry/sphere';
+import { AABB } from '../../../core/geometry/aabb';
+import intersect from '../../../core/geometry/intersect';
 
-const sphere = geometry.Sphere.create(0, 0, 0, 1);
-const boundingBox = new geometry.AABB();
-const rangedDirLightBoundingBox = new geometry.AABB(0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
+const sphere = Sphere.create(0, 0, 0, 1);
+const boundingBox = new AABB();
+const rangedDirLightBoundingBox = new AABB(0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
 export class PassContext {
     clearFlag: ClearFlagBit = ClearFlagBit.COLOR;
     clearColor = new Color();
@@ -112,8 +115,8 @@ export class PassContext {
             if (light.baked) {
                 continue;
             }
-            geometry.Sphere.set(sphere, light.position.x, light.position.y, light.position.z, light.range);
-            if (geometry.intersect.sphereFrustum(sphere, camera.frustum)) {
+            Sphere.set(sphere, light.position.x, light.position.y, light.position.z, light.range);
+            if (intersect.sphereFrustum(sphere, camera.frustum)) {
                 queue.addSceneOfCamera(camera, new LightInfo(light), flags);
             }
         }
@@ -123,8 +126,8 @@ export class PassContext {
             if (light.baked) {
                 continue;
             }
-            geometry.Sphere.set(sphere, light.position.x, light.position.y, light.position.z, light.range);
-            if (geometry.intersect.sphereFrustum(sphere, camera.frustum)) {
+            Sphere.set(sphere, light.position.x, light.position.y, light.position.z, light.range);
+            if (intersect.sphereFrustum(sphere, camera.frustum)) {
                 queue.addSceneOfCamera(camera, new LightInfo(light), flags);
             }
         }
@@ -134,16 +137,16 @@ export class PassContext {
             if (light.baked) {
                 continue;
             }
-            geometry.Sphere.set(sphere, light.position.x, light.position.y, light.position.z, light.range);
-            if (geometry.intersect.sphereFrustum(sphere, camera.frustum)) {
+            Sphere.set(sphere, light.position.x, light.position.y, light.position.z, light.range);
+            if (intersect.sphereFrustum(sphere, camera.frustum)) {
                 queue.addSceneOfCamera(camera, new LightInfo(light), flags);
             }
         }
         // ranged dir lights
         for (let i = 0; i < numRangedDirLights; i++) {
             const light = rangedDirLights[i];
-            geometry.AABB.transform(boundingBox, rangedDirLightBoundingBox, light.node!.getWorldMatrix());
-            if (geometry.intersect.aabbFrustum(boundingBox, camera.frustum)) {
+            AABB.transform(boundingBox, rangedDirLightBoundingBox, light.node!.getWorldMatrix());
+            if (intersect.aabbFrustum(boundingBox, camera.frustum)) {
                 queue.addSceneOfCamera(camera, new LightInfo(light), flags);
             }
         }

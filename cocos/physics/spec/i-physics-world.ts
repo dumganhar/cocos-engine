@@ -22,9 +22,10 @@
  THE SOFTWARE.
 */
 
-import { IVec3Like, RecyclePool, geometry, IQuatLike } from '../../core';
+import { IVec3Like, RecyclePool, IQuatLike } from '../../core';
 import { PhysicsRayResult } from '../framework/physics-ray-result';
 import { EPhysicsDrawFlags, PhysicsMaterial } from '../framework';
+import { geometry } from '../../core/geometry-index';
 
 export interface IRaycastOptions {
     mask: number;

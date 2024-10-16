@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { Color, Mat4, Vec3, Vec4, geometry, warnID, toRadian, cclegacy } from '../core';
+import { Color, Mat4, Vec3, Vec4, warnID, toRadian, cclegacy } from '../core';
 import { SetIndex } from './define';
 import { PipelineStateManager } from './pipeline-state-manager';
 import { Attribute, AttributeName, Buffer, BufferInfo, BufferUsageBit,
@@ -30,6 +30,7 @@ import { Attribute, AttributeName, Buffer, BufferInfo, BufferUsageBit,
     InputAssemblerInfo, MemoryUsageBit, RenderPass } from '../gfx';
 
 import { PipelineSceneData } from './pipeline-scene-data';
+import { geometry } from '../core/geometry-index';
 
 const _min = new Vec3();
 const _max = new Vec3();

@@ -28,7 +28,7 @@ import { Asset } from '../../asset/assets/asset';
 import { IDynamicGeometry } from '../../primitive/define';
 import { BufferBlob } from '../misc/buffer-blob';
 import { Skeleton } from './skeleton';
-import { geometry, cclegacy, sys, warnID, Mat4, Quat, Vec3, assertIsTrue, murmurhash2_32_gc, errorID, halfToFloat } from '../../core';
+import { cclegacy, sys, warnID, Mat4, Quat, Vec3, assertIsTrue, murmurhash2_32_gc, errorID, halfToFloat } from '../../core';
 import { RenderingSubMesh } from '../../asset/assets';
 import {
     Attribute, Device, Buffer, BufferInfo, AttributeName, BufferUsageBit, Feature, Format,
@@ -38,6 +38,7 @@ import { Morph } from './morph';
 import { MorphRendering, createMorphRendering } from './morph-rendering';
 import { MeshoptDecoder } from '../misc/mesh-codec';
 import zlib  from '../../../external/compression/zlib.min';
+import { geometry } from '../../core/geometry-index';
 
 function getIndexStrideCtor (stride: number): Uint8ArrayConstructor | Uint16ArrayConstructor | Uint32ArrayConstructor {
     switch (stride) {
@@ -792,15 +793,15 @@ export class Mesh extends Asset {
         if (!this._initialized) {
             const struct = JSON.parse(JSON.stringify(mesh._struct)) as Mesh.IStruct;
             const data = mesh._data.slice();
-            if (worldMatrix) {
+            if (worldMatrix && boundingBox) {
                 if (struct.maxPosition && struct.minPosition) {
-                    Vec3.add(boundingBox!.center, struct.maxPosition, struct.minPosition);
-                    Vec3.multiplyScalar(boundingBox!.center, boundingBox!.center, 0.5);
-                    Vec3.subtract(boundingBox!.halfExtents, struct.maxPosition, struct.minPosition);
-                    Vec3.multiplyScalar(boundingBox!.halfExtents, boundingBox!.halfExtents, 0.5);
-                    geometry.AABB.transform(boundingBox!, boundingBox!, worldMatrix);
-                    Vec3.add(struct.maxPosition, boundingBox!.center, boundingBox!.halfExtents);
-                    Vec3.subtract(struct.minPosition, boundingBox!.center, boundingBox!.halfExtents);
+                    Vec3.add(boundingBox.center, struct.maxPosition, struct.minPosition);
+                    Vec3.multiplyScalar(boundingBox.center, boundingBox.center, 0.5);
+                    Vec3.subtract(boundingBox.halfExtents, struct.maxPosition, struct.minPosition);
+                    Vec3.multiplyScalar(boundingBox.halfExtents, boundingBox.halfExtents, 0.5);
+                    geometry.AABB.transform(boundingBox, boundingBox, worldMatrix);
+                    Vec3.add(struct.maxPosition, boundingBox.center, boundingBox.halfExtents);
+                    Vec3.subtract(struct.minPosition, boundingBox.center, boundingBox.halfExtents);
                 }
                 for (let i = 0; i < struct.vertexBundles.length; i++) {
                     const vtxBdl = struct.vertexBundles[i];
@@ -1041,15 +1042,15 @@ export class Mesh extends Asset {
         };
 
         if (meshStruct.minPosition && mesh._struct.minPosition && meshStruct.maxPosition && mesh._struct.maxPosition) {
-            if (worldMatrix) {
-                Vec3.add(boundingBox!.center, mesh._struct.maxPosition, mesh._struct.minPosition);
-                Vec3.multiplyScalar(boundingBox!.center, boundingBox!.center, 0.5);
-                Vec3.subtract(boundingBox!.halfExtents, mesh._struct.maxPosition, mesh._struct.minPosition);
-                Vec3.multiplyScalar(boundingBox!.halfExtents, boundingBox!.halfExtents, 0.5);
-                geometry.AABB.transform(boundingBox!, boundingBox!, worldMatrix);
-                Vec3.add(vec3_temp, boundingBox!.center, boundingBox!.halfExtents);
+            if (worldMatrix && boundingBox) {
+                Vec3.add(boundingBox.center, mesh._struct.maxPosition, mesh._struct.minPosition);
+                Vec3.multiplyScalar(boundingBox.center, boundingBox.center, 0.5);
+                Vec3.subtract(boundingBox.halfExtents, mesh._struct.maxPosition, mesh._struct.minPosition);
+                Vec3.multiplyScalar(boundingBox.halfExtents, boundingBox.halfExtents, 0.5);
+                geometry.AABB.transform(boundingBox, boundingBox, worldMatrix);
+                Vec3.add(vec3_temp, boundingBox.center, boundingBox.halfExtents);
                 Vec3.max(meshStruct.maxPosition, meshStruct.maxPosition, vec3_temp);
-                Vec3.subtract(vec3_temp, boundingBox!.center, boundingBox!.halfExtents);
+                Vec3.subtract(vec3_temp, boundingBox.center, boundingBox.halfExtents);
                 Vec3.min(meshStruct.minPosition, meshStruct.minPosition, vec3_temp);
             } else {
                 Vec3.min(meshStruct.minPosition, meshStruct.minPosition, mesh._struct.minPosition);

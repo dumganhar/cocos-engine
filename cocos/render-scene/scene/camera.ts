@@ -23,14 +23,15 @@
 */
 import { EDITOR } from 'internal:constants';
 import { SurfaceTransform, ClearFlagBit, Device, Color, ClearFlags } from '../../gfx';
-import { lerp, Mat4, Rect, toRadian, Vec3, IVec4Like, preTransforms, warnID, geometry, cclegacy, Vec4, rect, mat4, v3 } from '../../core';
+import { lerp, Mat4, Rect, toRadian, Vec3, IVec4Like, preTransforms, warnID, cclegacy, Vec4, rect, mat4, v3 } from '../../core';
 import { CAMERA_DEFAULT_MASK } from '../../rendering/define';
 import { Node } from '../../scene-graph';
 import { RenderScene } from '../core/render-scene';
 import { RenderWindow } from '../core/render-window';
 import { GeometryRenderer } from '../../rendering/geometry-renderer';
 import { PostProcess } from '../../rendering/post-process/components/post-process';
-import type { Frustum } from '../../core/geometry';
+import { Frustum } from '../../core/geometry/frustum';
+import { Ray } from '../../core/geometry/ray';
 
 /**
  * @en The enumeration type for the fixed axis of the camera.
@@ -838,7 +839,7 @@ export class Camera {
     private _matProjInv$: Mat4 = mat4();
     private _matViewProj$: Mat4 = mat4();
     private _matViewProjInv$: Mat4 = mat4();
-    private _frustum$: geometry.Frustum = new geometry.Frustum();
+    private _frustum$: Frustum = new Frustum();
     private _forward$: Vec3 = v3();
     private _position$: Vec3 = v3();
     private _priority$ = 0;
@@ -1212,7 +1213,7 @@ export class Camera {
      * @param y the screen y of the position
      * @returns the resulting ray
      */
-    public screenPointToRay (out: geometry.Ray, x: number, y: number): geometry.Ray {
+    public screenPointToRay (out: Ray, x: number, y: number): Ray {
         if (!this._node$) return null!;
 
         const width = this.width;
@@ -1236,7 +1237,7 @@ export class Camera {
         if (isProj) {
             // camera origin
             this._node$.getWorldPosition(v_b);
-            geometry.Ray.fromPoints(out, v_b, v_a);
+            Ray.fromPoints(out, v_b, v_a);
         } else {
             Vec3.transformQuat(out.d, Vec3.FORWARD, this._node$.worldRotation);
         }

@@ -24,8 +24,9 @@
 
 import { BuiltinShape } from './builtin-shape';
 import { ICapsuleShape } from '../../spec/i-physics-shape';
-import { Vec3, geometry } from '../../../core';
+import { Vec3 } from '../../../core';
 import { EAxisDirection, CapsuleCollider } from '../../framework';
+import { geometry } from '../../../core/geometry-index';
 
 const temp0 = new Vec3();
 const temp1 = new Vec3();

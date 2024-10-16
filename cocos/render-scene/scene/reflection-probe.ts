@@ -24,11 +24,12 @@
 import { EDITOR } from 'internal:constants';
 import { Camera, CameraAperture, CameraFOVAxis, CameraISO, CameraProjection, CameraShutter, CameraType, SkyBoxFlagValue, TrackingType } from './camera';
 import { Node } from '../../scene-graph/node';
-import { Color, Quat, Rect, toRadian, Vec2, Vec3, geometry, cclegacy, Vec4, Size, v3, quat } from '../../core';
+import { Color, Quat, Rect, toRadian, Vec2, Vec3, cclegacy, Vec4, Size, v3, quat } from '../../core';
 import { CAMERA_DEFAULT_MASK } from '../../rendering/define';
 import { ClearFlagBit, Framebuffer } from '../../gfx';
 import { TextureCube } from '../../asset/assets/texture-cube';
 import { RenderTexture } from '../../asset/assets/render-texture';
+import { geometry } from '../../core/geometry-index';
 
 export enum ProbeClearFlag {
     SKYBOX = SkyBoxFlagValue.VALUE | ClearFlagBit.DEPTH_STENCIL,

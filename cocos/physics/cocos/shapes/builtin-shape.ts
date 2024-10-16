@@ -22,12 +22,13 @@
  THE SOFTWARE.
 */
 
-import { Mat4, Quat, Vec3, IVec3Like, geometry } from '../../../core';
+import { Mat4, Quat, Vec3, IVec3Like } from '../../../core';
 import { BuiltinSharedBody } from '../builtin-shared-body';
 import { IBuiltinShape } from '../builtin-interface';
 import { Collider, RigidBody, PhysicsMaterial, PhysicsSystem } from '../../../../exports/physics-framework';
 import { IBaseShape } from '../../spec/i-physics-shape';
 import { BuiltInWorld } from '../builtin-world';
+import { geometry } from '../../../core/geometry-index';
 
 export class BuiltinShape implements IBaseShape {
     getAABB (v: geometry.AABB): void { }

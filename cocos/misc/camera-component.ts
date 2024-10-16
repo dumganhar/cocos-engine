@@ -28,7 +28,7 @@ import { ccclass, help, executeInEditMode, menu, tooltip, displayOrder, type, se
 import { RenderTexture } from '../asset/assets/render-texture';
 import { UITransform } from '../2d/framework';
 import { Component } from '../scene-graph';
-import { Color, Rect, toRadian, Vec3, cclegacy, geometry, Enum } from '../core';
+import { Color, Rect, toRadian, Vec3, cclegacy, Enum } from '../core';
 import { CAMERA_DEFAULT_MASK } from '../rendering/define';
 import { scene } from '../render-scene';
 import { SkyBoxFlagValue, CameraProjection, CameraFOVAxis, CameraAperture, CameraISO, CameraShutter,
@@ -40,7 +40,7 @@ import { RenderWindow } from '../render-scene/core/render-window';
 import { ClearFlagBit } from '../gfx';
 import { PostProcess } from '../rendering/post-process/components/post-process';
 import { property } from '../core/data/class-decorator';
-import type { Ray } from '../core/geometry';
+import { Ray } from '../core/geometry/ray';
 
 const _temp_vec3_1 = new Vec3();
 
@@ -624,8 +624,8 @@ export class Camera extends Component {
      * @param out The output ray object.
      * @returns Return the output ray object.
      */
-    public screenPointToRay (x: number, y: number, out?: geometry.Ray): Ray {
-        if (!out) { out = geometry.Ray.create(); }
+    public screenPointToRay (x: number, y: number, out?: Ray): Ray {
+        if (!out) { out = Ray.create(); }
         if (this._camera) { this._camera.screenPointToRay(out, x, y); }
         return out;
     }

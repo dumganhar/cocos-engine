@@ -23,7 +23,7 @@
 */
 
 import type { ITweenCustomProperty, ITweenCustomPropertyStartParameter } from './tween';
-import { Spline, SplineMode } from '../core/geometry';
+import { Spline, SplineMode } from '../core/geometry/spline';
 import { Vec3 } from '../core/math';
 
 const _v3_tmp_1 = new Vec3();

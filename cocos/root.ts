@@ -314,7 +314,7 @@ export class Root {
             'customJointTextureLayouts',
         ) as ICustomJointTextureLayout[] || [];
         this._dataPoolMgr$?.jointTexturePool.registerCustomTextureLayouts(customJointTextureLayouts);
-        this._resizeMaxJointForDS();
+        this._resizeMaxJointForDS$();
     }
 
     /**
@@ -480,11 +480,11 @@ export class Root {
         }
 
         if (globalThis.__globalXR?.isWebXR) {
-            this._doWebXRFrameMove();
+            this._doWebXRFrameMove$();
         } else {
-            this._frameMoveBegin();
-            this._frameMoveProcess();
-            this._frameMoveEnd();
+            this._frameMoveBegin$();
+            this._frameMoveProcess$();
+            this._frameMoveEnd$();
         }
     }
 
@@ -617,10 +617,11 @@ export class Root {
      * @returns The light created
      */
     public createLight<T extends Light> (LightCtor: new () => T): T {
-        let l = this._lightPools$.get(LightCtor);
+        if (ONLY_2D) return null!;
+        let l = this._lightPools$!.get(LightCtor);
         if (!l) {
-            this._lightPools$.set(LightCtor, new Pool<Light>((): T => new LightCtor(), 4, (obj): void => obj.destroy()));
-            l = this._lightPools$.get(LightCtor)!;
+            this._lightPools$!.set(LightCtor, new Pool<Light>((): T => new LightCtor(), 4, (obj): void => obj.destroy()));
+            l = this._lightPools$!.get(LightCtor)!;
         }
         const light = l.alloc() as T;
         light.initialize();
@@ -633,6 +634,7 @@ export class Root {
      * @param l @en The light to be destroyed @zh 要销毁的光源
      */
     public destroyLight (l: Light): void {
+        if (ONLY_2D) return;
         if (l.scene) {
             switch (l.type) {
             case LightType.DIRECTIONAL:
@@ -663,7 +665,8 @@ export class Root {
      * @param l @en The light to be recycled @zh 要回收的光源
      */
     public recycleLight (l: Light): void {
-        const p = this._lightPools$.get(l.constructor as Constructor<Light>);
+        if (ONLY_2D) return;
+        const p = this._lightPools$!.get(l.constructor as Constructor<Light>);
         if (p) {
             p.free(l);
             if (l.scene) {
@@ -690,7 +693,8 @@ export class Root {
         }
     }
 
-    private _doWebXRFrameMove (): void {
+    private _doWebXRFrameMove$ (): void {
+        if (ONLY_2D) return;
         const xr = globalThis.__globalXR;
         if (!xr) {
             return;
@@ -738,9 +742,9 @@ export class Root {
             }
             allcameras.length = 0;
 
-            this._frameMoveBegin();
+            this._frameMoveBegin$();
 
-            this._frameMoveProcess();
+            this._frameMoveProcess$();
 
             for (let i = cameraList.length - 1; i >= 0; i--) {
                 const camera = cameraList[i];
@@ -752,11 +756,11 @@ export class Root {
                 }
             }
 
-            this._frameMoveEnd();
+            this._frameMoveEnd$();
         }
     }
 
-    private _frameMoveBegin (): void {
+    private _frameMoveBegin$ (): void {
         for (let i = 0; i < this._scenes$.length; ++i) {
             this._scenes$[i].removeBatches();
         }
@@ -764,7 +768,7 @@ export class Root {
         this._cameraList$.length = 0;
     }
 
-    private _frameMoveProcess (): void {
+    private _frameMoveProcess$ (): void {
         const { director } = cclegacy;
         const windows = this._windows$;
         const cameraList = this._cameraList$;
@@ -790,7 +794,7 @@ export class Root {
         }
     }
 
-    private _frameMoveEnd (): void {
+    private _frameMoveEnd$ (): void {
         const { director, Director } = cclegacy;
         const cameraList = this._cameraList$;
         if (this._pipeline$ && cameraList.length > 0) {
@@ -809,7 +813,7 @@ export class Root {
         if (this._batcher$) this._batcher$.reset();
     }
 
-    private _resizeMaxJointForDS (): void {
+    private _resizeMaxJointForDS$ (): void {
         // TODO: usedUBOVectorCount should be estimated more carefully, the UBOs used could vary in different scenes.
         const usedUBOVectorCount = Math.max((UBOGlobalEnum.COUNT + UBOCameraEnum.COUNT + UBOShadowEnum.COUNT + UBOLocalEnum.COUNT + UBOWorldBound.COUNT) / 4, 100);
         let maxJoints = Math.floor((deviceManager.gfxDevice.capabilities.maxVertexUniformVectors - usedUBOVectorCount) / 3);

@@ -22,9 +22,10 @@
  THE SOFTWARE.
 */
 
-import { lerp, Quat, errorID, cclegacy, binarySearchEpsilon, ValueType, bezierByTime, BezierControlPoints, easing } from '../core';
+import { lerp, Quat, errorID, cclegacy, binarySearchEpsilon, ValueType, easing } from '../core';
 import { ILerpable, isLerpable } from './types';
 import type * as legacy from './legacy-clip-data';
+import { bezierByTime, BezierControlPoints } from '../core/curves/bezier';
 
 /**
  * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
@@ -246,9 +247,7 @@ export function sampleAnimationCurve (curve: AnimCurve, sampler: RatioSampler, r
             index = sampler.ratios.length - 1;
         } else {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return curve.valueBetween(
-                ratio, index - 1, sampler.ratios[index - 1], index, sampler.ratios[index],
-            );
+            return curve.valueBetween(ratio, index - 1, sampler.ratios[index - 1], index, sampler.ratios[index]);
         }
     }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return

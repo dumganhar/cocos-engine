@@ -24,8 +24,7 @@
 
 import { ComponentPath, HierarchyPath, TargetPath } from './target-path';
 import { IValueProxyFactory } from './value-proxy';
-import { easing, QuatCurve, QuatInterpolationMode, RealCurve, RealInterpolationMode, RealKeyframeValue, TangentWeightMode,
-    warnID, Color, Quat, Size, Vec2, Vec3, Vec4, assertIsTrue, EasingMethod, BezierControlPoints, CompactValueTypeArray } from '../core';
+import { easing, warnID, Color, Quat, Size, Vec2, Vec3, Vec4, assertIsTrue, EasingMethod, CompactValueTypeArray } from '../core';
 import { AnimCurve, RatioSampler } from './animation-curve';
 import { Track, TrackPath } from './tracks/track';
 import { UntypedTrack } from './tracks/untyped-track';
@@ -36,6 +35,9 @@ import { VectorTrack } from './tracks/vector-track';
 import { QuatTrack } from './tracks/quat-track';
 import { ObjectTrack } from './tracks/object-track';
 import { SizeTrack } from './tracks/size-track';
+import { RealCurve, RealInterpolationMode, RealKeyframeValue, TangentWeightMode } from '../core/curves/curve';
+import { QuatCurve, QuatInterpolationMode } from '../core/curves/quat-curve';
+import { BezierControlPoints } from '../core/curves';
 
 /**
  * 表示曲线值，曲线值可以是任意类型，但必须符合插值方式的要求。

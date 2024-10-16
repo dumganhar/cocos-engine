@@ -23,10 +23,11 @@
 */
 
 import { ccclass, serializable } from 'cc.decorator';
-import { RealCurve, Size } from '../../core';
+import { Size } from '../../core';
 import { CLASS_NAME_PREFIX_ANIM, createEvalSymbol } from '../define';
 import { Channel, RealChannel, RuntimeBinding, Track, TrackEval } from './track';
 import { maskIfEmpty } from './utils';
+import { RealCurve } from '../../core/curves/curve';
 
 const CHANNEL_NAMES: ReadonlyArray<string> = ['Width', 'Height'];
 

@@ -22,7 +22,8 @@
  THE SOFTWARE.
 */
 
-import { _decorator, RealCurve } from '../../core';
+import { _decorator } from '../../core';
+import { RealCurve } from '../../core/curves/curve';
 import { CLASS_NAME_PREFIX_ANIM, createEvalSymbol } from '../define';
 import { Channel, RealChannel, RuntimeBinding, Track, TrackEval } from './track';
 
@@ -56,8 +57,10 @@ export class RealArrayTrack extends Track {
             this._channels.splice(value);
         } else if (value > nChannels) {
             this._channels.push(
-                ...Array.from({ length: value - nChannels },
-                    (): Channel<RealCurve> => new Channel<RealCurve>(new RealCurve())),
+                ...Array.from(
+                    { length: value - nChannels },
+                    (): Channel<RealCurve> => new Channel<RealCurve>(new RealCurve()),
+                ),
             );
         }
     }

@@ -28,13 +28,14 @@ import { SkelAnimDataHub } from './skeletal-animation-data-hub';
 import { getWorldTransformUntilRoot } from '../../animation/transform-utils';
 import { Mesh } from '../assets/mesh';
 import { Skeleton } from '../assets/skeleton';
-import { geometry, Mat4, Quat, Vec3 } from '../../core';
+import { Mat4, Quat, Vec3 } from '../../core';
 import { BufferUsageBit, Format, FormatInfos,
     MemoryUsageBit, Device, Buffer, BufferInfo, FormatFeatureBit } from '../../gfx';
 import { UBOSkinningAnimation } from '../../rendering/define';
 import { Node } from '../../scene-graph';
 import { ITextureBufferHandle, TextureBufferPool } from '../../render-scene/core/texture-buffer-pool';
 import { jointTextureSamplerInfo } from '../misc/joint-texture-sampler-info';
+import { geometry } from '../../core/geometry-index';
 
 // change here and cc-skinning.chunk to use other skinning algorithms
 export const uploadJointData = uploadJointDataLBS;
@@ -381,8 +382,7 @@ export class JointTexturePool {
         }
     }
 
-    private _createAnimInfos (skeleton: Skeleton, clip: AnimationClip, skinningRoot: Node): IInternalJointAnimInfo[]
-    {
+    private _createAnimInfos (skeleton: Skeleton, clip: AnimationClip, skinningRoot: Node): IInternalJointAnimInfo[] {
         const animInfos: IInternalJointAnimInfo[] = [];
         const { joints, bindposes } = skeleton;
         const jointCount = joints.length;
