@@ -27,24 +27,35 @@
 import spine from './spine-core';
 import { js } from '../../core';
 
-function resizeArray (array: any[], newSize: number): any[] {
-    if (!array) return new Array(newSize);
+interface NativeArray<T> {
+    size(): number;
+    resize(size: number): void;
+    get(i: number): T;
+    set?(i: number, v: T): void;
+}
+
+function resizeArray<T> (array: T[] | undefined, newSize: number): T[] {
+    if (!array) return new Array<T>(newSize);
     if (newSize === array.length) return array;
-    if (newSize < array.length) return array.slice(0, newSize);
-    else return new Array(newSize);
+    array.length = newSize;
+    return array;
+}
+
+function toJSArray<T> (jsArray: T[], nativeArray: NativeArray<T>): T[] {
+    const count = nativeArray.size();
+    jsArray = resizeArray(jsArray, count);
+    for (let i = 0; i < count; i++) {
+        jsArray[i] = nativeArray.get(i);
+    }
+    return jsArray;
 }
 
 function overrideDefineArrayProp (prototype: any, getPropVector: any, name: string): void {
     const _name = `_${name}`;
     Object.defineProperty(prototype, name, {
         get (): any[] {
-            const vectors = getPropVector.call(this);
-            const count = vectors.size();
-            let array = this[_name] as any[];
-            array = resizeArray(array, count);
-            for (let i = 0; i < count; i++) array[i] = vectors.get(i);
-            this[_name] = array;
-            return array;
+            const jsArray = this[_name] = this[_name] || [];
+            return toJSArray(jsArray, getPropVector.call(this));
         },
     });
 }
@@ -53,52 +64,27 @@ function overrideDefineArrayArrayProp (prototype: any, getPropVector: any, name:
     const _name = `_${name}`;
     Object.defineProperty(prototype, name, {
         get (): any[] {
-            const vectors = getPropVector.call(this);
-            const count = vectors.size();
-            let array = this[_name];
-            array = resizeArray(array, count);
+            const jsArray: any[] = this[_name] = this[_name] || [];
+            const nativeArray = getPropVector.call(this)
+            const count = nativeArray.size();
+            jsArray = resizeArray(jsArray, count);
             for (let i = 0; i < count; i++) {
-                const vectorI = vectors.get(i);
-                const countJ = vectorI.size();
-                let arrayJ: any[] = array[i];
-                arrayJ = resizeArray(arrayJ, countJ);
-                for (let j = 0; j < countJ; j++) arrayJ[j] = vectorI.get(j);
-                array[i] = arrayJ;
+                const nativeSubArray = nativeArray.get(i);
+                const nativeSubArrayLen = nativeSubArray.size();
+                const jsSubArray = jsArray[i] = resizeArray(jsArray[i], nativeSubArrayLen);
+                for (let j = 0; j < nativeSubArrayLen; ++j) jsSubArray[j] = nativeSubArray.get(j);
             }
-            this[_name] = array;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return array;
+            return jsArray;
         },
     });
 }
 
 function overrideDefineArrayFunction (prototype: any, getPropVector: any, name: string): void {
     const _name = `_${name}`;
-    Object.defineProperty(prototype, name, {
-        value (): any[] {
-            const vectors = getPropVector.call(this);
-            const count = vectors.size();
-            let array = this[_name] as any[];
-            array = resizeArray(array, count);
-            for (let i = 0; i < count; i++) array[i] = vectors.get(i);
-            this[_name] = array;
-            return array;
-        },
-    });
-}
-
-function overrideDefinePtrStringFunction (prototype: any, getPtr: any, name: string): void {
-    Object.defineProperty(prototype, name, {
-        value (): string {
-            let str = '';
-            const ptr = getPtr.call(this);
-            const HEAPU8 = spine.wasmUtil.wasm.HEAPU8;
-            const length = this.length;
-            const buffer = HEAPU8.subarray(ptr, ptr + length);
-            str = String.fromCharCode(...buffer);
-            return str;
-        },
-    });
+    prototype[name] = function () {
+        let jsArray = this[_name] ? this[_name] || [];
+        return toJSArray(jsArray, getPropVector.apply(this, arguments));
+    };
 }
 
 function overrideClass (wasm): void {
@@ -113,19 +99,6 @@ function overrideClass (wasm): void {
         }
     }
 }
-
-// function overrideProperty_String (): void {
-//     const prototype = spine.String.prototype as any;
-//     const propertyPolyfills = [
-//         ['length', prototype.length],
-//         ['isEmpty', prototype.isEmpty],
-//         ['str', prototype.str],
-//     ];
-//     propertyPolyfills.forEach((prop): void => {
-//         js.get(prototype, prop[0], prop[1]);
-//     });
-//     overrideDefinePtrStringFunction(prototype, prototype.strPtr, 'strPtr');
-// }
 
 function overrideProperty_BoneData (): void {
     const prototype = spine.BoneData.prototype as any;
