@@ -42,8 +42,10 @@ export interface IRaycastResult {
     distance: number;
 }
 
-const renderSceneProto = jsb.RenderScene.prototype;
+export const RenderScene: typeof JsbRenderScene = jsb.RenderScene;
+export type RenderScene = JsbRenderScene;
 
+const renderSceneProto = RenderScene.prototype;
 
 Object.defineProperty(renderSceneProto, 'mainLight', {
     enumerable: true,
@@ -52,5 +54,15 @@ Object.defineProperty(renderSceneProto, 'mainLight', {
         return this.getMainLight();
     }
 });
-export const RenderScene: typeof JsbRenderScene = jsb.RenderScene;
-export type RenderScene = JsbRenderScene;
+
+renderSceneProto.addBatch = function (batch) {
+    console.error('The Draw Batch class is implemented differently in the native platform and does not support this interface.');
+};
+
+renderSceneProto.removeBatch = function (batch) {
+    console.error('The Draw Batch class is implemented differently in the native platform and does not support this interface.');
+};
+
+renderSceneProto.removeBatches = function () {
+    console.error('The Draw Batch class is implemented differently in the native platform and does not support this interface.');
+};

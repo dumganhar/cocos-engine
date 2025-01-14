@@ -37,8 +37,9 @@ export type BakedSkinningModel = JsbBakedSkinningModel;
 cclegacy.BakedSkinningModel = jsb.BakedSkinningModel;
 const MorphModel = jsb.MorphModel;
 
-const bakedSkinningModelProto: any = BakedSkinningModel.prototype;
+const bakedSkinningModelProto: BakedSkinningModel = BakedSkinningModel.prototype;
 
+// @ts-ignore
 bakedSkinningModelProto._ctor = function () {
     jsb.Model.prototype._ctor.call(this);
     this.uploadedAnim = undefined;
@@ -104,8 +105,9 @@ bakedSkinningModelProto.uploadAnimation = function (anim: AnimationClip | null) 
         tex,
         this._jointsMedium.animInfo.data
     );
-}
+};
 
+// @ts-ignore
 bakedSkinningModelProto._applyJointTexture = function (texture: IJointTextureHandle | null = null) {
     const oldTex = this._jointsMedium.texture;
     if (oldTex && oldTex !== texture) { this._dataPoolManager.jointTexturePool.releaseHandle(oldTex); }
@@ -116,4 +118,4 @@ bakedSkinningModelProto._applyJointTexture = function (texture: IJointTextureHan
     jointTextureInfo[1] = this._skeleton!.joints.length;
     jointTextureInfo[2] = texture.pixelOffset + 0.1; // guard against floor() underflow
     jointTextureInfo[3] = 1 / jointTextureInfo[0];
-}
+};

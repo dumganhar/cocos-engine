@@ -28,14 +28,15 @@ import { Device, deviceManager } from './gfx';
 import { settings, Settings, warnID, Pool, macro, log } from './core';
 import { PipelineEventProcessor } from './rendering/pipeline-event';
 import type { Root as JsbRoot } from './root';
+import type { Light } from './render-scene/scene/light';
+import type { DirectionalLight, RangedDirectionalLight, SphereLight, PointLight, SpotLight } from './render-scene/scene';
 
-declare const nr: any;
 declare const jsb: any;
 
 export const Root: typeof JsbRoot = jsb.Root;
 export type Root = JsbRoot;
 
-enum LightType {
+export enum LightType {
     DIRECTIONAL,
     SPHERE,
     SPOT,
@@ -52,8 +53,9 @@ export interface IRootInfo {
     enableHDR?: boolean;
 }
 
-const rootProto: any = Root.prototype;
+const rootProto: Root = Root.prototype;
 
+// @ts-ignore
 rootProto._createBatcher2D = function () {
     if (!this._batcher && cclegacy.internal.Batcher2D) {
         this._batcher = new cclegacy.internal.Batcher2D(this);
@@ -90,6 +92,7 @@ Object.defineProperty(rootProto, 'pipelineEvent', {
     }
 });
 
+// @ts-ignore
 rootProto._ctor = function (device: Device) {
     this._device = device;
     this._dataPoolMgr = cclegacy.internal.DataPoolManager && new cclegacy.internal.DataPoolManager(device) as DataPoolManager;
@@ -147,23 +150,23 @@ rootProto.createLight = function (LightCtor) {
     return light;
 };
 
-rootProto.destroyLight = function (l) {
+rootProto.destroyLight = function (l: Light) {
     if (l.scene) {
         switch (l.type) {
             case LightType.DIRECTIONAL:
-                l.scene.removeDirectionalLight(l);
+                l.scene.removeDirectionalLight(l as DirectionalLight);
                 break;
             case LightType.SPHERE:
-                l.scene.removeSphereLight(l);
+                l.scene.removeSphereLight(l as SphereLight);
                 break;
             case LightType.SPOT:
-                l.scene.removeSpotLight(l);
+                l.scene.removeSpotLight(l as SpotLight);
                 break;
             case LightType.POINT:
-                l.scene.removePointLight(l);
+                l.scene.removePointLight(l as PointLight);
                 break;
             case LightType.RANGED_DIRECTIONAL:
-                l.scene.removeRangedDirLight(l);
+                l.scene.removeRangedDirLight(l as RangedDirectionalLight);
                 break;
             default:
                 break;
@@ -179,19 +182,19 @@ rootProto.recycleLight = function (l) {
         if (l.scene) {
             switch (l.type) {
                 case LightType.DIRECTIONAL:
-                    l.scene.removeDirectionalLight(l);
+                    l.scene.removeDirectionalLight(l as DirectionalLight);
                     break;
                 case LightType.SPHERE:
-                    l.scene.removeSphereLight(l);
+                    l.scene.removeSphereLight(l as SphereLight);
                     break;
                 case LightType.SPOT:
-                    l.scene.removeSpotLight(l);
+                    l.scene.removeSpotLight(l as SpotLight);
                     break;
                 case LightType.POINT:
-                    l.scene.removePointLight(l);
+                    l.scene.removePointLight(l as PointLight);
                     break;
                 case LightType.RANGED_DIRECTIONAL:
-                    l.scene.removeRangedDirLight(l);
+                    l.scene.removeRangedDirLight(l as RangedDirectionalLight);
                     break;
                 default:
                     break;
@@ -200,18 +203,22 @@ rootProto.recycleLight = function (l) {
     }
 };
 
+// @ts-ignore
 rootProto._onDirectorBeforeCommit = function () {
     cclegacy.director.emit(cclegacy.Director.EVENT_BEFORE_COMMIT);
 };
 
+// @ts-ignore
 rootProto._onDirectorBeforeRender = function () {
     cclegacy.director.emit(cclegacy.Director.EVENT_BEFORE_RENDER);
 };
 
+// @ts-ignore
 rootProto._onDirectorAfterRender = function () {
     cclegacy.director.emit(cclegacy.Director.EVENT_AFTER_RENDER);
 };
 
+// @ts-ignore
 rootProto._onDirectorPipelineChanged = function () {
     const scene = cclegacy.director.getScene();
     if (scene) {
@@ -255,16 +262,4 @@ rootProto.setRenderPipeline = function (customPipeline: boolean) {
     }
     this._createBatcher2D();
     return ppl;
-}
-
-rootProto.addBatch = function (batch) {
-    console.error('The Draw Batch class is implemented differently in the native platform and does not support this interface.');
-}
-
-rootProto.removeBatch = function (batch) {
-    console.error('The Draw Batch class is implemented differently in the native platform and does not support this interface.');
-}
-
-rootProto.removeBatches = function () {
-    console.error('The Draw Batch class is implemented differently in the native platform and does not support this interface.');
 }

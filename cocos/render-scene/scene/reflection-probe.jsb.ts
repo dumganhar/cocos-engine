@@ -39,7 +39,9 @@ export enum ProbeType {
 
 export const ReflectionProbe: typeof JsbReflectionProbe = jsb.ReflectionProbe;
 export type ReflectionProbe = JsbReflectionProbe;
-const reflectionProbeProto: any = jsb.ReflectionProbe.prototype;
+const reflectionProbeProto = ReflectionProbe.prototype;
+
+// @ts-ignore
 reflectionProbeProto._ctor = function (id:number) {
     this._probeId = id;
 };

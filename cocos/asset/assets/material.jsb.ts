@@ -31,6 +31,9 @@ import './asset';
 import { patch_cc_Material } from '../../native-binding/decorators';
 import type { Material as JsbMaterial } from './material';
 
+export type Material = JsbMaterial;
+export const Material: typeof JsbMaterial = jsb.Material;
+
 /**
  * @en The basic infos for material initialization.
  * @zh 用来初始化材质的基本信息。
@@ -76,7 +79,7 @@ interface IMaterialInfo {
 type MaterialPropertyFull = MaterialProperty | TextureBase | Texture | null;
 
 declare const jsb: any;
-const matProto: any = jsb.Material.prototype;
+const matProto = Material.prototype;
 
 type setProperyCB = (name: string, val: MaterialPropertyFull | MaterialPropertyFull[], passIdx?: number) => void;
 function wrapSetProperty(cb: setProperyCB, target: Material, name: string, val: MaterialPropertyFull | MaterialPropertyFull[], passIdx?: number) {
@@ -255,12 +258,12 @@ matProto.getProperty = function (name: string, passIdx?: number) {
     return ret || val;
 };
 
-export type Material = JsbMaterial;
-export const Material: typeof JsbMaterial = jsb.Material;
+
 cclegacy.Material = Material;
 
-const materialProto: any = Material.prototype;
+const materialProto = Material.prototype;
 
+// @ts-ignore
 materialProto._ctor = function () {
     jsb.Asset.prototype._ctor.apply(this, arguments);
     this._props = [];
@@ -276,6 +279,7 @@ materialProto.onLoaded = function () {
     oldOnLoaded.call(this);
 };
 
+// @ts-ignore
 materialProto._onPassesUpdated = function () {
     this._passes = this.getPasses();
 };

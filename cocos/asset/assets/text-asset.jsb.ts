@@ -22,16 +22,20 @@
  THE SOFTWARE.
 */
 import { cclegacy } from '../../core';
+import type { TextAsset as JsbTextAsset } from './text-asset';
 import { patch_cc_TextAsset } from '../../native-binding/decorators';
 import './asset';
 
-const textAssetProto: any = jsb.TextAsset.prototype;
+declare const jsb: any;
+
+export type TextAsset = JsbTextAsset;
+export const TextAsset: typeof JsbTextAsset = jsb.TextAsset;
+
+const textAssetProto = TextAsset.prototype;
 
 textAssetProto.createNode = null!;
 
-export type TextAsset = jsb.TextAsset;
-export const TextAsset = jsb.TextAsset;
-
+// @ts-ignore
 textAssetProto._ctor = function () {
     jsb.Asset.prototype._ctor.apply(this, arguments);
 };

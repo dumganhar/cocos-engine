@@ -20,6 +20,7 @@
  THE SOFTWARE.
 */
 
+// @ts-ignore
 import { EDITOR, EDITOR_NOT_IN_PREVIEW } from 'internal:constants';
 import { cclegacy } from '../core/global-exports';
 import { errorID, getError } from '../core/platform/debug';
@@ -38,6 +39,7 @@ import { nodePolyfill } from './node-dev';
 import * as js from '../core/utils/js';
 import { patch_cc_Node } from '../native-binding/decorators';
 import type { Node as JsbNode } from './node';
+import { Event } from '../input/types';
 import { DispatcherEventType, NodeEventProcessor } from './node-event-processor';
 
 const reserveContentsForAllSyncablePrefabTag = Symbol('ReserveContentsForAllSyncablePrefab');
@@ -49,7 +51,7 @@ export const Node: typeof JsbNode = jsb.Node;
 export type Node = JsbNode;
 cclegacy.Node = Node;
 
-const NodeCls: any = Node;
+const NodeCls: typeof JsbNode = Node;
 
 
 NodeCls.reserveContentsForAllSyncablePrefabTag = reserveContentsForAllSyncablePrefabTag;
@@ -81,7 +83,7 @@ NodeCls.TransformBit = TransformBit;
 
 const TRANSFORMBIT_TRS = TransformBit.TRS;
 
-const nodeProto: any = jsb.Node.prototype;
+const nodeProto: JsbNode = jsb.Node.prototype;
 export const TRANSFORM_ON = 1 << 0;
 const ACTIVE_ON = 1 << 1;
 const Destroying = CCObject.Flags.Destroying;
@@ -122,6 +124,7 @@ nodeProto.attr = function (attrs: unknown) {
 nodeProto.getComponent = function (typeOrClassName) {
     const constructor = getConstructor(typeOrClassName);
     if (constructor) {
+        // @ts-ignore
         return NodeCls._findComponent(this, constructor);
     }
     return null;
@@ -131,6 +134,7 @@ nodeProto.getComponents = function (typeOrClassName) {
     const constructor = getConstructor(typeOrClassName);
     const components = [];
     if (constructor) {
+        // @ts-ignore
         NodeCls._findComponents(this, constructor, components);
     }
     return components;
@@ -139,6 +143,7 @@ nodeProto.getComponents = function (typeOrClassName) {
 nodeProto.getComponentInChildren = function (typeOrClassName) {
     const constructor = getConstructor(typeOrClassName);
     if (constructor) {
+        // @ts-ignore
         return NodeCls._findChildComponent(this._children, constructor);
     }
     return null;
@@ -148,7 +153,9 @@ nodeProto.getComponentsInChildren = function (typeOrClassName) {
     const constructor = getConstructor(typeOrClassName);
     const components = [];
     if (constructor) {
+        // @ts-ignore
         NodeCls._findComponents(this, constructor, components);
+        // @ts-ignore
         NodeCls._findChildComponents(this.children, constructor, components);
     }
     return components;
@@ -160,7 +167,6 @@ nodeProto.addComponent = function (typeOrClassName) {
     }
 
     // get component
-
     let constructor;
     if (typeof typeOrClassName === 'string') {
         constructor = getClassByName(typeOrClassName);
@@ -383,6 +389,7 @@ nodeProto._removeComponent = function (component: Component) {
     }
 };
 
+// @ts-ignore
 nodeProto._registerIfAttached = !EDITOR ? undefined : function (this: Node, attached: boolean) {
     if (EditorExtends.Node && EditorExtends.Component) {
         if (attached) {
@@ -413,28 +420,34 @@ nodeProto._registerIfAttached = !EDITOR ? undefined : function (this: Node, atta
 
 // These functions are invoked by native Node object.
 
+// @ts-ignore
 nodeProto._onTransformChanged = function (transformType) {
     this.emit(NodeEventType.TRANSFORM_CHANGED, transformType);
 };
 
+// @ts-ignore
 nodeProto._onParentChanged = function (oldParent) {
     this.emit(NodeEventType.PARENT_CHANGED, oldParent);
 };
 
+// @ts-ignore
 nodeProto._onReAttach = function () {
     this._eventProcessor.reattach();
 };
 
+// @ts-ignore
 nodeProto._onEditorAttached = function (attached: boolean) {
     if (EDITOR) {
         this._registerIfAttached(attached);
     }
 };
 
+// @ts-ignore
 nodeProto._onRemovePersistRootNode = function () {
     cclegacy.game.removePersistRootNode(this);
 };
 
+// @ts-ignore
 nodeProto._onDestroyComponents = function () {
     // Destroy node event processor
     this._eventProcessor.destroy();
@@ -446,14 +459,17 @@ nodeProto._onDestroyComponents = function () {
     }
 };
 
+// @ts-ignore
 nodeProto._onMobilityChanged = function () {
     this.emit(NodeEventType.MOBILITY_CHANGED);
 };
 
+// @ts-ignore
 nodeProto._onLayerChanged = function (layer) {
     this.emit(NodeEventType.LAYER_CHANGED, layer);
 };
 
+// @ts-ignore
 nodeProto._onChildRemoved = function (child) {
     const removeAt = this._children.indexOf(child);
     if (removeAt < 0) {
@@ -464,12 +480,16 @@ nodeProto._onChildRemoved = function (child) {
     this.emit(NodeEventType.CHILD_REMOVED, child);
 };
 
+// @ts-ignore
 nodeProto._onChildAdded = function (child) {
     this._children.push(child);
     this.emit(NodeEventType.CHILD_ADDED, child);
 };
 
+// @ts-ignore
 const oldPreDestroy = nodeProto._onPreDestroy;
+
+// @ts-ignore
 nodeProto._onPreDestroy = function _onPreDestroy() {
     const ret = oldPreDestroy.call(this);
 
@@ -504,10 +524,12 @@ nodeProto.destroyAllChildren = function destroyAllChildren() {
     }
 };
 
+// @ts-ignore
 nodeProto._onSiblingOrderChanged = function () {
     this.emit(NodeEventType.CHILDREN_ORDER_CHANGED);
 };
 
+// @ts-ignore
 nodeProto._onActivateNode = function (shouldActiveNow) {
     cclegacy.director._nodeActivator.activateNode(this, shouldActiveNow);
 };
@@ -536,14 +558,16 @@ nodeProto._onPostActivated = function (active: boolean) {
     }
 };
 
+// @ts-ignore
 nodeProto._onLightProbeBakingChanged = function () {
     this.emit(NodeEventType.LIGHT_PROBE_BAKING_CHANGED);
 };
 
 // Static functions.
-
+// @ts-ignore
 NodeCls._findComponent = function (node, constructor) {
     const cls = constructor;
+    // @ts-ignore
     const comps = node._components;
     if (cls._sealed) {
         for (let i = 0; i < comps.length; ++i) {
@@ -563,8 +587,10 @@ NodeCls._findComponent = function (node, constructor) {
     return null;
 };
 
+// @ts-ignore
 NodeCls._findComponents = function (node, constructor, components) {
     const cls = constructor;
+    // @ts-ignore
     const comps = node._components;
     if (cls._sealed) {
         for (let i = 0; i < comps.length; ++i) {
@@ -583,9 +609,11 @@ NodeCls._findComponents = function (node, constructor, components) {
     }
 };
 
+// @ts-ignore
 NodeCls._findChildComponent = function (children, constructor) {
     for (let i = 0; i < children.length; ++i) {
         const node = children[i];
+        // @ts-ignore
         let comp: Component = NodeCls._findComponent(node, constructor);
         if (comp) {
             return comp;
@@ -593,6 +621,7 @@ NodeCls._findChildComponent = function (children, constructor) {
 
         const childChildren = node.children;
         if (childChildren.length > 0) {
+            // @ts-ignore
             comp = NodeCls._findChildComponent(childChildren, constructor);
             if (comp) {
                 return comp;
@@ -602,13 +631,16 @@ NodeCls._findChildComponent = function (children, constructor) {
     return null;
 };
 
+// @ts-ignore
 NodeCls._findChildComponents = function (children, constructor, components) {
     for (let i = 0; i < children.length; ++i) {
         const node = children[i];
+        // @ts-ignore
         NodeCls._findComponents(node, constructor, components);
 
         const childChildren = node.children;
         if (childChildren.length > 0) {
+            // @ts-ignore
             NodeCls._findChildComponents(childChildren, constructor, components);
         }
     }
@@ -785,24 +817,28 @@ nodeProto.getWorldMatrix = function getWorldMatrix(out?: Mat4): Mat4 {
     return out;
 };
 
+// @ts-ignore
 nodeProto.getEulerAngles = function getEulerAngles(out?: Vec3): Vec3 {
     this._getEulerAngles();
     out = out || new Vec3();
     return out.set(_tempFloatArray[0], _tempFloatArray[1], _tempFloatArray[2]);
 };
 
+// @ts-ignore
 nodeProto.getForward = function getForward(out?: Vec3): Vec3 {
     this._getForward();
     out = out || new Vec3();
     return out.set(_tempFloatArray[0], _tempFloatArray[1], _tempFloatArray[2]);
 };
 
+// @ts-ignore
 nodeProto.getUp = function getUp(out?: Vec3): Vec3 {
     this._getUp();
     out = out || new Vec3();
     return out.set(_tempFloatArray[0], _tempFloatArray[1], _tempFloatArray[2]);
 };
 
+// @ts-ignore
 nodeProto.getRight = function getRight(out?: Vec3): Vec3 {
     this._getRight();
     out = out || new Vec3();
@@ -834,7 +870,7 @@ nodeProto.getWorldRS = function getWorldRS(out?: Mat4): Mat4 {
     return out;
 };
 
-nodeProto.isTransformDirty = function (): Boolean {
+nodeProto.isTransformDirty = function (): boolean {
     return this._transformFlags !== TransformBit.NONE;
 };
 
@@ -1281,6 +1317,7 @@ nodeProto[serializeTag] = function (serializationOutput: SerializationOutput, co
     }
 };
 
+// @ts-ignore
 nodeProto._onActiveNode = function (shouldActiveNow: boolean) {
     cclegacy.director._nodeActivator.activateNode(this, shouldActiveNow);
 };
@@ -1306,10 +1343,12 @@ nodeProto._onBatchCreated = function (dontSyncChildPrefab: boolean) {
     syncNodeValues(this);
 };
 
+// @ts-ignore
 nodeProto._onSceneUpdated = function (scene) {
     this._scene = scene;
 };
 
+// @ts-ignore
 nodeProto._onLocalPositionUpdated = function (x, y, z) {
     const lpos = this._lpos;
     lpos.x = x;
@@ -1317,6 +1356,7 @@ nodeProto._onLocalPositionUpdated = function (x, y, z) {
     lpos.z = z;
 };
 
+// @ts-ignore
 nodeProto._onLocalRotationUpdated = function (x, y, z, w) {
     const lrot = this._lrot;
     lrot.x = x;
@@ -1325,6 +1365,7 @@ nodeProto._onLocalRotationUpdated = function (x, y, z, w) {
     lrot.w = w;
 };
 
+// @ts-ignore
 nodeProto._onLocalScaleUpdated = function (x, y, z) {
     const lscale = this._lscale;
     lscale.x = x;
@@ -1332,6 +1373,7 @@ nodeProto._onLocalScaleUpdated = function (x, y, z) {
     lscale.z = z;
 };
 
+// @ts-ignore
 nodeProto._onLocalPositionRotationScaleUpdated = function (px, py, pz, rx, ry, rz, rw, sx, sy, sz) {
     const lpos = this._lpos;
     lpos.x = px;
@@ -1350,6 +1392,7 @@ nodeProto._onLocalPositionRotationScaleUpdated = function (px, py, pz, rx, ry, r
     lscale.z = sz;
 };
 
+// @ts-ignore
 nodeProto._instantiate = function (cloned: Node, isSyncedNode: boolean) {
     if (!cloned) {
         cloned = cclegacy.instantiate._clone(this, this);
@@ -1381,7 +1424,8 @@ nodeProto._getUITransformComp = function () {
     return this._uiProps.uiTransformComp;
 };
 
-nodeProto._onSiblingIndexChanged = function (index) {
+// @ts-ignore
+nodeProto._onSiblingIndexChanged = function (index: number) {
     const siblings = this._parent._children;
     index = index !== -1 ? index : siblings.length - 1;
     const oldIndex = siblings.indexOf(this);
@@ -1396,8 +1440,8 @@ nodeProto._onSiblingIndexChanged = function (index) {
     }
 }
 
-//
-nodeProto._ctor = function (name?: string) {
+// @ts-ignore
+nodeProto._ctor = function (name?: string): void {
     this.__nativeRefs = {};
     this._parentRef = null;
     this.__jsb_ref_id = undefined;
@@ -1433,7 +1477,6 @@ nodeProto._ctor = function (name?: string) {
 
     this._registeredNodeEventTypeMask = 0;
 };
-
 
 nodePolyfill(Node);
 

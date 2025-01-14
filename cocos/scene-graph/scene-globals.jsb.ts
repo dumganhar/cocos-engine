@@ -187,8 +187,9 @@ export type PostSettingsInfo = JsbPostSettingsInfo;
 legacyCC.PostSettingsInfo = PostSettingsInfo;
 
 (function () {
-    const sceneGlobalsProto: any = SceneGlobals.prototype;
+    const sceneGlobalsProto: SceneGlobals = SceneGlobals.prototype;
 
+    // @ts-ignore
     sceneGlobalsProto._ctor = function () {
         this._ambientRef = this.getAmbientInfo();
         this._shadowsRef = this.getShadowsInfo();

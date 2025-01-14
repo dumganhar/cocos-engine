@@ -20,6 +20,7 @@
  THE SOFTWARE.
 */
 
+// @ts-ignore
 import { EDITOR, TEST } from "internal:constants";
 import { legacyCC } from '../core/global-exports';
 import { Node } from './node';
@@ -36,7 +37,7 @@ export const Scene: typeof JsbScene = jsb.Scene;
 export type Scene = JsbScene;
 legacyCC.Scene = Scene;
 
-const sceneProto: any = Scene.prototype;
+const sceneProto: Scene = Scene.prototype;
 
 Object.defineProperty(sceneProto, '_globals', {
     enumerable: true,
@@ -80,6 +81,7 @@ Object.defineProperty(sceneProto, 'renderScene', {
     }
 });
 
+// @ts-ignore
 sceneProto._ctor = function () {
     // TODO: Property '_ctor' does not exist on type 'Node'.
     // issue: https://github.com/cocos/cocos-engine/issues/14644
@@ -138,6 +140,7 @@ sceneProto._activate = function (active: boolean) {
     }
 };
 
+// @ts-ignore
 sceneProto._instantiate = function(): void {};
 
 // handle meta data, it is generated automatically

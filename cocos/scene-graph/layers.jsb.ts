@@ -23,7 +23,10 @@
 */
 
 import { legacyCC } from '../core/global-exports';
+import { Layers as JsbLayers } from './layers';
 
-export const Layers = jsb.Layers;
-export type Layers = jsb.Layers;
+declare const jsb: any;
+
+export const Layers: typeof JsbLayers = jsb.Layers;
+export type Layers = JsbLayers;
 legacyCC.Layers = Layers;

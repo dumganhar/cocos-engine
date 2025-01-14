@@ -131,7 +131,7 @@ export const SKYBOX_FLAG = SkyBoxFlagValue.VALUE;
 
 export const Camera: typeof JsbCamera = jsb.Camera;
 export type Camera = JsbCamera;
-const cameraProto: any = jsb.Camera.prototype;
+const cameraProto = Camera.prototype;
 
 Object.defineProperty(Camera, "standardExposureValue", {
     configurable: true,

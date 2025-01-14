@@ -33,7 +33,7 @@ declare const jsb: any;
 export const Skeleton: typeof JsbSkeleton = jsb.Skeleton;
 export type Skeleton = JsbSkeleton;
 cclegacy.Skeleton = Skeleton;
-const skeletonProto: any = Skeleton.prototype;
+const skeletonProto = Skeleton.prototype;
 
 Object.defineProperty(skeletonProto, 'bindposes', {
     enumerable: true,
@@ -47,7 +47,7 @@ Object.defineProperty(skeletonProto, 'bindposes', {
     },
 });
 
-
+// @ts-ignore
 skeletonProto._ctor = function () {
     jsb.Asset.prototype._ctor.apply(this, arguments);
     this._bindposes = [];

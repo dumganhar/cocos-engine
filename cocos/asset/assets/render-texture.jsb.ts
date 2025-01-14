@@ -21,21 +21,34 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+// @ts-ignore
 import { EDITOR, TEST } from 'internal:constants';
 import { cclegacy } from '../../core';
 import { TextureFilter, PixelFormat, WrapMode } from './asset-enum';
-import './asset';
 import { patch_cc_RenderTexture } from '../../native-binding/decorators';
+import { RenderPassInfo, TextureFlags } from '../../gfx';
 import type { RenderTexture as JsbRenderTexture } from './render-texture';
+import type { TextureBase } from './texture-base';
+
 
 declare const jsb: any;
-const renderTextureProto: any = jsb.RenderTexture.prototype;
-const textureBaseProto: any = jsb.TextureBase.prototype;
+export type RenderTexture = JsbRenderTexture;
+export const RenderTexture: typeof JsbRenderTexture = jsb.RenderTexture;
+
+const renderTextureProto = RenderTexture.prototype;
+const textureBaseProto: TextureBase = jsb.TextureBase.prototype;
 
 renderTextureProto.createNode = null!;
 
-export type RenderTexture = JsbRenderTexture;
-export const RenderTexture: typeof JsbRenderTexture = jsb.RenderTexture;
+export interface IRenderTextureCreateInfo {
+    name?: string;
+    width: number;
+    height: number;
+    passInfo?: RenderPassInfo;
+    externalResLow?: number; // for vulkan vkImage/opengl es texture created from external
+    externalResHigh?: number; // for vulkan vkImage created from external
+    externalFlag?: TextureFlags; // external texture type normal or oes
+}
 
 RenderTexture.Filter = TextureFilter;
 RenderTexture.PixelFormat = PixelFormat;
@@ -58,14 +71,14 @@ renderTextureProto._deserialize = function (serializedData: any, handle: any) {
 };
 
 const oldReadPixels = renderTextureProto.readPixels;
-renderTextureProto.readPixels = function readPixels (x: number, y: number, width: number, height: number, buffer?: Uint8Array) {
+renderTextureProto.readPixels = function readPixels (x: number, y: number, width: number, height: number, buffer?: Uint8Array): Uint8Array | null {
     x = x || 0;
     y = y || 0;
     width = width || this.width;
     height = height || this.height;
 
 
-    let tmpBuffer = oldReadPixels.call(this, x, y, width, height);
+    let tmpBuffer: Uint8Array = oldReadPixels.call(this, x, y, width, height);
     if (tmpBuffer.length == 0) {
         return null;
     }

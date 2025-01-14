@@ -22,6 +22,7 @@
  THE SOFTWARE.
 */
 
+// @ts-ignore
 import { ALIPAY, XIAOMI, JSB, TEST, EDITOR } from 'internal:constants';
 import { Format, FormatFeatureBit, deviceManager } from '../../gfx';
 import { PixelFormat } from './asset-enum';
@@ -66,8 +67,9 @@ function isNativeImage (imageSource: ImageSource): imageSource is (HTMLImageElem
 }
 
 // TODO: we mark imageAssetProto as type of any, because here we have many dynamic injected property @dumganhar
-const imageAssetProto: any = ImageAsset.prototype;
+const imageAssetProto = ImageAsset.prototype;
 
+// @ts-ignore
 imageAssetProto._ctor = function (nativeAsset?: ImageSource) {
     jsb.Asset.prototype._ctor.apply(this, arguments);
     this._width = 0;
@@ -161,6 +163,7 @@ Object.defineProperty(imageAssetProto, 'height', {
     }
 });
 
+// @ts-ignore
 imageAssetProto._syncDataToNative = function () {
     const data: any = this._nativeData;
     this._width = data.width;

@@ -35,6 +35,13 @@ export interface IPassInfoFull extends EffectAsset.IPassStates {
     defines: MacroRecord;
     stateOverrides?: PassOverrides;
 }
+
+declare type RecursivePartial<T> = {
+    [P in keyof T]?:
+    T[P] extends Array<infer U> ? Array<RecursivePartial<U>> :
+        T[P] extends ReadonlyArray<infer V> ? ReadonlyArray<RecursivePartial<V>> : RecursivePartial<T[P]>;
+};
+
 export type PassOverrides = RecursivePartial<EffectAsset.IPassStates>;
 
 export interface IMacroPatch {

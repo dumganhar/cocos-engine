@@ -27,24 +27,10 @@ import type { Mesh as JsbMesh } from './mesh';
 
 declare const jsb: any;
 
-export declare namespace Mesh {
-    export interface IBufferView {
-        offset: number;
-        length: number;
-        count: number;
-        stride: number;
-    }
-    export type IVertexBundle = JsbMesh.IVertexBundle;
-    export type ISubMesh = JsbMesh.ISubMesh;
-    export type IDynamicInfo = JsbMesh.IDynamicInfo;
-    export type IDynamicStruct = JsbMesh.IDynamicStruct;
-    export type IStruct = JsbMesh.IStruct;
-    export type ICreateInfo = JsbMesh.ICreateInfo;
-}
 export type Mesh = JsbMesh;
 export const Mesh: typeof JsbMesh = jsb.Mesh;
 
-const IStructProto: any = jsb.Mesh.IStruct.prototype;
+const IStructProto: JsbMesh.IStruct = jsb.Mesh.IStruct.prototype;
 
 Object.defineProperty(IStructProto, 'minPosition', {
     configurable: true,
@@ -88,11 +74,12 @@ Object.defineProperty(IStructProto, 'maxPosition', {
     }
 });
 
-const meshAssetProto: any = jsb.Mesh.prototype;
+const meshAssetProto = Mesh.prototype;
 
 meshAssetProto.createNode = null!;
 const originOnLoaded = meshAssetProto.onLoaded;
 
+// @ts-ignore
 meshAssetProto._ctor = function () {
     jsb.Asset.prototype._ctor.apply(this, arguments);
     this._struct = {

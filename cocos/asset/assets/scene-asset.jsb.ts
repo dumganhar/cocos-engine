@@ -33,7 +33,7 @@ export type SceneAsset = JsbSceneAsset;
 
 cclegacy.SceneAsset = SceneAsset;
 
-const sceneAssetProto: any = SceneAsset.prototype;
+const sceneAssetProto = SceneAsset.prototype;
 
 Object.defineProperty(sceneAssetProto, 'scene', {
     enumerable: true,
@@ -50,6 +50,7 @@ Object.defineProperty(sceneAssetProto, 'scene', {
     }
 });
 
+// @ts-ignore
 sceneAssetProto._ctor = function () {
     jsb.Asset.prototype._ctor.apply(this, arguments);
     this._scene = null;

@@ -31,4 +31,3 @@ export type MeshUtils = JsbMeshUtils;
 export const createMesh = MeshUtils.createMesh;
 export const createDynamicMesh = MeshUtils.createDynamicMesh;
 cclegacy.MeshUtils = jsb.MeshUtils;
-

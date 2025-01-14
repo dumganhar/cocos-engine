@@ -30,7 +30,7 @@ declare const jsb: any;
 export const MaterialInstance: typeof JsbMaterialInstance = jsb.MaterialInstance;
 export type MaterialInstance = JsbMaterialInstance;
 
-const materialInstanceProto: any = jsb.MaterialInstance.prototype;
+const materialInstanceProto = MaterialInstance.prototype;
 
 export interface IMaterialInstanceInfo {
     parent: Material;
@@ -54,6 +54,7 @@ Object.defineProperty(materialInstanceProto, 'owner', {
     },
 });
 
+// @ts-ignore
 materialInstanceProto._ctor = function (info: IMaterialInstanceInfo) {
     jsb.Material.prototype._ctor.apply(this, arguments);
     this._registerListeners();
@@ -66,6 +67,7 @@ materialInstanceProto._ctor = function (info: IMaterialInstanceInfo) {
     this._passes = this.getPasses();
 };
 
+// @ts-ignore
 materialInstanceProto._onRebuildPSO = function () {
     if (this._owner) {
         this._owner._onRebuildPSO(this._subModelIdx, this);

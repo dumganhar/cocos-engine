@@ -38,8 +38,12 @@ export type CreateNodeCallback = (error: Error | null, node: Node) => void;
 
 applyMixins(jsb.Asset, [CallbacksInvoker, jsbUtils.ExtraEventMethods]);
 
-const assetProto: any = jsb.Asset.prototype;
+export type Asset = JsbAsset;
+export const Asset: typeof JsbAsset = jsb.Asset;
 
+const assetProto = Asset.prototype;
+
+// @ts-ignore
 assetProto._ctor = function () {
     this.loaded = true; // deprecated in v3.3
     this._ref = 0;
@@ -115,9 +119,6 @@ assetProto.toString = function () {
 };
 
 assetProto.createNode = null!;
-
-export type Asset = JsbAsset;
-export const Asset: typeof JsbAsset = jsb.Asset;
 
 cclegacy.Asset = jsb.Asset;
 

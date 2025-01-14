@@ -22,6 +22,7 @@
  THE SOFTWARE.
 */
 
+// @ts-ignore
 import { TEST, EDITOR, EDITOR_NOT_IN_PREVIEW } from 'internal:constants';
 import { SpriteFrame } from '../../2d/assets/sprite-frame';
 import type { ImageSource } from '../assets/image-asset';
@@ -38,7 +39,8 @@ declare const jsb: any;
 const Texture2D = jsb.Texture2D;
 const ImageAsset = jsb.ImageAsset;
 
-const BuiltinResMgr = jsb.BuiltinResMgr;
+export type BuiltinResMgr = JsbBuiltinResMgr;
+export const BuiltinResMgr: typeof JsbBuiltinResMgr = jsb.BuiltinResMgr;
 const builtinResMgrProto = BuiltinResMgr.prototype;
 
 builtinResMgrProto.init = function () {
@@ -154,5 +156,6 @@ builtinResMgrProto.loadBuiltinAssets = function () {
     });
 }
 
+// @ts-ignore
 const builtinResMgr = cclegacy.builtinResMgr = BuiltinResMgr.getInstance() as JsbBuiltinResMgr;
 export { builtinResMgr };

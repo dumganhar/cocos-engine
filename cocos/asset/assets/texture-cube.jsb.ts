@@ -21,14 +21,16 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+// @ts-ignore
+import { EDITOR, TEST } from 'internal:constants';
+
 import { TextureFilter, PixelFormat, WrapMode } from './asset-enum';
 import { js, cclegacy } from '../../core';
-import './simple-texture';
-import { EDITOR, TEST } from 'internal:constants';
 import { patch_cc_TextureCube } from '../../native-binding/decorators';
 import type { TextureCube as JsbTextureCube } from './texture-cube';
+import { ITexture2DCreateInfo } from './texture-2d';
 
-const textureCubeProto: any = jsb.TextureCube.prototype;
+const textureCubeProto: TextureCube = jsb.TextureCube.prototype;
 interface ITextureCubeSerializeData {
     base: string;
     rgbe: boolean;
@@ -60,14 +62,18 @@ enum FaceIndex {
     front = 4,
     back = 5,
 }
-enum MipmapMode {
+export enum MipmapMode {
     NONE = 0,
     AUTO = 1,
     BAKED_CONVOLUTION_MAP = 2,
 }
+
+export type ITextureCubeCreateInfo = ITexture2DCreateInfo;
+
 textureCubeProto.createNode = null!;
 
 declare const jsb: any;
+declare const EditorExtends: any;
 
 export type TextureCube = JsbTextureCube;
 export const TextureCube: typeof JsbTextureCube = jsb.TextureCube;
@@ -76,6 +82,7 @@ TextureCube.Filter = TextureFilter;
 TextureCube.PixelFormat = PixelFormat;
 TextureCube.WrapMode = WrapMode;
 
+// @ts-ignore
 textureCubeProto._ctor = function () {
     jsb.SimpleTexture.prototype._ctor.apply(this, arguments);
     this._mipmaps = null;

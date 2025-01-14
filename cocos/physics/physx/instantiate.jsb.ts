@@ -28,6 +28,7 @@
 
 import { selector, IPhysicsSelector } from '../framework/physics-selector';
 
+// @ts-ignore
 (selector as Mutable<IPhysicsSelector>).id = 'physx';
 
 export function loadWasmModulePhysX (): Promise<void> {

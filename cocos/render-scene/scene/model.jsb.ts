@@ -30,6 +30,7 @@ declare const jsb: any;
 
 export interface IInstancedAttributeBlock {
     buffer: Uint8Array;
+    // @ts-ignore
     views: TypedArray[];
     attributes: Attribute[];
 }
@@ -46,8 +47,9 @@ export enum ModelType {
 export const Model: typeof JsbModel = jsb.Model;
 export type Model = JsbModel;
 
-const modelProto: any = Model.prototype;
+const modelProto = Model.prototype;
 
+// @ts-ignore
 modelProto._ctor = function () {
     this._device = deviceManager.gfxDevice;
 };

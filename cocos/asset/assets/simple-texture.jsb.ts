@@ -23,23 +23,28 @@
 */
 import { TextureFilter, PixelFormat, WrapMode } from './asset-enum';
 import dependUtil from '../asset-manager/depend-util';
-import { js, macro, cclegacy } from '../../core';
-import './texture-base';
+import { js, macro, cclegacy, ccenum } from '../../core';
+import { Format, TextureInfo, TextureViewInfo } from '../../gfx';
 import { patch_cc_SimpleTexture } from '../../native-binding/decorators';
 import type { SimpleTexture as JsbSimpleTexture } from './simple-texture';
 
 declare const jsb: any;
+
+export type PresumedGFXTextureInfo = Pick<TextureInfo, 'usage' | 'flags' | 'format' | 'levelCount'>;
+export type PresumedGFXTextureViewInfo = Pick<TextureViewInfo, 'texture' | 'format' | 'baseLevel' | 'levelCount'>;
 
 export type SimpleTexture = JsbSimpleTexture;
 export const SimpleTexture: typeof JsbSimpleTexture = jsb.SimpleTexture;
 
 const jsbWindow = jsb.window;
 
+ccenum(Format);
+
 SimpleTexture.Filter = TextureFilter;
 SimpleTexture.PixelFormat = PixelFormat;
 SimpleTexture.WrapMode = WrapMode;
 
-const simpleTextureProto = jsb.SimpleTexture.prototype;
+const simpleTextureProto = SimpleTexture.prototype;
 const oldUpdateDataFunc = simpleTextureProto.uploadData;
 simpleTextureProto.uploadData = function (source, level = 0, arrayIndex = 0) {
     let data;
@@ -55,6 +60,7 @@ simpleTextureProto.uploadData = function (source, level = 0, arrayIndex = 0) {
     oldUpdateDataFunc.call(this, data, level, arrayIndex);
 };
 
+// @ts-ignore
 simpleTextureProto._ctor = function () {
     jsb.TextureBase.prototype._ctor.apply(this, arguments);
     this._gfxTexture = null;
@@ -69,10 +75,12 @@ simpleTextureProto.getGFXTexture = function () {
     return this._gfxTexture;
 };
 
+// @ts-ignore
 simpleTextureProto._onGFXTextureUpdated = function (gfxTexture) {
     this._gfxTexture = gfxTexture;
 };
 
+// @ts-ignore
 simpleTextureProto._onAfterAssignImage = function (image) {
     if (macro.CLEANUP_IMAGE_CACHE) {
         const deps = dependUtil.getDeps(this._uuid);

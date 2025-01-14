@@ -21,24 +21,25 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-
+// @ts-ignore
 import { EDITOR, TEST } from 'internal:constants'
 import { ImageAsset } from './image-asset';
 import { SimpleTexture } from './simple-texture';
 import { TextureBase } from './texture-base.jsb';
 import { js, cclegacy } from '../../core';
 import { TextureFilter, PixelFormat, WrapMode } from './asset-enum';
-import './simple-texture';
 import { patch_cc_Texture2D } from '../../native-binding/decorators';
 import type { Texture2D as JsbTexture2D } from './texture-2d';
 
 declare const jsb: any;
-const texture2DProto: any = jsb.Texture2D.prototype;
-
-texture2DProto.createNode = null!;
+declare const EditorExtends: any;
 
 export type Texture2D = JsbTexture2D;
 export const Texture2D: typeof JsbTexture2D = jsb.Texture2D;
+
+const texture2DProto = Texture2D.prototype;
+
+texture2DProto.createNode = null!;
 
 Texture2D.Filter = TextureFilter;
 Texture2D.PixelFormat = PixelFormat;
@@ -49,6 +50,7 @@ export interface ITexture2DSerializeData {
     mipmaps: string[];
 }
 
+// @ts-ignore
 texture2DProto._ctor = function () {
     // TODO: Property '_ctor' does not exist on type 'SimpleTexture'.
     // issue: https://github.com/cocos/cocos-engine/issues/14644

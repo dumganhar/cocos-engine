@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-
+// @ts-ignore
 import { TEST, EDITOR } from 'internal:constants';
 import { deviceManager } from '../../gfx';
 import { cclegacy } from '../../core';
@@ -33,7 +33,11 @@ import type { Batcher2D } from '../../2d/renderer/batcher-2d';
 
 declare const jsb: any;
 
-const textureBaseProto: any = jsb.TextureBase.prototype;
+export type TextureBase = JsbTextureBase;
+export const TextureBase: typeof JsbTextureBase = jsb.TextureBase;
+
+const textureBaseProto = TextureBase.prototype;
+textureBaseProto.createNode = null!;
 
 textureBaseProto._serialize = function (ctxForExporting: any): any {
     if (EDITOR || TEST) {
@@ -58,18 +62,22 @@ textureBaseProto._deserialize = function (serializedData: any, handle: any) {
     }
 };
 
+// @ts-ignore
 textureBaseProto._getGFXDevice = function () {
     return deviceManager.gfxDevice;
 };
 
+// @ts-ignore
 textureBaseProto._getGFXFormat = function () {
     return this._getGFXPixelFormat(this.format);
 };
 
+// @ts-ignore
 textureBaseProto._setGFXFormat = function (format?: PixelFormat) {
     this.format = format === undefined ? PixelFormat.RGBA8888 : format;
 };
 
+// @ts-ignore
 textureBaseProto._getGFXPixelFormat = function (format) {
     if (format === PixelFormat.RGBA_ETC1) {
         format = PixelFormat.RGB_ETC1;
@@ -81,15 +89,11 @@ textureBaseProto._getGFXPixelFormat = function (format) {
     return format;
 };
 
-textureBaseProto.createNode = null!;
-
-export type TextureBase = JsbTextureBase;
-export const TextureBase: typeof JsbTextureBase = jsb.TextureBase;
-
 TextureBase.Filter = TextureFilter;
 TextureBase.PixelFormat = PixelFormat;
 TextureBase.WrapMode = WrapMode;
 
+// @ts-ignore
 textureBaseProto._ctor = function () {
     jsb.Asset.prototype._ctor.apply(this, arguments);
     this._gfxSampler = null;
@@ -133,6 +137,7 @@ textureBaseProto.destroy = function () {
     return oldDestroy.call(this);
 };
 
+// @ts-ignore
 textureBaseProto._onGFXSamplerUpdated = function (gfxSampler, samplerInfo) {
     this._gfxSampler = gfxSampler;
     this._samplerInfo = samplerInfo;

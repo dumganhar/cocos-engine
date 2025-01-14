@@ -21,10 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-
-declare const nr: any;
-declare const jsb: any;
-
+// @ts-ignore
 import { OPEN_HARMONY } from 'internal:constants'
 import { legacyCC } from '../../core/global-exports';
 import { ccenum, CCString } from '../../core';
@@ -51,8 +48,12 @@ import * as decors from '../../native-binding/decorators';
 import { ccclass, serializable, editable, type } from '../../core/data/class-decorator';
 import { RenderTexture } from '../../asset/assets/render-texture';
 
+declare const nr: any;
+declare const jsb: any;
+
 export function createDefaultPipeline (): ForwardPipeline {
     const rppl = new ForwardPipeline();
+    // @ts-ignore
     if (!window.oh) {
         rppl.initialize({ flows: [] });
     }
@@ -115,8 +116,9 @@ interface IRenderStageInfo {
 }
 
 // ForwardPipeline
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const forwardPipelineProto: any = ForwardPipeline.prototype;
+const forwardPipelineProto = ForwardPipeline.prototype;
+
+// @ts-ignore
 forwardPipelineProto._ctor = function () {
     this._tag = 0;
     this._flows = [];
@@ -142,7 +144,7 @@ forwardPipelineProto.onLoaded = function () {
 }
 
 // TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const forwardFlowProto: any = ForwardFlow.prototype;
+const forwardFlowProto = ForwardFlow.prototype;
 forwardFlowProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -157,8 +159,7 @@ forwardFlowProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const shadowFlowProto: any = ShadowFlow.prototype;
+const shadowFlowProto = ShadowFlow.prototype;
 shadowFlowProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -173,8 +174,7 @@ shadowFlowProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const forwardStageProto: any = ForwardStage.prototype;
+const forwardStageProto = ForwardStage.prototype;
 forwardStageProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -191,8 +191,7 @@ forwardStageProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const shadowStageProto: any = ShadowStage.prototype;
+const shadowStageProto = ShadowStage.prototype;
 shadowStageProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -204,8 +203,7 @@ shadowStageProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const deferredPipelineProto: any = DeferredPipeline.prototype;
+const deferredPipelineProto = DeferredPipeline.prototype;
 deferredPipelineProto._ctor = function () {
     this._tag = 0;
     this._flows = [];
@@ -226,8 +224,7 @@ deferredPipelineProto.onLoaded = function () {
 }
 
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const mainFlowProto: any = MainFlow.prototype;
+const mainFlowProto = MainFlow.prototype;
 mainFlowProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -242,8 +239,7 @@ mainFlowProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const gbufferStageProto: any = GbufferStage.prototype;
+const gbufferStageProto = GbufferStage.prototype;
 gbufferStageProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -260,8 +256,7 @@ gbufferStageProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const lightingStageProto: any = LightingStage.prototype;
+const lightingStageProto = LightingStage.prototype;
 lightingStageProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -280,8 +275,7 @@ lightingStageProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const bloomStageProto: any = BloomStage.prototype;
+const bloomStageProto = BloomStage.prototype;
 bloomStageProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -300,9 +294,7 @@ bloomStageProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const postProcessStageProto: any = PostProcessStage.prototype;
+const postProcessStageProto = PostProcessStage.prototype;
 postProcessStageProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -321,8 +313,7 @@ postProcessStageProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const reflectionProbeFlowProto: any = ReflectionProbeFlow.prototype;
+const reflectionProbeFlowProto = ReflectionProbeFlow.prototype;
 reflectionProbeFlowProto._ctor = function () {
     this._name = 0;
     this._priority = 0;
@@ -337,8 +328,7 @@ reflectionProbeFlowProto.init = function (pipeline) {
     this.initialize(info);
 }
 
-// TODO: we mark it as type of any, because here we have many dynamic injected property @dumganhar
-const reflectionProbeStage: any = ReflectionProbeStage.prototype;
+const reflectionProbeStage = ReflectionProbeStage.prototype;
 reflectionProbeStage._ctor = function () {
     this._name = 0;
     this._priority = 0;
