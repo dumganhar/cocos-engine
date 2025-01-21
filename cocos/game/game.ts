@@ -826,8 +826,9 @@ export class Game extends EventTarget {
                     return;
                 }
                 const renderMode = settings.querySettings(SettingsCategory.RENDERING, 'renderMode');
+                const { gfxDevice } = deviceManager;
                 if (renderMode === LegacyRenderMode.HEADLESS) {
-                    cclegacy.rendering.init(deviceManager.gfxDevice, null);
+                    cclegacy.rendering.init(gfxDevice, null);
                     return;
                 }
                 const data = effectSettings.data;
@@ -835,7 +836,7 @@ export class Game extends EventTarget {
                     errorID(1102);
                     return;
                 }
-                cclegacy.rendering.init(deviceManager.gfxDevice, data);
+                cclegacy.rendering.init(gfxDevice, data);
             })
             .then((): Promise<any[]> => {
                 const scriptPackages = settings.querySettings<string[]>(SettingsCategory.SCRIPTING, 'scriptPackages');

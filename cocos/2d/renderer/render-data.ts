@@ -76,7 +76,7 @@ export class BaseRenderData {
     }
     set drawInfoType (type: RenderDrawInfoType) {
         this._drawInfoType = type;
-        if (this._renderDrawInfo) {
+        if (JSB && this._renderDrawInfo) {
             this._renderDrawInfo.setDrawInfoType(type);
         }
     }
@@ -95,7 +95,7 @@ export class BaseRenderData {
     }
     set material (val: Material | null) {
         this._material = val;
-        if (this._renderDrawInfo) {
+        if (JSB && this._renderDrawInfo) {
             this._renderDrawInfo.setMaterial(val!);
         }
     }
@@ -106,7 +106,7 @@ export class BaseRenderData {
     }
     set dataHash (val: number) {
         this._dataHash = val;
-        if (this._renderDrawInfo) {
+        if (JSB && this._renderDrawInfo) {
             this._renderDrawInfo.setDataHash(val);
         }
     }
@@ -266,7 +266,7 @@ export class RenderData extends BaseRenderData {
     }
     set vertDirty (val: boolean) {
         this._vertDirty = val;
-        if (this._renderDrawInfo && val) {
+        if (JSB && this._renderDrawInfo && val) {
             this._renderDrawInfo.setVertDirty(val);
         }
     }
@@ -283,7 +283,7 @@ export class RenderData extends BaseRenderData {
 
     public set frame (val: SpriteFrame | TextureBase | null) {
         this._frame = val;
-        if (this._renderDrawInfo) {
+        if (JSB && this._renderDrawInfo) {
             if (this._frame) {
                 this._renderDrawInfo.setTexture(this._frame.getGFXTexture());
                 this._renderDrawInfo.setSampler(this._frame.getGFXSampler());
@@ -449,7 +449,7 @@ export class RenderData extends BaseRenderData {
             this.passDirty = false;
             this.hashDirty = true;
 
-            if (this._renderDrawInfo) {
+            if (JSB && this._renderDrawInfo) {
                 this._renderDrawInfo.setMaterial(this.material);
             }
         }
@@ -468,7 +468,7 @@ export class RenderData extends BaseRenderData {
             this.textureDirty = false;
             this.hashDirty = true;
 
-            if (this._renderDrawInfo) {
+            if (JSB && this._renderDrawInfo) {
                 this._renderDrawInfo.setTexture(this.frame ? this.frame.getGFXTexture() : null);
                 this._renderDrawInfo.setSampler(this.frame ? this.frame.getGFXSampler() : null);
             }
@@ -476,7 +476,7 @@ export class RenderData extends BaseRenderData {
         if (this.hashDirty) {
             this.updateHash();
 
-            if (this._renderDrawInfo) {
+            if (JSB && this._renderDrawInfo) {
                 this._renderDrawInfo.setDataHash(this.dataHash);
             }
         }

@@ -409,8 +409,9 @@ export class Mesh extends Asset {
         if (this.struct.encoded) { // decode mesh data
             info = decodeMesh(info);
         }
+        const { gfxDevice } = deviceManager;
         if (this.struct.quantized
-            && !(deviceManager.gfxDevice.getFormatFeatures(Format.RGB16F) & FormatFeatureBit.VERTEX_ATTRIBUTE)) {
+            && !(gfxDevice.getFormatFeatures(Format.RGB16F) & FormatFeatureBit.VERTEX_ATTRIBUTE)) {
             // dequantize mesh data
             info = dequantizeMesh(info);
         }
@@ -419,13 +420,12 @@ export class Mesh extends Asset {
         this._data = info.data;
 
         if (this._struct.dynamic) {
-            const device: Device = deviceManager.gfxDevice;
             const vertexBuffers: Buffer[] = [];
             const subMeshes: RenderingSubMesh[] = [];
 
             for (let i = 0; i < this._struct.vertexBundles.length; i++) {
                 const vertexBundle = this._struct.vertexBundles[i];
-                const vertexBuffer = device.createBuffer(new BufferInfo(
+                const vertexBuffer = gfxDevice.createBuffer(new BufferInfo(
                     BufferUsageBit.VERTEX | BufferUsageBit.TRANSFER_DST,
                     MemoryUsageBit.DEVICE,
                     vertexBundle.view.length,
@@ -441,7 +441,7 @@ export class Mesh extends Asset {
                 let indexBuffer: Buffer | null = null;
 
                 if (indexView) {
-                    indexBuffer = device.createBuffer(new BufferInfo(
+                    indexBuffer = gfxDevice.createBuffer(new BufferInfo(
                         BufferUsageBit.INDEX | BufferUsageBit.TRANSFER_DST,
                         MemoryUsageBit.DEVICE,
                         indexView.length,
@@ -478,7 +478,6 @@ export class Mesh extends Asset {
             this._renderingSubMeshes = subMeshes;
         } else {
             const { buffer } = this._data;
-            const gfxDevice: Device = deviceManager.gfxDevice;
             const vertexBuffers = this._createVertexBuffers(gfxDevice, buffer);
             const indexBuffers: Buffer[] = [];
             const subMeshes: RenderingSubMesh[] = [];
@@ -1092,42 +1091,50 @@ export class Mesh extends Asset {
      * @param mesh @en The other mesh to be validated @zh 待验证的网格
      */
     public validateMergingMesh (mesh: Mesh): boolean {
+        const thisStruct = this._struct;
+        const meshStruct = mesh._struct;
         // dynamic mesh is not allowed to merge.
-        if (this._struct.dynamic || mesh._struct.dynamic) {
+        if (thisStruct.dynamic || meshStruct.dynamic) {
             return false;
         }
 
+        const thisVertexBundles = thisStruct.vertexBundles;
+        const meshVertexBundles = meshStruct.vertexBundles;
         // validate vertex bundles
-        if (this._struct.vertexBundles.length !== mesh._struct.vertexBundles.length) {
+        if (thisVertexBundles.length !== meshVertexBundles.length) {
             return false;
         }
 
-        for (let i = 0; i < this._struct.vertexBundles.length; ++i) {
-            const bundle = this._struct.vertexBundles[i];
-            const dstBundle = mesh._struct.vertexBundles[i];
+        for (let i = 0; i < thisVertexBundles.length; ++i) {
+            const bundleAttributes = thisVertexBundles[i].attributes;
+            const dstBundleAttributes = meshVertexBundles[i].attributes;
 
-            if (bundle.attributes.length !== dstBundle.attributes.length) {
+            if (bundleAttributes.length !== dstBundleAttributes.length) {
                 return false;
             }
-            for (let j = 0; j < bundle.attributes.length; ++j) {
-                if (bundle.attributes[j].format !== dstBundle.attributes[j].format) {
+            for (let j = 0; j < bundleAttributes.length; ++j) {
+                if (bundleAttributes[j].format !== dstBundleAttributes[j].format) {
                     return false;
                 }
             }
         }
 
         // validate primitives
-        if (this._struct.primitives.length !== mesh._struct.primitives.length) {
+        const thisPrimitives = thisStruct.primitives;
+        const meshPrimitives = meshStruct.primitives;
+        if (thisPrimitives.length !== meshPrimitives.length) {
             return false;
         }
-        for (let i = 0; i < this._struct.primitives.length; ++i) {
-            const prim = this._struct.primitives[i];
-            const dstPrim = mesh._struct.primitives[i];
-            if (prim.vertexBundelIndices.length !== dstPrim.vertexBundelIndices.length) {
+        for (let i = 0; i < thisPrimitives.length; ++i) {
+            const prim = thisPrimitives[i];
+            const primVertexBundelIndices = prim.vertexBundelIndices;
+            const dstPrim = meshPrimitives[i];
+            const dstPrimVertexBundelIndices = dstPrim.vertexBundelIndices;
+            if (primVertexBundelIndices.length !== dstPrimVertexBundelIndices.length) {
                 return false;
             }
-            for (let j = 0; j < prim.vertexBundelIndices.length; ++j) {
-                if (prim.vertexBundelIndices[j] !== dstPrim.vertexBundelIndices[j]) {
+            for (let j = 0; j < primVertexBundelIndices.length; ++j) {
+                if (primVertexBundelIndices[j] !== dstPrimVertexBundelIndices[j]) {
                     return false;
                 }
             }

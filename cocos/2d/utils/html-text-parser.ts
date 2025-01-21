@@ -75,11 +75,12 @@ export class HtmlTextParser {
     private _resultObjectArray: IHtmlTextParserResultObj[] = [];
 
     constructor () {
-        this._specialSymbolArray.push([/&lt;/g, '<']);
-        this._specialSymbolArray.push([/&gt;/g, '>']);
-        this._specialSymbolArray.push([/&amp;/g, '&']);
-        this._specialSymbolArray.push([/&quot;/g, '"']);
-        this._specialSymbolArray.push([/&apos;/g, '\'']);
+        const specialSymbolArray = this._specialSymbolArray;
+        specialSymbolArray.push([/&lt;/g, '<']);
+        specialSymbolArray.push([/&gt;/g, '>']);
+        specialSymbolArray.push([/&amp;/g, '&']);
+        specialSymbolArray.push([/&quot;/g, '"']);
+        specialSymbolArray.push([/&apos;/g, '\'']);
     }
 
     public parse (htmlString: string): IHtmlTextParserResultObj[] {
