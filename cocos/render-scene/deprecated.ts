@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { replaceProperty, removeProperty } from '../core';
+import { replaceProperty, removeProperty } from '../core/utils/x-deprecated';
 import { RenderScene } from './core/render-scene';
 import { Layers } from '../scene-graph/layers';
 import { legacyCC } from '../core/global-exports';

@@ -22,7 +22,8 @@
  THE SOFTWARE.
 */
 
-import { removeProperty, replaceProperty, js, cclegacy } from '../core';
+import { js, cclegacy } from '../core';
+import { removeProperty, replaceProperty } from '../core/utils/x-deprecated';
 import Burst from './burst';
 import { ParticleSystem } from './particle-system';
 import { Billboard } from './billboard';

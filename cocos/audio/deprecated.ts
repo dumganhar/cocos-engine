@@ -23,7 +23,7 @@
 */
 
 import { AudioSource } from './audio-source';
-import { replaceProperty, markAsWarning } from '../core';
+import { replaceProperty, markAsWarning } from '../core/utils/x-deprecated';
 import { AudioClip } from './audio-clip';
 
 // remove AudioClip static property
@@ -37,7 +37,9 @@ replaceProperty(AudioClip, 'AudioClip', [
 ]);
 
 // deprecate AudioClip property
-markAsWarning(AudioClip.prototype, 'AudioClip.prototype',
+markAsWarning(
+    AudioClip.prototype,
+    'AudioClip.prototype',
     [
         'state',
         'play',
@@ -53,4 +55,5 @@ markAsWarning(AudioClip.prototype, 'AudioClip.prototype',
     ].map((item) => ({
         name: item,
         suggest: `please use AudioSource.prototype.${item} instead`,
-    })));
+    })),
+);

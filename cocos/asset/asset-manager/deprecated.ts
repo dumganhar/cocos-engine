@@ -24,7 +24,8 @@
 
 import { BUILD } from 'internal:constants';
 import { Asset } from '../assets/asset';
-import { getError, macro, path, removeProperty, replaceProperty, cclegacy } from '../../core';
+import { getError, macro, path, cclegacy } from '../../core';
+import { removeProperty, replaceProperty } from '../../core/utils/x-deprecated';
 import Cache from './cache';
 import assetManager, { AssetManager } from './asset-manager';
 import { resources } from './bundle';

@@ -36,7 +36,7 @@ import * as misc from './misc';
  */
 import * as path from './path';
 
-export * from './x-deprecated';
+// export * from './x-deprecated';
 
 export {
     js,
@@ -44,4 +44,4 @@ export {
     path,
 };
 
-export * from './coordinates-converts-utils';
+// export * from './coordinates-converts-utils';

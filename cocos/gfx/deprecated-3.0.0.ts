@@ -22,7 +22,8 @@
  THE SOFTWARE.
 */
 
-import { replaceProperty, removeProperty, cclegacy } from '../core';
+import { replaceProperty, removeProperty } from '../core/utils/x-deprecated';
+import { cclegacy } from '../core';
 
 // Deprecated CC polyfill
 const polyfills = {

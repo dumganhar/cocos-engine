@@ -22,7 +22,8 @@
  THE SOFTWARE.
 */
 
-import { js, markAsWarning } from './utils';
+import { js } from './utils/js';
+import { markAsWarning } from './utils/x-deprecated';
 
 markAsWarning(js, 'js', [
     {

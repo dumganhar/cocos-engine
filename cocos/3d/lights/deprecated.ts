@@ -26,7 +26,8 @@ import { Light } from './light-component';
 import { SpotLight } from './spot-light-component';
 import { SphereLight } from './sphere-light-component';
 import { DirectionalLight } from './directional-light-component';
-import { cclegacy, js, replaceProperty } from '../../core';
+import { cclegacy, js } from '../../core';
+import { replaceProperty } from '../../core/utils/x-deprecated';
 
 /**
  * Alias of [[Light]]

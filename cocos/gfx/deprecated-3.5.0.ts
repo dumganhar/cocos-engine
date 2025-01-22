@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { removeProperty, replaceProperty } from '../core';
+import { removeProperty, replaceProperty } from '../core/utils/x-deprecated';
 import { Device } from './base/device';
 import { Feature, ColorAttachment, DepthStencilAttachment } from './base/define';
 

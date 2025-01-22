@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { markAsWarning, removeProperty, replaceProperty } from '../utils';
+import { markAsWarning, removeProperty, replaceProperty } from '../utils/x-deprecated';
 import { sys } from './sys';
 import { legacyCC } from '../global-exports';
 import { screen } from './screen';

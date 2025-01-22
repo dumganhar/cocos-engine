@@ -31,7 +31,8 @@ import { UIMeshRenderer } from './ui-mesh-renderer';
 import { Graphics } from './graphics';
 import { UIStaticBatch } from './ui-static-batch';
 import { UIOpacity } from './ui-opacity';
-import { js, cclegacy, replaceProperty, markAsWarning } from '../../core';
+import { js, cclegacy } from '../../core';
+import { replaceProperty, markAsWarning } from '../../core/utils/x-deprecated';
 import { LabelShadow } from './label-shadow';
 
 /**

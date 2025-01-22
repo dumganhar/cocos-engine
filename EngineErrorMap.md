@@ -176,6 +176,10 @@ Effect settings not found, effects will not be imported.
 
 Success to load scene: %s
 
+### 1104
+
+Set 'setter' to boolean is deprecated. Please don not use like this again.
+
 ### 1200
 
 cocos2d: Director: Error in gettimeofday
