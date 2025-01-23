@@ -25,7 +25,7 @@
 import { BUILD, LOAD_SPINE_MANUALLY } from 'internal:constants';
 import { ccenum } from '../core';
 import spine from './lib/spine-core';
-import { waitForSpineWasmInstantiation } from './lib/instantiated';
+import { waitForSpineWasmInstantiation3_8, waitForSpineWasmInstantiation4_2 } from './lib/instantiated';
 
 /**
  * @en
@@ -127,7 +127,8 @@ export function loadWasmModuleSpine (): Promise<void> {
     if (BUILD && LOAD_SPINE_MANUALLY) {
         if (loadSpinePromise) return loadSpinePromise;
         loadSpinePromise = Promise.resolve()
-            .then(() => waitForSpineWasmInstantiation());
+            .then(() => waitForSpineWasmInstantiation3_8())
+            .then(() => waitForSpineWasmInstantiation4_2());
         return loadSpinePromise;
     } else {
         return Promise.resolve();
