@@ -22,6 +22,7 @@
  THE SOFTWARE.
 */
 
+import { USE_3D } from 'internal:constants';
 import { Pool, cclegacy, warnID, settings, macro, log, errorID, SettingsCategory } from './core';
 import { DebugView } from './rendering/debug-view';
 import { Camera, CameraType, Light, Model, TrackingType } from './render-scene/scene';
@@ -568,6 +569,7 @@ export class Root {
      * @returns The model created
      */
     public createModel<T extends Model> (ModelCtor: typeof Model): T {
+        if (!USE_3D) return null!;
         let p = this._modelPools.get(ModelCtor);
         if (!p) {
             this._modelPools.set(ModelCtor, new Pool((): Model => new ModelCtor(), 10, (obj): void => obj.destroy()));
@@ -584,6 +586,7 @@ export class Root {
      * @param m @en The model to be destroyed @zh 要销毁的模型
      */
     public destroyModel (m: Model): void {
+        if (!USE_3D) return;
         const p = this._modelPools.get(m.constructor as Constructor<Model>);
         if (p) {
             p.free(m);
@@ -612,6 +615,7 @@ export class Root {
      * @returns The light created
      */
     public createLight<T extends Light> (LightCtor: new () => T): T {
+        if (!USE_3D) return null!;
         let l = this._lightPools.get(LightCtor);
         if (!l) {
             this._lightPools.set(LightCtor, new Pool<Light>((): T => new LightCtor(), 4, (obj): void => obj.destroy()));
@@ -628,6 +632,7 @@ export class Root {
      * @param l @en The light to be destroyed @zh 要销毁的光源
      */
     public destroyLight (l: Light): void {
+        if (!USE_3D) return;
         if (l.scene) {
             switch (l.type) {
             case LightType.DIRECTIONAL:

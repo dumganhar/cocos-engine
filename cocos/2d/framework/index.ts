@@ -33,4 +33,6 @@ export * from './ui-transform';
 export * from './ui-skew';
 export * from './deprecated';
 export * from './render-root-2d';
+
+/** @export_if context.buildTimeConstants.USE_3D */
 export * from './sprite-renderer';
