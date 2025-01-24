@@ -68,7 +68,7 @@ export const ShadowSize = Enum({
 /**
  * @zh 阴影类型。
  * @en The shadow type
- * @enum Shadows.ShadowType
+ * @enum ShadowType
  */
 export const ShadowType = Enum({
     /**

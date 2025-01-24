@@ -525,7 +525,6 @@ export class RenderScene {
      * @param m The model.
      */
     public addModel (m: Model): void {
-        if (!USE_3D) return;
         m.attachToScene(this);
         this._models.push(m);
     }
@@ -536,7 +535,6 @@ export class RenderScene {
      * @param m The model.
      */
     public removeModel (model: Model): void {
-        if (!USE_3D) return;
         for (let i = 0; i < this._models.length; ++i) {
             if (this._models[i] === model) {
                 this._lodStateCache.removeModel(model);
@@ -553,7 +551,6 @@ export class RenderScene {
      * @zh 删除所有模型。
      */
     public removeModels (): void {
-        if (!USE_3D) return;
         this._models.forEach((m) => {
             this._lodStateCache.removeModel(m);
             m.detachFromScene();
@@ -646,7 +643,6 @@ export class RenderScene {
      * @zh 通知所有模型全局管线状态已更新，需要更新自身状态。
      */
     public onGlobalPipelineStateChanged (): void {
-        if (!USE_3D) return;
         this._models.forEach((m) => {
             m.onGlobalPipelineStateChanged();
         });

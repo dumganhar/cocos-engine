@@ -257,10 +257,10 @@ export class Root {
     private _batcher: Batcher2D | null = null;
     private declare _dataPoolMgr: DataPoolManager;
     private _scenes: RenderScene[] = [];
-    private _modelPools = USE_3D ? new Map<Constructor<Model>, Pool<Model>>() : null!;
+    private _modelPools = new Map<Constructor<Model>, Pool<Model>>();
     private _cameraPool: Pool<Camera> | null = null;
     private _lightPools = USE_3D ? new Map<Constructor<Light>, Pool<Light>>() : null!;
-    private _debugView = new DebugView();
+    private declare _debugView: DebugView;
     private _fpsTime = 0;
     private _frameCount = 0;
     private _fps = 0;
@@ -278,6 +278,9 @@ export class Root {
      */
     constructor (device: Device) {
         this._device = device;
+        if (USE_3D) {
+            this._debugView = new DebugView();
+        }
         this._dataPoolMgr = cclegacy.internal.DataPoolManager && new cclegacy.internal.DataPoolManager(device) as DataPoolManager;
 
         RenderScene.registerCreateFunc(this);
@@ -569,7 +572,6 @@ export class Root {
      * @returns The model created
      */
     public createModel<T extends Model> (ModelCtor: typeof Model): T {
-        if (!USE_3D) return null!;
         let p = this._modelPools.get(ModelCtor);
         if (!p) {
             this._modelPools.set(ModelCtor, new Pool((): Model => new ModelCtor(), 10, (obj): void => obj.destroy()));
@@ -586,7 +588,6 @@ export class Root {
      * @param m @en The model to be destroyed @zh 要销毁的模型
      */
     public destroyModel (m: Model): void {
-        if (!USE_3D) return;
         const p = this._modelPools.get(m.constructor as Constructor<Model>);
         if (p) {
             p.free(m);

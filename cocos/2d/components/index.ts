@@ -23,13 +23,13 @@
 */
 
 export * from './label';
-//cjh export { Mask } from './mask';
+export { Mask } from './mask';
 //cjh export { RichText } from './rich-text';
 export { Sprite } from './sprite';
 /** @export_if context.buildTimeConstants.USE_3D */
 export { UIMeshRenderer } from './ui-mesh-renderer';
 export { LabelOutline } from './label-outline';
-//cjh export { Graphics } from './graphics';
+export { Graphics } from './graphics';
 export { UIStaticBatch } from './ui-static-batch';
 export { LabelShadow } from './label-shadow';
 export { UIOpacity } from './ui-opacity';
