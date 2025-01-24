@@ -257,9 +257,9 @@ export class Root {
     private _batcher: Batcher2D | null = null;
     private declare _dataPoolMgr: DataPoolManager;
     private _scenes: RenderScene[] = [];
-    private _modelPools = new Map<Constructor<Model>, Pool<Model>>();
+    private _modelPools = USE_3D ? new Map<Constructor<Model>, Pool<Model>>() : null!;
     private _cameraPool: Pool<Camera> | null = null;
-    private _lightPools = new Map<Constructor<Light>, Pool<Light>>();
+    private _lightPools = USE_3D ? new Map<Constructor<Light>, Pool<Light>>() : null!;
     private _debugView = new DebugView();
     private _fpsTime = 0;
     private _frameCount = 0;
@@ -436,7 +436,7 @@ export class Root {
             this._scenes[i].onGlobalPipelineStateChanged();
         }
 
-        if (getPipelineSceneData().skybox.enabled) {
+        if (USE_3D && getPipelineSceneData().skybox.enabled) {
             getPipelineSceneData().skybox.model!.onGlobalPipelineStateChanged();
         }
 
@@ -691,6 +691,7 @@ export class Root {
     }
 
     private _doWebXRFrameMove (): void {
+        if (!USE_3D) return;
         const xr = globalThis.__globalXR;
         if (!xr) {
             return;

@@ -24,6 +24,6 @@
 
 import './utils';
 
-export * from './graphics';
+//cjh export * from './graphics';
 export * from './label';
 export * from './sprite';

@@ -39,7 +39,6 @@ import { Model } from '../render-scene/scene/model';
 import { PostSettings } from '../render-scene/scene/post-settings';
 import type { MeshRenderer } from '../3d/framework/mesh-renderer';
 import type { LightProbes } from '../gi/light-probe';
-import type { Director } from '../game/director';
 
 const GEOMETRY_RENDERER_TECHNIQUE_COUNT = 6;
 
@@ -191,6 +190,7 @@ export class PipelineSceneData {
     }
 
     public initOcclusionQuery (): void {
+        if (!USE_3D) return;
         if (!this._occlusionQueryInputAssembler) {
             this._occlusionQueryInputAssembler = this._createOcclusionQueryIA();
         }
@@ -207,6 +207,7 @@ export class PipelineSceneData {
     }
 
     public getOcclusionQueryPass (): Pass | null {
+        if (!USE_3D) return null;
         if (this._occlusionQueryMaterial && this._occlusionQueryMaterial.passes.length > 0) {
             return this._occlusionQueryMaterial.passes[0];
         }
@@ -235,6 +236,7 @@ export class PipelineSceneData {
     }
 
     private _createOcclusionQueryIA (): InputAssembler {
+        if (!USE_3D) return null!;
         // create vertex buffer
         const device = this._device;
         const vertices = new Float32Array([-1, -1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, 1, 1, 1, 1, 1]);
