@@ -22,7 +22,6 @@
  THE SOFTWARE.
 */
 
-import { JSB } from 'internal:constants';
 import { clamp, Vec3 } from '../math';
 import { assertID, warnID } from '../platform/debug';
 import { ShapeType } from './enums';
