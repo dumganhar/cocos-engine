@@ -753,7 +753,11 @@
             "cocos/rendering/planar-shadow-queue.ts",
             "cocos/rendering/post-process/components/post-process.ts",
             "cocos/2d/framework/sprite-renderer.ts",
-            "cocos/core/utils/x-deprecated.ts"
+            "cocos/core/utils/x-deprecated.ts",
+            "pal/input/minigame/gamepad-input.ts",
+            "pal/input/minigame/handheld-input.ts",
+            "pal/input/minigame/handle-input.ts",
+            "pal/input/minigame/hmd-input.ts"
         ]
     }
 }
