@@ -35,4 +35,6 @@ export { InstancedBuffer } from './instanced-buffer';
 export { PipelineStateManager } from './pipeline-state-manager';
 
 export { PipelineEventProcessor, PipelineEventType } from './pipeline-event';
+
+/** @export_if context.buildTimeConstants.USE_3D */
 export { DebugView } from './debug-view';

@@ -23,7 +23,7 @@
 */
 
 // Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
-import { EDITOR } from 'internal:constants';
+import { EDITOR, USE_3D } from 'internal:constants';
 import { builtinResMgr } from '../../asset/asset-manager/builtin-res-mgr';
 import { Material } from '../../asset/assets/material';
 import { RenderingSubMesh } from '../../asset/assets/rendering-sub-mesh';
@@ -37,12 +37,10 @@ import { Mat4, Vec3, Vec4, geometry, cclegacy, EPSILON, v3, v4 } from '../../cor
 import { Attribute, DescriptorSet, Device, Buffer, BufferInfo,
     BufferUsageBit, MemoryUsageBit, Filter, Address, SamplerInfo, deviceManager, Texture } from '../../gfx';
 import {
-    UBOLocal,
-    UBOLocalEnum, UBOSH, UBOSHEnum, UBOWorldBound, UNIFORM_LIGHTMAP_TEXTURE_BINDING, UNIFORM_REFLECTION_PROBE_BLEND_CUBEMAP_BINDING,
+    UBOLocalEnum, UBOSHEnum, UBOWorldBound, UNIFORM_LIGHTMAP_TEXTURE_BINDING, UNIFORM_REFLECTION_PROBE_BLEND_CUBEMAP_BINDING,
     UNIFORM_REFLECTION_PROBE_CUBEMAP_BINDING, UNIFORM_REFLECTION_PROBE_DATA_MAP_BINDING,
     UNIFORM_REFLECTION_PROBE_TEXTURE_BINDING,
 } from '../../rendering/define';
-import { Root } from '../../root';
 import { TextureCube } from '../../asset/assets';
 import { ShadowType } from './shadows';
 import { ProbeType, ReflectionProbe } from './reflection-probe';
@@ -716,8 +714,11 @@ export class Model {
         this._updateStamp = stamp;
 
         this.updateSHUBOs();
-        const shadows = this.node.scene.globals.shadows;
-        const forceUpdateUBO = shadows.enabled && shadows.type === ShadowType.Planar;
+        let forceUpdateUBO = false;
+        if (USE_3D) {
+            const shadows = this.node.scene.globals.shadows;
+            forceUpdateUBO = shadows.enabled && shadows.type === ShadowType.Planar;
+        }
 
         if (!this._localDataUpdated) { return; }
         this._localDataUpdated = false;
@@ -817,6 +818,7 @@ export class Model {
      * @zh 更新模型的球谐 ubo
      */
     public updateSHUBOs (): void {
+        if (!USE_3D) return;
         if (!this.isLightProbeAvailable()) {
             return;
         }
