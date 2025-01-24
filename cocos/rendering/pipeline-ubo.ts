@@ -35,7 +35,11 @@ import { Mat4, Vec3, Vec4, Color, toRadian, cclegacy } from '../core';
 import { PipelineRuntime } from './custom/pipeline';
 import { CSMLevel, PCFType, Shadows, ShadowType } from '../render-scene/scene/shadows';
 import { Light, LightType } from '../render-scene/scene/light';
-import { Ambient, DirectionalLight, SpotLight, Fog, Skybox } from '../render-scene/scene';
+import { Ambient } from '../render-scene/scene/ambient';
+import { DirectionalLight } from '../render-scene/scene/directional-light';
+import { Fog } from '../render-scene/scene/fog';
+import { Skybox } from '../render-scene/scene/skybox';
+import { SpotLight } from '../render-scene/scene/spot-light';
 import { RenderWindow } from '../render-scene/core/render-window';
 import { DebugViewCompositeType } from './debug-view';
 import type { Root } from '../root';
@@ -183,8 +187,13 @@ export class PipelineUBO {
 
         cv[UBOCameraEnum.SURFACE_TRANSFORM_OFFSET] = camera.surfaceTransform;
         cv[UBOCameraEnum.SURFACE_TRANSFORM_OFFSET + 1] = camera.cameraUsage;
-        cv[UBOCameraEnum.SURFACE_TRANSFORM_OFFSET + 2] = Math.cos(toRadian(sceneData.skybox.getRotationAngle()));
-        cv[UBOCameraEnum.SURFACE_TRANSFORM_OFFSET + 3] = Math.sin(toRadian(sceneData.skybox.getRotationAngle()));
+        if (USE_3D) {
+            cv[UBOCameraEnum.SURFACE_TRANSFORM_OFFSET + 2] = Math.cos(toRadian(sceneData.skybox.getRotationAngle()));
+            cv[UBOCameraEnum.SURFACE_TRANSFORM_OFFSET + 3] = Math.sin(toRadian(sceneData.skybox.getRotationAngle()));
+        } else {
+            cv[UBOCameraEnum.SURFACE_TRANSFORM_OFFSET + 2] = 1;
+            cv[UBOCameraEnum.SURFACE_TRANSFORM_OFFSET + 3] = 0;
+        }
 
         if (USE_3D) {
             const colorTempRGB = fog.colorArray;
@@ -213,6 +222,7 @@ export class PipelineUBO {
     }
 
     public static getPCFRadius (shadowInfo: Shadows, mainLight: DirectionalLight): number {
+        if (!USE_3D) return 0;
         const shadowMapSize = shadowInfo.size.x;
         switch (mainLight.shadowPcf) {
         case PCFType.HARD:
