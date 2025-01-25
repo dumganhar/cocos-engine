@@ -25,7 +25,7 @@
             ]
         },
         "3d": {
-            "modules": ["3d"],
+            "modules": ["3d", "sorting"],
             "dependentAssets": [
                 "511d2633-09a7-4bdd-ac42-f778032124b3",
                 "5d45aa00-e064-4938-b314-4265f0c2258c",
@@ -39,7 +39,7 @@
             "modules": ["animation", "skeletal-animation"]
         },
         "2d": {
-            "modules": ["2d", "sorting"],
+            "modules": ["2d"],
             "dependentAssets": [
                 "60f7195c-ec2a-45eb-ba94-8955f60e81d0",
                 "1c02ae6f-4492-4915-b8f8-7492a3b1e4cd",
@@ -53,6 +53,10 @@
                 "dd3a144d-ab7f-41f0-82b8-2e43a090d496",
                 "f0416e68-0200-4b77-a926-4f9d16e494da"
             ]
+        },
+        "rich-text": {
+            "modules": ["rich-text"],
+            "dependentModules": ["2d"]
         },
         "ui": {
             "modules": ["ui", "2d"]

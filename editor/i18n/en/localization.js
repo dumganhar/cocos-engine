@@ -975,6 +975,10 @@ module.exports = link(mixin({
             label: "Basic 2D Features",
             description: "Components and tools that are widely used in general 2D applications.",
         },
+        rich_text: {
+            label: "Rich Text",
+            description: "Rich text support.",
+        },
         physics_2d: {
             label: "2D Physics System",
             description: "Physics system that applied to 2D application.",

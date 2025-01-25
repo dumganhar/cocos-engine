@@ -953,6 +953,10 @@ module.exports = link(mixin({
             label: "基础 2D 功能",
             description: "常用于一般 2D 应用的工具与组件。",
         },
+        rich_text: {
+            label: "富文本",
+            description: "富文本支持。",
+        },
         physics_2d: {
             label: "2D 物理系统",
             description: "应用于 2D 的物理系统支持。",
