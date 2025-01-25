@@ -759,6 +759,7 @@ export class Model {
     }
 
     private isLightProbeAvailable (): boolean {
+        if (!USE_3D) return false;
         if (!this._useLightProbe) {
             return false;
         }
@@ -776,6 +777,7 @@ export class Model {
     }
 
     private updateSHBuffer (): void {
+        if (!USE_3D) return;
         if (!this._localSHData) {
             return;
         }
@@ -802,6 +804,7 @@ export class Model {
      * @zh 清除模型的球谐 ubo
      */
     public clearSHUBOs (): void {
+        if (!USE_3D) return;
         if (!this._localSHData) {
             return;
         }
@@ -957,6 +960,7 @@ export class Model {
      * @param uvParam uv coordinate
      */
     public updateLightingmap (texture: Texture2D | null, uvParam: Vec4): void {
+        if (!USE_3D) return;
         Vec4.toArray(this._localData, uvParam, UBOLocalEnum.LIGHTINGMAP_UVPARAM);
         this._localDataUpdated = true;
         this._lightmap = texture;
@@ -987,6 +991,7 @@ export class Model {
      * @param texture probe cubemap
      */
     public updateReflectionProbeCubemap (texture: TextureCube | null): void {
+        if (!USE_3D) return;
         this._localDataUpdated = true;
         this.onMacroPatchesStateChanged();
 
@@ -1015,6 +1020,7 @@ export class Model {
      * @param texture probe cubemap
      */
     public updateReflectionProbeBlendCubemap (texture: TextureCube | null): void {
+        if (!USE_3D) return;
         this._localDataUpdated = true;
         this.onMacroPatchesStateChanged();
 
@@ -1043,6 +1049,7 @@ export class Model {
      * @param texture planar relflection map
      */
     public updateReflectionProbePlanarMap (texture: Texture | null): void {
+        if (!USE_3D) return;
         this._localDataUpdated = true;
         this.onMacroPatchesStateChanged();
 
@@ -1076,6 +1083,7 @@ export class Model {
      * @param texture data map
      */
     public updateReflectionProbeDataMap (texture: Texture2D | null): void {
+        if (!USE_3D) return;
         this._localDataUpdated = true;
         this.onMacroPatchesStateChanged();
 
@@ -1101,6 +1109,7 @@ export class Model {
      * @zh 更新阴影偏移
      */
     public updateLocalShadowBias (): void {
+        if (!USE_3D) return;
         const sv = this._localData;
         sv[UBOLocalEnum.LOCAL_SHADOW_BIAS + 0] = this._shadowBias;
         sv[UBOLocalEnum.LOCAL_SHADOW_BIAS + 1] = this._shadowNormalBias;
@@ -1112,6 +1121,7 @@ export class Model {
      * @zh 更新物体使用哪个反射探针
      */
     public updateReflectionProbeId  (): void {
+        if (!USE_3D) return;
         const sv = this._localData;
         sv[UBOLocalEnum.LOCAL_SHADOW_BIAS + 2] = this._reflectionProbeId;
         sv[UBOLocalEnum.LOCAL_SHADOW_BIAS + 3] = this._reflectionProbeBlendId;
@@ -1210,8 +1220,10 @@ export class Model {
         this._initLocalDescriptors(subModelIndex);
         this._updateLocalDescriptors(subModelIndex, subModel.descriptorSet);
 
-        this._initLocalSHDescriptors(subModelIndex);
-        this._updateLocalSHDescriptors(subModelIndex, subModel.descriptorSet);
+        if (USE_3D) {
+            this._initLocalSHDescriptors(subModelIndex);
+            this._updateLocalSHDescriptors(subModelIndex, subModel.descriptorSet);
+        }
 
         this._initWorldBoundDescriptors(subModelIndex);
 
@@ -1253,6 +1265,7 @@ export class Model {
     }
 
     protected _initLocalSHDescriptors (subModelIndex: number): void {
+        if (!USE_3D) return;
         if (!EDITOR && !this._useLightProbe) {
             return;
         }
