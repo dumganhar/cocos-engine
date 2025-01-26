@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { EDITOR } from 'internal:constants';
+import { EDITOR, USE_3D } from 'internal:constants';
 import { cclegacy, toRadian, Vec2, Vec4, Vec3, v3 } from '../../../core';
 import { Camera, CameraUsage } from '../../../render-scene/scene';
 import { Pipeline } from '../../custom/pipeline';
@@ -252,7 +252,7 @@ export class HBAOPass extends SettingPass {
         // debug view
         const director = cclegacy.director;
         const root = director.root;
-        if (root.debugView) {
+        if (USE_3D && root.debugView) {
             if (root.debugView.isEnabled()
                 && (root.debugView.singleMode !== DebugViewSingleType.NONE && root.debugView.singleMode !== DebugViewSingleType.AO
                 || !root.debugView.isCompositeModeEnabled(DebugViewCompositeType.AO))) {
