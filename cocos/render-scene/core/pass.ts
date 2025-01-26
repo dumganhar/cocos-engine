@@ -877,6 +877,7 @@ export class Pass {
     get rootBufferDirty (): boolean { return this._rootBufferDirty; }
     /**
      * @engineInternal
+     * @mangle
      * Currently, can not just mark setter as engine internal, so change to a function.
      */
     setRootBufferDirty (val: boolean): void { this._rootBufferDirty = val; }
