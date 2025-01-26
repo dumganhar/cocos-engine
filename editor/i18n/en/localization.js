@@ -987,6 +987,10 @@ module.exports = link(mixin({
             label: "Graphic Drawing",
             description: "2D Graphic Drawing support.",
         },
+        ui_skew: {
+            label: "UI Skew",
+            description: "UI Skew support.",
+        },
         affine_transform: {
             label: "2D Affine Transform",
             description: "2D Affine Transform support.",
