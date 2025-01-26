@@ -569,15 +569,16 @@ export class ProgramLib {
         } else {
             errorID(16346);
         }
-        tmplInfo.shaderInfo.stages[0].source = prefix + src.vert;
-        tmplInfo.shaderInfo.stages[1].source = prefix + src.frag;
-
-        // strip out the active attributes only, instancing depend on this
-        tmplInfo.shaderInfo.attributes = getActiveAttributes(tmpl, tmplInfo.gfxAttributes, defines);
-
-        tmplInfo.shaderInfo.name = getShaderInstanceName(name, macroArray);
 
         let shaderInfo = tmplInfo.shaderInfo;
+        shaderInfo.stages[0].source = prefix + src.vert;
+        shaderInfo.stages[1].source = prefix + src.frag;
+
+        // strip out the active attributes only, instancing depend on this
+        shaderInfo.attributes = getActiveAttributes(tmpl, tmplInfo.gfxAttributes, defines);
+
+        shaderInfo.name = getShaderInstanceName(name, macroArray);
+
         if (env.WEBGPU) {
             // keep 'tmplInfo.shaderInfo' originally
             shaderInfo = new ShaderInfo();
