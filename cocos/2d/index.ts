@@ -23,7 +23,6 @@
 */
 
 import {
-    //cjh graphicsAssembler,
     labelAssembler,
     spriteAssembler,
 } from './assembler';
@@ -48,7 +47,6 @@ export {
     StencilManager,
     spriteAssembler, // use less
     labelAssembler, // use less
-    //cjh graphicsAssembler, // use less
 };
 
 cclegacy.UI = {
