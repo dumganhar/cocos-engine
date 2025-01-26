@@ -85,7 +85,7 @@ export class PipelineUBO {
         for (let i = 0; i <= 3; i++) {
             fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET + i] = 0.0;
         }
-        if (debugView.isEnabled()) {
+        if (USE_3D && debugView.isEnabled()) {
             fv[UBOGlobalEnum.DEBUG_VIEW_MODE_OFFSET] = debugView.singleMode as number;
 
             for (let i = DebugViewCompositeType.DIRECT_DIFFUSE as number; i < (DebugViewCompositeType.MAX_BIT_COUNT as unknown as number); i++) {
