@@ -22,7 +22,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { JSB } from 'internal:constants';
+import { JSB, USE_3D } from 'internal:constants';
 import { displayOrder, group, range } from 'cc.decorator';
 import { Texture2D, TextureCube } from '../../asset/assets';
 import { Material } from '../../asset/assets/material';
@@ -437,6 +437,7 @@ export class MeshRenderer extends ModelRenderer {
      * @param visibility @en direction light visibility. @zh 方向光的可见性。
      */
     public onUpdateReceiveDirLight (visibility: number, forceClose = false): void {
+        if (!USE_3D) return;
         if (!this._model) { return; }
         if (forceClose) {
             this._model.receiveDirLight = false;
@@ -497,11 +498,14 @@ export class MeshRenderer extends ModelRenderer {
         if (this.enabledInHierarchy) {
             this._attachToScene();
         }
-        this._updateCastShadow();
-        this._updateReceiveShadow();
-        this._updateUseLightProbe();
-        this._updateUseReflectionProbe();
-        this._updateReceiveDirLight();
+
+        if (USE_3D) {
+            this._updateCastShadow();
+            this._updateReceiveShadow();
+            this._updateUseLightProbe();
+            this._updateUseReflectionProbe();
+            this._updateReceiveDirLight();
+        }
     }
 
     /**
@@ -550,6 +554,7 @@ export class MeshRenderer extends ModelRenderer {
 
     /**
      * @engineInternal
+     * @mangle
      */
     public clearGlobalStandardSkinObjectFlag (): void {
         this._enabledGlobalStandardSkinObject = false;
@@ -582,15 +587,18 @@ export class MeshRenderer extends ModelRenderer {
         }
         this._watchMorphInMesh();
         this._updateModels();
-        this._updateCastShadow();
-        this._updateReceiveShadow();
-        this._updateShadowBias();
-        this._updateShadowNormalBias();
-        this._updateUseLightProbe();
-        this._updateBakeToReflectionProbe();
-        this._updateUseReflectionProbe();
-        this._updateReceiveDirLight();
-        this._updateStandardSkin();
+
+        if (USE_3D) {
+            this._updateCastShadow();
+            this._updateReceiveShadow();
+            this._updateShadowBias();
+            this._updateShadowNormalBias();
+            this._updateUseLightProbe();
+            this._updateBakeToReflectionProbe();
+            this._updateUseReflectionProbe();
+            this._updateReceiveDirLight();
+            this._updateStandardSkin();
+        }
     }
 
     // Redo, Undo, Prefab restore, etc.
@@ -599,15 +607,18 @@ export class MeshRenderer extends ModelRenderer {
         if (this.enabledInHierarchy) {
             this._attachToScene();
         }
-        this._updateCastShadow();
-        this._updateReceiveShadow();
-        this._updateShadowBias();
-        this._updateShadowNormalBias();
-        this._updateUseLightProbe();
-        this._updateBakeToReflectionProbe();
-        this._updateUseReflectionProbe();
-        this._updateReceiveDirLight();
-        this._updateStandardSkin();
+
+        if (USE_3D) {
+            this._updateCastShadow();
+            this._updateReceiveShadow();
+            this._updateShadowBias();
+            this._updateShadowNormalBias();
+            this._updateUseLightProbe();
+            this._updateBakeToReflectionProbe();
+            this._updateUseReflectionProbe();
+            this._updateReceiveDirLight();
+            this._updateStandardSkin();
+        }
     }
 
     public onEnable (): void {
@@ -622,18 +633,21 @@ export class MeshRenderer extends ModelRenderer {
             this._updateModels();
         }
         this._model!.onGlobalPipelineStateChanged();
-        this._updateCastShadow();
-        this._updateReceiveShadow();
-        this._updateShadowBias();
-        this._updateShadowNormalBias();
-        this._updateBakeToReflectionProbe();
-        this._updateUseReflectionProbe();
-        this._onUpdateLocalShadowBiasAndProbeId();
-        this._updateUseLightProbe();
-        this._updateReceiveDirLight();
-        this._onUpdateReflectionProbeDataMap();
-        this._onUpdateLocalReflectionProbeData();
-        this._updateStandardSkin();
+
+        if (USE_3D) {
+            this._updateCastShadow();
+            this._updateReceiveShadow();
+            this._updateShadowBias();
+            this._updateShadowNormalBias();
+            this._updateBakeToReflectionProbe();
+            this._updateUseReflectionProbe();
+            this._onUpdateLocalShadowBiasAndProbeId();
+            this._updateUseLightProbe();
+            this._updateReceiveDirLight();
+            this._onUpdateReflectionProbeDataMap();
+            this._onUpdateLocalReflectionProbeData();
+            this._updateStandardSkin();
+        }
         this._attachToScene();
     }
 
@@ -757,6 +771,7 @@ export class MeshRenderer extends ModelRenderer {
      * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
      */
     public _updateLightmap (lightmap: Texture2D|null, uOff: number, vOff: number, scale: number, lum: number): void {
+        if (!USE_3D) return;
         this.bakeSettings.texture = lightmap;
         this.bakeSettings.uvParam.x = uOff;
         this.bakeSettings.uvParam.y = vOff;
@@ -776,6 +791,7 @@ export class MeshRenderer extends ModelRenderer {
      * @param useDefaultTexture if the reflection probe has not been baked, is the skybox used instead.
      */
     public updateProbeCubemap (cubeMap: TextureCube | null): void {
+        if (!USE_3D) return;
         if (this.bakeSettings.probeCubemap && this.bakeSettings.probeCubemap === cubeMap) {
             return;
         }
@@ -793,6 +809,7 @@ export class MeshRenderer extends ModelRenderer {
      * @param cubeMap baked cubemap.
      */
     public updateProbeBlendCubemap (cubeMap: TextureCube | null): void {
+        if (!USE_3D) return;
         if (this.bakeSettings.probeBlendCubemap && this.bakeSettings.probeBlendCubemap === cubeMap) {
             return;
         }
@@ -810,6 +827,7 @@ export class MeshRenderer extends ModelRenderer {
      * @param planarMap render texture.
      */
     public updateProbePlanarMap (planarMap: Texture | null): void {
+        if (!USE_3D) return;
         if (this.bakeSettings.probePlanarmap === planarMap) {
             return;
         }
@@ -827,6 +845,7 @@ export class MeshRenderer extends ModelRenderer {
      * @param dataMap data mapping with data saved all reflection probe data.
      */
     public updateReflectionProbeDataMap (dataMap: Texture2D | null): void {
+        if (!USE_3D) return;
         this._reflectionProbeDataMap = dataMap;
         if (this.model !== null) {
             this.model.updateReflectionProbeDataMap(dataMap);
@@ -841,6 +860,7 @@ export class MeshRenderer extends ModelRenderer {
      * @param probeId probe id.
      */
     public updateReflectionProbeId (probeId: number): void {
+        if (!USE_3D) return;
         this._reflectionProbeId = probeId;
         if (this.model) {
             this.model.reflectionProbeId = probeId;
@@ -856,6 +876,7 @@ export class MeshRenderer extends ModelRenderer {
      * @param blendProbeId probe id of blend.
      */
     public updateReflectionProbeBlendId (blendProbeId: number): void {
+        if (!USE_3D) return;
         this._reflectionProbeBlendId = blendProbeId;
         if (this.model) {
             this.model.reflectionProbeBlendId = blendProbeId;
@@ -871,6 +892,7 @@ export class MeshRenderer extends ModelRenderer {
      * @param weight blending weight.
      */
     public updateReflectionProbeBlendWeight (weight: number): void {
+        if (!USE_3D) return;
         this._reflectionProbeBlendWeight = weight;
         if (this.model) {
             this.model.reflectionProbeBlendWeight = weight;
@@ -879,6 +901,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _updateReflectionProbeTexture (): void {
+        if (!USE_3D) return;
         if (!this.model) return;
 
         const bakeSettings = this.bakeSettings;
@@ -928,22 +951,28 @@ export class MeshRenderer extends ModelRenderer {
                 this._model.createBoundingShape(meshStruct.minPosition, meshStruct.maxPosition);
                 this._model.updateWorldBound();
             }
-            // Initialize lighting map before model initializing
-            // because the lighting map will influence the model's shader
-            this._model.initLightingmap(this.bakeSettings.texture, this.bakeSettings.uvParam);
-            this._updateUseLightProbe();
-            this._updateUseReflectionProbeType();
-            this._updateModelParams();
-            this._onUpdateLightingmap();
-            this._onUpdateLocalShadowBiasAndProbeId();
-            this._updateUseReflectionProbe();
-            this._updateReceiveDirLight();
-            this._onUpdateReflectionProbeDataMap();
-            this._onUpdateLocalReflectionProbeData();
+
+            if (USE_3D) {
+                // Initialize lighting map before model initializing
+                // because the lighting map will influence the model's shader
+                this._model.initLightingmap(this.bakeSettings.texture, this.bakeSettings.uvParam);
+                this._updateUseLightProbe();
+                this._updateUseReflectionProbeType();
+                this._updateModelParams();
+                this._onUpdateLightingmap();
+                this._onUpdateLocalShadowBiasAndProbeId();
+                this._updateUseReflectionProbe();
+                this._updateReceiveDirLight();
+                this._onUpdateReflectionProbeDataMap();
+                this._onUpdateLocalReflectionProbeData();
+            } else {
+                this._updateModelParams();
+            }
         }
     }
 
     protected _updateReceiveDirLight (): void {
+        if (!USE_3D) return;
         if (!this._model) { return; }
         const scene = this.node.scene;
         if (!scene || !scene.renderScene) { return; }
@@ -1002,6 +1031,7 @@ export class MeshRenderer extends ModelRenderer {
 
     /**
      * @engineInternal
+     * @mangle
      */
     public _detachFromScene (): void {
         if (this._model && this._model.scene) {
@@ -1032,6 +1062,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _onUpdateLightingmap (): void {
+        if (!USE_3D) return;
         if (this.model !== null) {
             this.model.updateLightingmap(this.bakeSettings.texture, this.bakeSettings.uvParam);
         }
@@ -1045,6 +1076,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _onUpdateLocalShadowBiasAndProbeId (): void {
+        if (!USE_3D) return;
         if (this.model !== null) {
             this.model.updateLocalShadowBias();
             this.model.updateReflectionProbeId();
@@ -1059,6 +1091,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _onUpdateLocalReflectionProbeData (): void {
+        if (!USE_3D) return;
         if (this.bakeSettings.reflectionProbe === ReflectionProbeType.BAKED_CUBEMAP
             || this.bakeSettings.reflectionProbe === ReflectionProbeType.BLEND_PROBES
             || this.bakeSettings.reflectionProbe === ReflectionProbeType.BLEND_PROBES_AND_SKYBOX) {
@@ -1076,6 +1109,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _onUpdateReflectionProbeDataMap (): void {
+        if (!USE_3D) return;
         if (this.model !== null) {
             this.model.updateReflectionProbeDataMap(this._reflectionProbeDataMap);
         }
@@ -1084,7 +1118,9 @@ export class MeshRenderer extends ModelRenderer {
     protected _onMaterialModified (idx: number, material: Material | null): void {
         if (!this._model || !this._model.inited) { return; }
         this._onRebuildPSO(idx, material || this._getBuiltinMaterial());
-        this._updateStandardSkin();
+        if (USE_3D) {
+            this._updateStandardSkin();
+        }
     }
 
     /**
@@ -1094,11 +1130,13 @@ export class MeshRenderer extends ModelRenderer {
         if (!this._model || !this._model.inited) { return; }
         this._model.isDynamicBatching = this._isBatchingEnabled();
         this._model.setSubModelMaterial(idx, material);
-        this._onUpdateLightingmap();
-        this._onUpdateLocalShadowBiasAndProbeId();
-        this._updateReflectionProbeTexture();
-        this._onUpdateReflectionProbeDataMap();
-        this._onUpdateLocalReflectionProbeData();
+        if (USE_3D) {
+            this._onUpdateLightingmap();
+            this._onUpdateLocalShadowBiasAndProbeId();
+            this._updateReflectionProbeTexture();
+            this._onUpdateReflectionProbeDataMap();
+            this._onUpdateLocalReflectionProbeData();
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -1124,16 +1162,19 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _updateShadowBias (): void {
+        if (!USE_3D) return;
         if (!this._model) { return; }
         this._model.shadowBias = this._shadowBias;
     }
 
     protected _updateShadowNormalBias (): void {
+        if (!USE_3D) return;
         if (!this._model) { return; }
         this._model.shadowNormalBias = this._shadowNormalBias;
     }
 
     protected _updateCastShadow (): void {
+        if (!USE_3D) return;
         if (!this._model) { return; }
         if (this._shadowCastingMode === ModelShadowCastingMode.OFF) {
             this._model.castShadow = false;
@@ -1147,6 +1188,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _updateReceiveShadow (): void {
+        if (!USE_3D) return;
         if (!this._model) { return; }
         if (this._shadowReceivingMode === ModelShadowReceivingMode.OFF) {
             this._model.receiveShadow = false;
@@ -1169,6 +1211,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected onReflectionProbeChanged (): void {
+        if (!USE_3D) return;
         this._updateUseReflectionProbe();
         this._onUpdateLocalShadowBiasAndProbeId();
         const reflectionProbeManager = cclegacy.internal.reflectionProbeManager as ReflectionProbeManager;
@@ -1193,6 +1236,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _updateUseLightProbe (): void {
+        if (!USE_3D) return;
         if (!this._model) { return; }
         const node = this.node;
         if (this._mesh && node && node.mobility === MobilityMode.Movable && this.bakeSettings.useLightProbe) {
@@ -1215,22 +1259,26 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     protected _updateUseReflectionProbe (): void {
+        if (!USE_3D) return;
         if (!this._model) return;
         this._model.reflectionProbeType = this.bakeSettings.reflectionProbe;
         this._updateReflectionProbeTexture();
     }
 
     protected _updateUseReflectionProbeType (): void {
+        if (!USE_3D) return;
         if (!this._model) return;
         this._model.reflectionProbeType = this.bakeSettings.reflectionProbe;
     }
 
     protected _updateBakeToReflectionProbe (): void {
+        if (!USE_3D) return;
         if (!this._model) { return; }
         this._model.bakeToReflectionProbe = this.bakeSettings.bakeToReflectionProbe;
     }
 
     private _watchMorphInMesh (): void {
+        if (!USE_3D) return;
         if (this._morphInstance) {
             this._morphInstance.destroy();
             this._morphInstance = null;
@@ -1311,6 +1359,7 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     private _updateStandardSkin (): void {
+        if (!USE_3D) return;
         const pipelineSceneData = getPipelineSceneData();
         if (this._enabledGlobalStandardSkinObject) {
             pipelineSceneData.standardSkinMeshRenderer = this;

@@ -27,7 +27,7 @@ import {
     ccclass, editable, type, displayOrder, menu,
     executeInEditMode, serializable, playOnFocus, tooltip, visible, formerlySerializedAs, override,
 } from 'cc.decorator';
-import { EDITOR, EDITOR_NOT_IN_PREVIEW } from 'internal:constants';
+import { EDITOR, EDITOR_NOT_IN_PREVIEW, JSB } from 'internal:constants';
 import { UIRenderer } from '../2d/framework/ui-renderer';
 import { Color, Vec2, warnID, errorID, error, path } from '../core';
 import { Simulator } from './particle-simulator-2d';
@@ -1223,6 +1223,7 @@ export class ParticleSystem2D extends UIRenderer {
     }
 
     protected _updatePositionType (): void {
+        if (!JSB) return;
         if (this._positionType === PositionType.RELATIVE) {
             this._renderEntity.setRenderTransform(this.node.parent);
             this._renderEntity.setUseLocal(true);

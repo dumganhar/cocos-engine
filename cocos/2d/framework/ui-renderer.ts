@@ -230,7 +230,9 @@ export class UIRenderer extends Renderer {
     }
     set stencilStage (val: Stage) {
         this._stencilStage = val;
-        this._renderEntity.setStencilStage(val);
+        if (JSB) {
+            this._renderEntity.setStencilStage(val);
+        }
     }
 
     @override
@@ -306,7 +308,9 @@ export class UIRenderer extends Renderer {
     protected _lastParent: Node | null = null;
 
     public onLoad (): void {
-        this._renderEntity.setNode(this.node);
+        if (JSB) {
+            this._renderEntity.setNode(this.node);
+        }
     }
 
     public __preload (): void {
@@ -346,11 +350,15 @@ export class UIRenderer extends Renderer {
         this.destroyRenderData();
         uiRendererManager.removeRenderer(this);
         this._renderFlag = false;
-        this._renderEntity.enabled = false;
+        if (JSB) {
+            this._renderEntity.enabled = false;
+        }
     }
 
     public onDestroy (): void {
-        this._renderEntity.setNode(null);
+        if (JSB) {
+            this._renderEntity.setNode(null);
+        }
         if (this.node._uiProps.uiComp === this) {
             this.node._uiProps.uiComp = null;
         }
@@ -411,7 +419,9 @@ export class UIRenderer extends Renderer {
             this._assembler.updateRenderData(this);
         }
         this._renderFlag = this._canRender();
-        this._renderEntity.enabled = this._renderFlag;
+        if (JSB) {
+            this._renderEntity.enabled = this._renderFlag;
+        }
     }
 
     /**
