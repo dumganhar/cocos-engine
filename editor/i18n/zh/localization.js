@@ -965,6 +965,10 @@ module.exports = link(mixin({
             label: "图形绘制",
             description: "2D 图形绘制支持。",
         },
+        affine_transform: {
+            label: "2D 仿射变换",
+            description: "2D 仿射变换支持。",
+        },
         physics_2d: {
             label: "2D 物理系统",
             description: "应用于 2D 的物理系统支持。",
