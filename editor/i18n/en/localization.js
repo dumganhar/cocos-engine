@@ -979,6 +979,14 @@ module.exports = link(mixin({
             label: "Rich Text",
             description: "Rich text support.",
         },
+        mask: {
+            label: "Mask",
+            description: "Mask support.",
+        },
+        graphics_2d: {
+            label: "Graphic Drawing",
+            description: "2D Graphic Drawing support.",
+        },
         physics_2d: {
             label: "2D Physics System",
             description: "Physics system that applied to 2D application.",

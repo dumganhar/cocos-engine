@@ -957,6 +957,14 @@ module.exports = link(mixin({
             label: "富文本",
             description: "富文本支持。",
         },
+        mask: {
+            label: "遮罩",
+            description: "遮罩功能支持。",
+        },
+        graphics_2d: {
+            label: "图形绘制",
+            description: "2D 图形绘制支持。",
+        },
         physics_2d: {
             label: "2D 物理系统",
             description: "应用于 2D 的物理系统支持。",
