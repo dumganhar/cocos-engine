@@ -176,10 +176,12 @@ export class ForwardStage extends RenderStage {
         }
 
         if (camera.clearFlag & ClearFlagBit.COLOR) {
-            colors[0].x = camera.clearColor.x;
-            colors[0].y = camera.clearColor.y;
-            colors[0].z = camera.clearColor.z;
-            colors[0].w = camera.clearColor.w;
+            const cameraClearColor = camera.clearColor;
+            const colors0 = colors[0];
+            colors0.x = cameraClearColor.x;
+            colors0.y = cameraClearColor.y;
+            colors0.z = cameraClearColor.z;
+            colors0.w = cameraClearColor.w;
         }
         pipeline.generateRenderArea(camera, this._renderArea);
 
