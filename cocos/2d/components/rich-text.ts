@@ -92,14 +92,14 @@ function createSegment (type: string): ISegment {
 }
 
 function getSegmentByPool (type: string, content: string | SpriteFrame): ISegment | null {
-    let seg;
+    let seg: ISegment | null = null;
     if (type === RichTextChildName) {
         seg = labelPool._get();
     } else if (type === RichTextChildImageName) {
         seg = imagePool._get();
     }
     seg = seg || createSegment(type);
-    let node = seg.node as Node;
+    let node = seg.node;
     if (!node) {
         node = new Node(type);
     }
@@ -896,7 +896,7 @@ export class RichText extends Component {
                 labelString,
                 fragmentWidth,
                 this._maxWidth,
-this._measureText(styleIndex) as unknown as (s: string) => number,
+                this._measureText(styleIndex) as unknown as (s: string) => number,
             );
             for (let k = 0; k < fragments.length; ++k) {
                 const splitString = fragments[k];
