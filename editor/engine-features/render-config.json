@@ -75,6 +75,27 @@
             ],
             "enginePlugin": true
         },
+        "mask": {
+            "default": true,
+            "label": "i18n:ENGINE.features.mask.label",
+            "description": "i18n:ENGINE.features.mask.description",
+            "category": "2d",
+            "dependencies": [
+                "2d",
+                "graphics"
+            ],
+            "enginePlugin": true
+        },
+        "graphics": {
+            "default": true,
+            "label": "i18n:ENGINE.features.graphics_2d.label",
+            "description": "i18n:ENGINE.features.graphics_2d.description",
+            "category": "2d",
+            "dependencies": [
+                "2d"
+            ],
+            "enginePlugin": true
+        },
         "xr": {
             "default": false,
             "label": "i18n:ENGINE.features.xr.label",

@@ -58,6 +58,14 @@
             "modules": ["rich-text"],
             "dependentModules": ["2d"]
         },
+        "mask": {
+            "modules": ["mask", "graphics"],
+            "dependentModules": ["2d"]
+        },
+        "graphics": {
+            "modules": ["graphics"],
+            "dependentModules": ["2d"]
+        },
         "ui": {
             "modules": ["ui", "2d"]
         },
