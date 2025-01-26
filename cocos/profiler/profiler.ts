@@ -210,7 +210,7 @@ export class Profiler extends System {
         }
     }
 
-    public generateCanvas (): void {
+    private generateCanvas (): void {
         if (this._canvasDone) {
             return;
         }
@@ -242,7 +242,7 @@ export class Profiler extends System {
         this._region.texExtent.height = textureHeight;
     }
 
-    public generateStats (): void {
+    private generateStats (): void {
         if (this._statsDone || !this._ctx || !this._canvas) {
             return;
         }
@@ -274,7 +274,7 @@ export class Profiler extends System {
         this._device!.copyTexImagesToTexture(this._canvasArr, this._texture!, this._regionArr);
     }
 
-    public generateNode (): void {
+    private generateNode (): void {
         if (this._rootNode && this._rootNode.isValid) {
             return;
         }
@@ -351,7 +351,7 @@ export class Profiler extends System {
         this._inited = true;
     }
 
-    public beforeUpdate (): void {
+    private beforeUpdate (): void {
         if (!this._profilerStats) {
             return;
         }
@@ -361,7 +361,7 @@ export class Profiler extends System {
         (this._profilerStats.logic.counter as PerfCounter).start(now);
     }
 
-    public afterUpdate (): void {
+    private afterUpdate (): void {
         if (!this._profilerStats) {
             return;
         }
@@ -374,7 +374,7 @@ export class Profiler extends System {
         }
     }
 
-    public beforePhysics (): void {
+    private beforePhysics (): void {
         if (!this._profilerStats) {
             return;
         }
@@ -383,7 +383,7 @@ export class Profiler extends System {
         (this._profilerStats.physics.counter as PerfCounter).start(now);
     }
 
-    public afterPhysics (): void {
+    private afterPhysics (): void {
         if (!this._profilerStats) {
             return;
         }
@@ -392,7 +392,7 @@ export class Profiler extends System {
         (this._profilerStats.physics.counter as PerfCounter).end(now);
     }
 
-    public beforeDraw (): void {
+    private beforeDraw (): void {
         if (!this._profilerStats || !this._inited) {
             return;
         }
@@ -423,7 +423,7 @@ export class Profiler extends System {
         (this._profilerStats.render.counter as PerfCounter).start(now);
     }
 
-    public afterRender (): void {
+    private afterRender (): void {
         if (!this._profilerStats || !this._inited) {
             return;
         }
@@ -432,7 +432,7 @@ export class Profiler extends System {
         (this._profilerStats.present.counter as PerfCounter).start(now);
     }
 
-    public afterPresent (): void {
+    private afterPresent (): void {
         if (!this._profilerStats || !this._inited) {
             return;
         }

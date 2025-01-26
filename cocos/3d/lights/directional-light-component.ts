@@ -27,7 +27,6 @@ import { Light } from './light-component';
 import { scene } from '../../render-scene';
 import { clamp, warnID, CCBoolean, CCFloat, _decorator, settings, CCInteger, SettingsCategory } from '../../core';
 import { Camera, PCFType, Shadows, ShadowType, CSMOptimizationMode, CSMLevel } from '../../render-scene/scene';
-import { Root } from '../../root';
 import { MeshRenderer } from '../framework/mesh-renderer';
 import { getPipelineSceneData } from '../../rendering/pipeline-scene-data-utils';
 
