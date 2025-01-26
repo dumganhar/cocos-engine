@@ -965,6 +965,10 @@ module.exports = link(mixin({
             label: "图形绘制",
             description: "2D 图形绘制支持。",
         },
+        ui_skew: {
+            label: "UI 斜切",
+            description: "UI 斜切支持。",
+        },
         affine_transform: {
             label: "2D 仿射变换",
             description: "2D 仿射变换支持。",

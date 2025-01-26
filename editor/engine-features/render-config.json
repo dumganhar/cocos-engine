@@ -96,6 +96,16 @@
             ],
             "enginePlugin": true
         },
+        "ui-skew": {
+            "default": true,
+            "label": "i18n:ENGINE.features.ui_skew.label",
+            "description": "i18n:ENGINE.features.ui_skew.description",
+            "category": "2d",
+            "dependencies": [
+                "2d"
+            ],
+            "enginePlugin": true
+        },
         "affine-transform": {
             "label": "i18n:ENGINE.features.affine_transform.label",
             "description": "i18n:ENGINE.features.affine_transform.description",
