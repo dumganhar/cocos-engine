@@ -70,6 +70,7 @@ import { IWebGL2BindingMapping, IWebGL2BlitManager } from './webgl2-gpu-objects'
 import { BrowserType, OS } from '../../../pal/system-info/enum-type';
 import type { WebGL2StateCache } from './webgl2-state-cache';
 import { WebGLConstants } from '../gl-constants';
+import { loadWebGL2Functions, CCWebGL2RenderingContext } from './webgl2-functions';
 
 function setFormatFeature (formatFeatures: FormatFeature[], indexArray: Format[], feature: FormatFeature): void {
     for (let i = 0; i < indexArray.length; ++i) {
@@ -89,7 +90,7 @@ export class WebGL2Device extends Device {
         super();
     }
 
-    get gl (): WebGL2RenderingContext {
+    get gl (): CCWebGL2RenderingContext {
         return this._context!;
     }
 
@@ -122,7 +123,7 @@ export class WebGL2Device extends Device {
     }
 
     private _swapchain: WebGL2Swapchain | null = null;
-    private _context: WebGL2RenderingContext | null = null;
+    private _context: CCWebGL2RenderingContext | null = null;
     private _bindingMappings: IWebGL2BindingMapping | null = null;
 
     protected _textureExclusive = new Array<boolean>(Format.COUNT);
@@ -155,7 +156,7 @@ export class WebGL2Device extends Device {
             flexibleSet: mapping.setIndices[mapping.setIndices.length - 1],
         };
 
-        const gl = this._context = getContext(Device.canvas);
+        const gl = this._context = loadWebGL2Functions(getContext(Device.canvas));
 
         if (!gl) {
             errorID(16405);

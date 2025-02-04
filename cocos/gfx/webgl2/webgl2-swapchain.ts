@@ -35,10 +35,11 @@ import { OS } from '../../../pal/system-info/enum-type';
 import { IWebGL2BlitManager } from './webgl2-gpu-objects';
 import { WebGLConstants } from '../gl-constants';
 import { macro } from '../../core/platform/macro';
+import { CCWebGL2RenderingContext } from './webgl2-functions';
 
 const eventWebGLContextLost = 'webglcontextlost';
 
-function initStates (gl: WebGL2RenderingContext): void {
+function initStates (gl: CCWebGL2RenderingContext): void {
     gl.activeTexture(WebGLConstants.TEXTURE0);
     gl.pixelStorei(WebGLConstants.PACK_ALIGNMENT, 1);
     gl.pixelStorei(WebGLConstants.UNPACK_ALIGNMENT, 1);
@@ -76,7 +77,7 @@ function initStates (gl: WebGL2RenderingContext): void {
     gl.blendColor(0.0, 0.0, 0.0, 0.0);
 }
 
-function getExtension (gl: WebGL2RenderingContext, ext: string): any {
+function getExtension (gl: CCWebGL2RenderingContext, ext: string): any {
     const prefixes = ['', 'WEBKIT_', 'MOZ_'];
     for (let i = 0; i < prefixes.length; ++i) {
         const _ext = gl.getExtension(prefixes[i] + ext);
@@ -87,7 +88,7 @@ function getExtension (gl: WebGL2RenderingContext, ext: string): any {
     return null;
 }
 
-export function getExtensions (gl: WebGL2RenderingContext): IWebGL2Extensions {
+export function getExtensions (gl: CCWebGL2RenderingContext): IWebGL2Extensions {
     const res: IWebGL2Extensions = {
         EXT_texture_filter_anisotropic: getExtension(gl, 'EXT_texture_filter_anisotropic'),
         EXT_color_buffer_half_float: getExtension(gl, 'EXT_color_buffer_half_float'),

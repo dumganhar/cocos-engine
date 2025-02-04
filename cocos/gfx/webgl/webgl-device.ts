@@ -66,6 +66,7 @@ import { IWebGLExtensions, WebGLDeviceManager } from './webgl-define';
 import { IWebGLBindingMapping, IWebGLBlitManager } from './webgl-gpu-objects';
 import type { WebGLStateCache } from './webgl-state-cache';
 import { WebGLConstants } from '../gl-constants';
+import { loadWebGL1Functions } from './webgl-functions';
 import { debug, errorID } from '../../core/platform/debug';
 
 function setFormatFeature (formatFeatures: FormatFeature[], indexArray: Format[], feature: FormatFeature): void {
@@ -158,13 +159,14 @@ export class WebGLDevice extends Device {
             flexibleSet: mapping.setIndices[mapping.setIndices.length - 1],
         };
 
-        const gl = this._context = getContext(Device.canvas);
+        this._context = getContext(Device.canvas);
 
-        if (!gl) {
+        if (!this._context) {
             errorID(16333);
             return false;
         }
 
+        const gl = loadWebGL1Functions(this._context);
         // create queue
         this._queue = this.createQueue(new QueueInfo(QueueType.GRAPHICS));
         this._cmdBuff = this.createCommandBuffer(new CommandBufferInfo(this._queue));

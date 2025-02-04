@@ -67,7 +67,7 @@ function CmpF32NotEuqal (a: number, b: number): boolean {
     return (c > 0.000001 || c < -0.000001);
 }
 
-export function GFXFormatToWebGLType (format: Format, gl: WebGL2RenderingContext): GLenum {
+export function GFXFormatToWebGLType (format: Format): GLenum {
     switch (format) {
     case Format.R8: return WebGLConstants.UNSIGNED_BYTE;
     case Format.R8SN: return WebGLConstants.BYTE;
@@ -195,7 +195,7 @@ export function GFXFormatToWebGLType (format: Format, gl: WebGL2RenderingContext
     }
 }
 
-export function GFXFormatToWebGLInternalFormat (format: Format, gl: WebGL2RenderingContext): GLenum {
+export function GFXFormatToWebGLInternalFormat (format: Format): GLenum {
     switch (format) {
     case Format.A8: return WebGLConstants.ALPHA;
     case Format.L8: return WebGLConstants.LUMINANCE;
@@ -315,7 +315,7 @@ export function GFXFormatToWebGLInternalFormat (format: Format, gl: WebGL2Render
     }
 }
 
-export function GFXFormatToWebGLFormat (format: Format, gl: WebGL2RenderingContext): GLenum {
+export function GFXFormatToWebGLFormat (format: Format): GLenum {
     switch (format) {
     case Format.A8: return WebGLConstants.ALPHA;
     case Format.L8: return WebGLConstants.LUMINANCE;
@@ -434,7 +434,7 @@ export function GFXFormatToWebGLFormat (format: Format, gl: WebGL2RenderingConte
     }
 }
 
-function GFXTypeToWebGLType (type: Type, gl: WebGL2RenderingContext): GLenum {
+function GFXTypeToWebGLType (type: Type): GLenum {
     switch (type) {
     case Type.BOOL: return WebGLConstants.BOOL;
     case Type.BOOL2: return WebGLConstants.BOOL_VEC2;
@@ -469,7 +469,7 @@ function GFXTypeToWebGLType (type: Type, gl: WebGL2RenderingContext): GLenum {
     }
 }
 
-function WebGLTypeToGFXType (glType: GLenum, gl: WebGL2RenderingContext): Type {
+function WebGLTypeToGFXType (glType: GLenum): Type {
     switch (glType) {
     case WebGLConstants.BOOL: return Type.BOOL;
     case WebGLConstants.BOOL_VEC2: return Type.BOOL2;
@@ -507,7 +507,7 @@ function WebGLTypeToGFXType (glType: GLenum, gl: WebGL2RenderingContext): Type {
     }
 }
 
-function WebGLGetTypeSize (glType: GLenum, gl: WebGL2RenderingContext): number {
+function WebGLGetTypeSize (glType: GLenum): number {
     switch (glType) {
     case WebGLConstants.BOOL: return 4;
     case WebGLConstants.BOOL_VEC2: return 8;
@@ -554,7 +554,7 @@ function WebGLGetTypeSize (glType: GLenum, gl: WebGL2RenderingContext): number {
     }
 }
 
-function WebGLGetComponentCount (glType: GLenum, gl: WebGL2RenderingContext): Type {
+function WebGLGetComponentCount (glType: GLenum): Type {
     switch (glType) {
     case WebGLConstants.FLOAT_MAT2: return 2;
     case WebGLConstants.FLOAT_MAT2x3: return 2;
@@ -848,7 +848,7 @@ export function WebGL2CmdFuncUpdateBuffer (
                 // TODO(zhouzhenglong): glBufferSubData is faster than glBufferData in most cases.
                 // We should use multiple buffers to avoid stall (cpu write conflicts with gpu read).
                 // Before that, we will use glBufferData instead of glBufferSubData.
-                gl.bufferData(gpuBuffer.glTarget, buff, gl.DYNAMIC_DRAW);
+                gl.bufferData(gpuBuffer.glTarget, buff, WebGLConstants.DYNAMIC_DRAW);
             } else if (size === buff.byteLength) {
                 gl.bufferSubData(gpuBuffer.glTarget, offset, buff);
             } else {
@@ -875,7 +875,7 @@ export function WebGL2CmdFuncUpdateBuffer (
                 // TODO(zhouzhenglong): glBufferSubData is faster than glBufferData in most cases.
                 // We should use multiple buffers to avoid stall (cpu write conflicts with gpu read).
                 // Before that, we will use glBufferData instead of glBufferSubData.
-                gl.bufferData(gpuBuffer.glTarget, buff, gl.DYNAMIC_DRAW);
+                gl.bufferData(gpuBuffer.glTarget, buff, WebGLConstants.DYNAMIC_DRAW);
             } else if (size === buff.byteLength) {
                 gl.bufferSubData(gpuBuffer.glTarget, offset, buff);
             } else {
@@ -894,7 +894,7 @@ export function WebGL2CmdFuncUpdateBuffer (
                 // TODO(zhouzhenglong): glBufferSubData is faster than glBufferData in most cases.
                 // We should use multiple buffers to avoid stall (cpu write conflicts with gpu read).
                 // Before that, we will use glBufferData instead of glBufferSubData.
-                gl.bufferData(gpuBuffer.glTarget, buff, gl.DYNAMIC_DRAW);
+                gl.bufferData(gpuBuffer.glTarget, buff, WebGLConstants.DYNAMIC_DRAW);
             } else if (size === buff.byteLength) {
                 gl.bufferSubData(gpuBuffer.glTarget, offset, buff);
             } else {
@@ -914,9 +914,9 @@ export function WebGL2CmdFuncCreateTexture (device: WebGL2Device, gpuTexture: IW
     const cache = device.getStateCache();
     const capabilities = device.capabilities;
 
-    gpuTexture.glInternalFmt = GFXFormatToWebGLInternalFormat(gpuTexture.format, gl);
-    gpuTexture.glFormat = GFXFormatToWebGLFormat(gpuTexture.format, gl);
-    gpuTexture.glType = GFXFormatToWebGLType(gpuTexture.format, gl);
+    gpuTexture.glInternalFmt = GFXFormatToWebGLInternalFormat(gpuTexture.format);
+    gpuTexture.glFormat = GFXFormatToWebGLFormat(gpuTexture.format);
+    gpuTexture.glType = GFXFormatToWebGLType(gpuTexture.format);
 
     let w = gpuTexture.width;
     let h = gpuTexture.height;
@@ -1546,8 +1546,8 @@ export function WebGL2CmdFuncCreateShader (device: WebGL2Device, gpuShader: IWeb
             }
 
             const glLoc = gl.getAttribLocation(gpuShader.glProgram, varName);
-            const type = WebGLTypeToGFXType(attribInfo.type, gl);
-            const stride = WebGLGetTypeSize(attribInfo.type, gl);
+            const type = WebGLTypeToGFXType(attribInfo.type);
+            const stride = WebGLGetTypeSize(attribInfo.type);
 
             gpuShader.glInputs[i] = {
                 name: varName,
@@ -1635,7 +1635,7 @@ export function WebGL2CmdFuncCreateShader (device: WebGL2Device, gpuShader: IWeb
                 count: sampler.count,
                 units: [],
                 glUnits: null!,
-                glType: GFXTypeToWebGLType(sampler.type, gl),
+                glType: GFXTypeToWebGLType(sampler.type),
                 glLoc: null!,
             };
         }
@@ -1770,7 +1770,7 @@ export function WebGL2CmdFuncCreateInputAssember (device: WebGL2Device, gpuInput
 
         const gpuBuffer = gpuInputAssembler.gpuVertexBuffers[stream];
 
-        const glType = GFXFormatToWebGLType(attrib.format, gl);
+        const glType = GFXFormatToWebGLType(attrib.format);
         const { size } = FormatInfos[attrib.format];
 
         gpuInputAssembler.glAttribs[i] = {
@@ -1780,7 +1780,7 @@ export function WebGL2CmdFuncCreateInputAssember (device: WebGL2Device, gpuInput
             size,
             count: FormatInfos[attrib.format].count,
             stride: gpuBuffer.stride,
-            componentCount: WebGLGetComponentCount(glType, gl),
+            componentCount: WebGLGetComponentCount(glType),
             isNormalized: (attrib.isNormalized !== undefined ? attrib.isNormalized : false),
             isInstanced: (attrib.isInstanced !== undefined ? attrib.isInstanced : false),
             offset: offsets[stream],
