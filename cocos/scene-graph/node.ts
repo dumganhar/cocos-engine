@@ -1849,6 +1849,27 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
     }
 
     /**
+     * @en Set the world transformation matrix
+     * @zh 设置世界坐标系变换矩阵
+     */
+    public set worldMatrix (val: Readonly<Mat4>) {
+        if (this._parent) {
+            this._parent.updateWorldTransform();
+            Mat4.invert(m4_1, this._parent._mat);
+            Mat4.multiply(m4_2, m4_1, val);
+            Mat4.toSRT(m4_2, this._lrot, this._lpos, this._lscale);
+        } else {
+            Mat4.toSRT(val, this._lrot, this._lpos, this._lscale);
+        }
+        this._eulerDirty = true;
+
+        this.invalidateChildren(TransformBit.TRS);
+        if (this._eventMask & TRANSFORM_ON) {
+            this.emit(TRANSFORM_CHANGED, TransformBit.TRS);
+        }
+    }
+
+    /**
      * @en The vector representing forward direction in local coordinate system, it's the minus z direction by default
      * @zh 当前节点面向的前方方向，默认前方为 -z 方向
      */
