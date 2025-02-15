@@ -25,7 +25,7 @@
             ]
         },
         "3d": {
-            "modules": ["3d"],
+            "modules": ["3d", "sorting"],
             "overrideConstants": {
                 "USE_3D": true
             },
@@ -42,7 +42,7 @@
             "modules": ["animation", "skeletal-animation"]
         },
         "2d": {
-            "modules": ["2d", "sorting"],
+            "modules": ["2d"],
             "dependentAssets": [
                 "60f7195c-ec2a-45eb-ba94-8955f60e81d0",
                 "1c02ae6f-4492-4915-b8f8-7492a3b1e4cd",
