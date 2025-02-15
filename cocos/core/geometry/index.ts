@@ -35,15 +35,15 @@ export { Line } from './line';
 export { Plane } from './plane';
 export { Ray } from './ray';
 export { Triangle } from './triangle';
-export { Sphere } from './sphere';
+// export { Sphere } from './sphere';
 export { AABB } from './aabb';
 export { OBB } from './obb';
-export { Capsule } from './capsule';
+// export { Capsule } from './capsule';
 export { Frustum } from './frustum';
-export { Keyframe, AnimationCurve, WrapModeMask } from './curve';
-export { SplineMode, Spline } from './spline';
+// export { Keyframe, AnimationCurve, WrapModeMask } from './curve';
+// export { SplineMode, Spline } from './spline';
 export * from './spec';
 export * from './deprecated-3.0.0';
 
 // engine internal exports
-export { constructLegacyCurveAndConvert, OptimizedKey, evalOptCurve } from './curve';
+// export { constructLegacyCurveAndConvert, OptimizedKey, evalOptCurve } from './curve';

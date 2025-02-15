@@ -26,7 +26,7 @@ import { DEBUG } from 'internal:constants';
 import { Mat3, Mat4, Quat, Vec3 } from '../math';
 import { ShapeType } from './enums';
 import { IVec3, IVec3Like } from '../math/type-define';
-import { Sphere } from './sphere';
+// import { Sphere } from './sphere';
 import { Frustum } from './frustum';
 import { warn } from '../platform';
 
@@ -190,11 +190,11 @@ export class AABB {
       * @param a @zh 输入的 AABB，只读参数。 @en The input AABB，it's readonly.
       * @returns @zh 接受操作的包围球 `out` 的引用. @en The reference to the first parameter `out`.
       */
-    public static toBoundingSphere (out: Sphere, a: AABB | Readonly<AABB>): Sphere {
-        out.center.set(a.center);
-        out.radius = a.halfExtents.length();
-        return out;
-    }
+    // public static toBoundingSphere (out: Sphere, a: AABB | Readonly<AABB>): Sphere {
+    //     out.center.set(a.center);
+    //     out.radius = a.halfExtents.length();
+    //     return out;
+    // }
 
     /**
       * @en

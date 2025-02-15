@@ -24,7 +24,7 @@
 
 import { EPSILON, Mat3, v3, Vec3 } from '../math';
 import { AABB } from './aabb';
-import { Capsule } from './capsule';
+// import { Capsule } from './capsule';
 import * as distance from './distance';
 import { ShapeType } from './enums';
 import { Frustum } from './frustum';
@@ -32,7 +32,7 @@ import { Line } from './line';
 import { OBB } from './obb';
 import { Plane } from './plane';
 import { Ray } from './ray';
-import { Sphere } from './sphere';
+// import { Sphere } from './sphere';
 import { Triangle } from './triangle';
 import { IVec3Like } from '../math/type-define';
 import type { RenderingSubMesh }  from '../../asset/assets';
@@ -129,27 +129,27 @@ const rayTriangle = (function (): (ray: Ray, triangle: Triangle, doubleSided?: b
  * @param sphere @zh 要测试的球。 @en The sphere to test.
  * @returns @zh 如果没有相交，返回 0 ，否则返回非 0。 @en zero if no intersection, otherwise returns a non-zero value.
  */
-const raySphere = (function (): (ray: Ray, sphere: Sphere) => number {
-    const e = v3();
-    return function (ray: Ray, sphere: Sphere): number {
-        const r = sphere.radius;
-        const c = sphere.center;
-        const o = ray.o;
-        const d = ray.d;
-        const rSq = r * r;
-        vec3Subtract(e, c, o);
-        const eSq = e.lengthSqr();
+// const raySphere = (function (): (ray: Ray, sphere: Sphere) => number {
+//     const e = v3();
+//     return function (ray: Ray, sphere: Sphere): number {
+//         const r = sphere.radius;
+//         const c = sphere.center;
+//         const o = ray.o;
+//         const d = ray.d;
+//         const rSq = r * r;
+//         vec3Subtract(e, c, o);
+//         const eSq = e.lengthSqr();
 
-        const aLength = vec3Dot(e, d); // assume ray direction already normalized
-        const fSq = rSq - (eSq - aLength * aLength);
-        if (fSq < 0) { return 0; }
+//         const aLength = vec3Dot(e, d); // assume ray direction already normalized
+//         const fSq = rSq - (eSq - aLength * aLength);
+//         if (fSq < 0) { return 0; }
 
-        const f = Math.sqrt(fSq);
-        const t = eSq < rSq ? aLength + f : aLength - f;
-        if (t < 0) { return 0; }
-        return t;
-    };
-}());
+//         const f = Math.sqrt(fSq);
+//         const t = eSq < rSq ? aLength + f : aLength - f;
+//         if (t < 0) { return 0; }
+//         return t;
+//     };
+// }());
 
 /**
  * @en
@@ -268,92 +268,92 @@ const rayOBB = (function (): (ray: Ray, obb: OBB) => number {
     };
 }());
 
-/**
- * @en
- * ray-capsule intersect detect.
- * @zh
- * 射线和胶囊体的相交性检测。
- * @param ray @zh 要测试的射线。 @en The ray to test.
- * @param capsule @zh 要测试的胶囊体。 @en The capsule to test.
- * @returns @zh 如果没有相交，返回 0 ，否则返回非 0。 @en zero if no intersection, otherwise returns a non-zero value.
- */
-const rayCapsule = (function (): (ray: Ray, capsule: Capsule) => number {
-    const v3_0 = v3();
-    const v3_1 = v3();
-    const v3_2 = v3();
-    const v3_3 = v3();
-    const v3_4 = v3();
-    const v3_5 = v3();
-    const v3_6 = v3();
-    const sphere_0 = new Sphere();
-    return function (ray: Ray, capsule: Capsule): number {
-        const A = capsule.ellipseCenter0;
-        const B = capsule.ellipseCenter1;
-        const BA = vec3Subtract(v3_1, B, A);
-        if (BA.length() < EPSILON) {
-            // deduce to sphere
-            sphere_0.radius = capsule.radius;
-            sphere_0.center.set(capsule.ellipseCenter0);
-            return intersect.raySphere(ray, sphere_0);
-        }
+// /**
+//  * @en
+//  * ray-capsule intersect detect.
+//  * @zh
+//  * 射线和胶囊体的相交性检测。
+//  * @param ray @zh 要测试的射线。 @en The ray to test.
+//  * @param capsule @zh 要测试的胶囊体。 @en The capsule to test.
+//  * @returns @zh 如果没有相交，返回 0 ，否则返回非 0。 @en zero if no intersection, otherwise returns a non-zero value.
+//  */
+// const rayCapsule = (function (): (ray: Ray, capsule: Capsule) => number {
+//     const v3_0 = v3();
+//     const v3_1 = v3();
+//     const v3_2 = v3();
+//     const v3_3 = v3();
+//     const v3_4 = v3();
+//     const v3_5 = v3();
+//     const v3_6 = v3();
+//     const sphere_0 = new Sphere();
+//     return function (ray: Ray, capsule: Capsule): number {
+//         const A = capsule.ellipseCenter0;
+//         const B = capsule.ellipseCenter1;
+//         const BA = vec3Subtract(v3_1, B, A);
+//         if (BA.length() < EPSILON) {
+//             // deduce to sphere
+//             sphere_0.radius = capsule.radius;
+//             sphere_0.center.set(capsule.ellipseCenter0);
+//             return intersect.raySphere(ray, sphere_0);
+//         }
 
-        const O = ray.o;
-        const OA = vec3Subtract(v3_2, O, A);
-        const vRayNorm = Vec3.normalize(v3_0, ray.d);
-        const VxBA = vec3Cross(v3_3, vRayNorm, BA);
-        const a = VxBA.lengthSqr();
-        if (a === 0) {
-            sphere_0.radius = capsule.radius;
-            const BO = vec3Subtract(v3_4, B, O);
-            if (OA.lengthSqr() < BO.lengthSqr()) {
-                sphere_0.center.set(A);
-            } else {
-                sphere_0.center.set(B);
-            }
-            return intersect.raySphere(ray, sphere_0);
-        }
+//         const O = ray.o;
+//         const OA = vec3Subtract(v3_2, O, A);
+//         const vRayNorm = Vec3.normalize(v3_0, ray.d);
+//         const VxBA = vec3Cross(v3_3, vRayNorm, BA);
+//         const a = VxBA.lengthSqr();
+//         if (a === 0) {
+//             sphere_0.radius = capsule.radius;
+//             const BO = vec3Subtract(v3_4, B, O);
+//             if (OA.lengthSqr() < BO.lengthSqr()) {
+//                 sphere_0.center.set(A);
+//             } else {
+//                 sphere_0.center.set(B);
+//             }
+//             return intersect.raySphere(ray, sphere_0);
+//         }
 
-        const OAxBA = vec3Cross(v3_4, OA, BA);
-        const ab2 = BA.lengthSqr();
-        const b = 2 * vec3Dot(VxBA, OAxBA);
-        const radiusSqr = capsule.radius * capsule.radius;
-        const c = OAxBA.lengthSqr() - (radiusSqr * ab2);
-        const d = b * b - 4 * a * c;
+//         const OAxBA = vec3Cross(v3_4, OA, BA);
+//         const ab2 = BA.lengthSqr();
+//         const b = 2 * vec3Dot(VxBA, OAxBA);
+//         const radiusSqr = capsule.radius * capsule.radius;
+//         const c = OAxBA.lengthSqr() - (radiusSqr * ab2);
+//         const d = b * b - 4 * a * c;
 
-        if (d < 0) { return 0; }
+//         if (d < 0) { return 0; }
 
-        const t = (-b - Math.sqrt(d)) / (2 * a);
-        if (t < 0) {
-            sphere_0.radius = capsule.radius;
-            const BO = vec3Subtract(v3_5, B, O);
-            if (OA.lengthSqr() < BO.lengthSqr()) {
-                sphere_0.center.set(capsule.ellipseCenter0);
-            } else {
-                sphere_0.center.set(capsule.ellipseCenter1);
-            }
-            return intersect.raySphere(ray, sphere_0);
-        } else {
-            // Limit intersection between the bounds of the cylinder's end caps.
-            const iPos = vec3ScaleAndAdd(v3_5, ray.o, vRayNorm, t);
-            const iPosLen = vec3Subtract(v3_6, iPos, A);
-            const tLimit = vec3Dot(iPosLen, BA) / ab2;
+//         const t = (-b - Math.sqrt(d)) / (2 * a);
+//         if (t < 0) {
+//             sphere_0.radius = capsule.radius;
+//             const BO = vec3Subtract(v3_5, B, O);
+//             if (OA.lengthSqr() < BO.lengthSqr()) {
+//                 sphere_0.center.set(capsule.ellipseCenter0);
+//             } else {
+//                 sphere_0.center.set(capsule.ellipseCenter1);
+//             }
+//             return intersect.raySphere(ray, sphere_0);
+//         } else {
+//             // Limit intersection between the bounds of the cylinder's end caps.
+//             const iPos = vec3ScaleAndAdd(v3_5, ray.o, vRayNorm, t);
+//             const iPosLen = vec3Subtract(v3_6, iPos, A);
+//             const tLimit = vec3Dot(iPosLen, BA) / ab2;
 
-            if (tLimit >= 0 && tLimit <= 1) {
-                return t;
-            } else if (tLimit < 0) {
-                sphere_0.radius = capsule.radius;
-                sphere_0.center.set(capsule.ellipseCenter0);
-                return intersect.raySphere(ray, sphere_0);
-            } else if (tLimit > 1) {
-                sphere_0.radius = capsule.radius;
-                sphere_0.center.set(capsule.ellipseCenter1);
-                return intersect.raySphere(ray, sphere_0);
-            } else {
-                return 0;
-            }
-        }
-    };
-}());
+//             if (tLimit >= 0 && tLimit <= 1) {
+//                 return t;
+//             } else if (tLimit < 0) {
+//                 sphere_0.radius = capsule.radius;
+//                 sphere_0.center.set(capsule.ellipseCenter0);
+//                 return intersect.raySphere(ray, sphere_0);
+//             } else if (tLimit > 1) {
+//                 sphere_0.radius = capsule.radius;
+//                 sphere_0.center.set(capsule.ellipseCenter1);
+//                 return intersect.raySphere(ray, sphere_0);
+//             } else {
+//                 return 0;
+//             }
+//         }
+//     };
+// }());
 
 /**
  * @en
@@ -495,18 +495,18 @@ function lineOBB (line: Line, obb: OBB): number {
  * @param sphere @zh 球 @en The sphere to test
  * @returns @zh 如果没有相交，返回 0 ，否则返回非 0。 @en zero if no intersection, otherwise returns a non-zero value.no intersection
  */
-function lineSphere (line: Line, sphere: Sphere): number {
-    r_t.o.set(line.s);
-    vec3Subtract(r_t.d, line.e, line.s);
-    r_t.d.normalize();
-    const min = raySphere(r_t, sphere);
-    const len = line.length();
-    if (min <= len) {
-        return min;
-    } else {
-        return 0;
-    }
-}
+// function lineSphere (line: Line, sphere: Sphere): number {
+//     r_t.o.set(line.s);
+//     vec3Subtract(r_t.d, line.e, line.s);
+//     r_t.d.normalize();
+//     const min = raySphere(r_t, sphere);
+//     const len = line.length();
+//     if (min <= len) {
+//         return min;
+//     } else {
+//         return 0;
+//     }
+// }
 
 /**
  * @en
@@ -969,65 +969,65 @@ const obbWithOBB = (function (): (obb1: OBB, obb2: OBB) => number {
  * @param capsule @zh 胶囊体 @en The capsule to test.
  * @returns @zh 如果没有相交，返回 0 ，否则返回非 0。 @en zero if no intersection, otherwise returns a non-zero value.
  */
-const obbCapsule = (function (): (obb: OBB, capsule: Capsule) => boolean | 1 | 0 {
-    const sphere_0 = new Sphere();
-    const v3_0 = v3();
-    const v3_1 = v3();
-    const v3_2 = v3();
-    const v3_verts8 = new Array<Vec3>(8);
-    for (let i = 0; i < 8; i++) { v3_verts8[i] = v3(); }
-    const v3_axis8 = new Array<Vec3>(8);
-    for (let i = 0; i < 8; i++) { v3_axis8[i] = v3(); }
-    return function (obb: OBB, capsule: Capsule): boolean | 1 | 0 {
-        const capsuleEllipseCenter0 = capsule.ellipseCenter0;
-        const capsuleEllipseCenter1 = capsule.ellipseCenter1;
-        const capsuleRadius = capsule.radius;
-        const h = vec3SquaredDistance(capsuleEllipseCenter0, capsuleEllipseCenter1);
-        if (h === 0) {
-            sphere_0.radius = capsule.radius;
-            sphere_0.center.set(capsuleEllipseCenter0);
-            return intersect.sphereOBB(sphere_0, obb);
-        } else {
-            const orientation = obb.orientation;
-            v3_0.x = orientation.m00;
-            v3_0.y = orientation.m01;
-            v3_0.z = orientation.m02;
-            v3_1.x = orientation.m03;
-            v3_1.y = orientation.m04;
-            v3_1.z = orientation.m05;
-            v3_2.x = orientation.m06;
-            v3_2.y = orientation.m07;
-            v3_2.z = orientation.m08;
-            getOBBVertices(obb.center, obb.halfExtents, v3_0, v3_1, v3_2, v3_verts8);
+// const obbCapsule = (function (): (obb: OBB, capsule: Capsule) => boolean | 1 | 0 {
+//     const sphere_0 = new Sphere();
+//     const v3_0 = v3();
+//     const v3_1 = v3();
+//     const v3_2 = v3();
+//     const v3_verts8 = new Array<Vec3>(8);
+//     for (let i = 0; i < 8; i++) { v3_verts8[i] = v3(); }
+//     const v3_axis8 = new Array<Vec3>(8);
+//     for (let i = 0; i < 8; i++) { v3_axis8[i] = v3(); }
+//     return function (obb: OBB, capsule: Capsule): boolean | 1 | 0 {
+//         const capsuleEllipseCenter0 = capsule.ellipseCenter0;
+//         const capsuleEllipseCenter1 = capsule.ellipseCenter1;
+//         const capsuleRadius = capsule.radius;
+//         const h = vec3SquaredDistance(capsuleEllipseCenter0, capsuleEllipseCenter1);
+//         if (h === 0) {
+//             sphere_0.radius = capsule.radius;
+//             sphere_0.center.set(capsuleEllipseCenter0);
+//             return intersect.sphereOBB(sphere_0, obb);
+//         } else {
+//             const orientation = obb.orientation;
+//             v3_0.x = orientation.m00;
+//             v3_0.y = orientation.m01;
+//             v3_0.z = orientation.m02;
+//             v3_1.x = orientation.m03;
+//             v3_1.y = orientation.m04;
+//             v3_1.z = orientation.m05;
+//             v3_2.x = orientation.m06;
+//             v3_2.y = orientation.m07;
+//             v3_2.z = orientation.m08;
+//             getOBBVertices(obb.center, obb.halfExtents, v3_0, v3_1, v3_2, v3_verts8);
 
-            const axes = v3_axis8;
-            const a0 = vec3Copy(axes[0], v3_0);
-            const a1 = vec3Copy(axes[1], v3_1);
-            const a2 = vec3Copy(axes[2], v3_2);
-            const C = vec3Subtract(axes[3], capsule.center, obb.center);
-            C.normalize();
-            const B = vec3Subtract(axes[4], capsuleEllipseCenter0, capsuleEllipseCenter1);
-            B.normalize();
-            vec3Cross(axes[5], a0, B);
-            vec3Cross(axes[6], a1, B);
-            vec3Cross(axes[7], a2, B);
+//             const axes = v3_axis8;
+//             const a0 = vec3Copy(axes[0], v3_0);
+//             const a1 = vec3Copy(axes[1], v3_1);
+//             const a2 = vec3Copy(axes[2], v3_2);
+//             const C = vec3Subtract(axes[3], capsule.center, obb.center);
+//             C.normalize();
+//             const B = vec3Subtract(axes[4], capsuleEllipseCenter0, capsuleEllipseCenter1);
+//             B.normalize();
+//             vec3Cross(axes[5], a0, B);
+//             vec3Cross(axes[6], a1, B);
+//             vec3Cross(axes[7], a2, B);
 
-            for (let i = 0; i < 8; ++i) {
-                const a = getInterval(v3_verts8, axes[i]);
-                const d0 = vec3Dot(axes[i], capsuleEllipseCenter0);
-                const d1 = vec3Dot(axes[i], capsuleEllipseCenter1);
-                const max_d = mathMax(d0, d1);
-                const min_d = mathMin(d0, d1);
-                const d_min = min_d - capsuleRadius;
-                const d_max = max_d + capsuleRadius;
-                if (d_min > a[1] || a[0] > d_max) {
-                    return 0; // Seperating axis found
-                }
-            }
-            return 1;
-        }
-    };
-}());
+//             for (let i = 0; i < 8; ++i) {
+//                 const a = getInterval(v3_verts8, axes[i]);
+//                 const d0 = vec3Dot(axes[i], capsuleEllipseCenter0);
+//                 const d1 = vec3Dot(axes[i], capsuleEllipseCenter1);
+//                 const max_d = mathMax(d0, d1);
+//                 const min_d = mathMin(d0, d1);
+//                 const d_min = min_d - capsuleRadius;
+//                 const d_max = max_d + capsuleRadius;
+//                 if (d_min > a[1] || a[0] > d_max) {
+//                     return 0; // Seperating axis found
+//                 }
+//             }
+//             return 1;
+//         }
+//     };
+// }());
 
 /**
  * @en
@@ -1039,12 +1039,12 @@ const obbCapsule = (function (): (obb: OBB, capsule: Capsule) => boolean | 1 | 0
  * @param plane @zh 平面 @en The plane to test
  * @returns @zh 检测结果, 包含为 -1, 不包含为 0, 相交为 1 @en Test result, inside(back) = -1, outside(front) = 0, intersect = 1
  */
-const spherePlane = function (sphere: Sphere, plane: Plane): number {
-    const dot = vec3Dot(plane.n, sphere.center);
-    const r = sphere.radius * plane.n.length();
-    if (dot + r < plane.d) { return -1; } else if (dot - r > plane.d) { return 0; }
-    return 1;
-};
+// const spherePlane = function (sphere: Sphere, plane: Plane): number {
+//     const dot = vec3Dot(plane.n, sphere.center);
+//     const r = sphere.radius * plane.n.length();
+//     if (dot + r < plane.d) { return -1; } else if (dot - r > plane.d) { return 0; }
+//     return 1;
+// };
 
 /**
  * @en
@@ -1055,16 +1055,16 @@ const spherePlane = function (sphere: Sphere, plane: Plane): number {
  * @param frustum @zh 锥台 @en The frustum to test
  * @returns @zh 如果没有相交，返回 0 ，否则返回非 0。 @en zero if no intersection, otherwise returns a non-zero value.no intersection
  */
-const sphereFrustum = function (sphere: Sphere, frustum: Frustum): number {
-    const frustumPlanes = frustum.planes;
-    for (let i = 0; i < frustumPlanes.length; i++) {
-        // frustum plane normal points to the inside
-        if (spherePlane(sphere, frustumPlanes[i]) === -1) {
-            return 0;
-        }
-    } // completely outside
-    return 1;
-};
+// const sphereFrustum = function (sphere: Sphere, frustum: Frustum): number {
+//     const frustumPlanes = frustum.planes;
+//     for (let i = 0; i < frustumPlanes.length; i++) {
+//         // frustum plane normal points to the inside
+//         if (spherePlane(sphere, frustumPlanes[i]) === -1) {
+//             return 0;
+//         }
+//     } // completely outside
+//     return 1;
+// };
 
 // https://stackoverflow.com/questions/20912692/view-frustum-culling-corner-cases
 /**
@@ -1076,32 +1076,32 @@ const sphereFrustum = function (sphere: Sphere, frustum: Frustum): number {
  * @param frustum @zh 锥台 @en The frustum to test
  * @returns @zh 如果没有相交，返回 0 ，否则返回非 0。 @en zero if no intersection, otherwise returns a non-zero value.no intersection
  */
-const sphereFrustumAccurate = (function (): (sphere: Sphere, frustum: Frustum) => number {
-    const pt = v3();
-    const map = [1, -1, 1, -1, 1, -1];
-    return function (sphere: Sphere, frustum: Frustum): number {
-        for (let i = 0; i < 6; i++) {
-            const plane = frustum.planes[i];
-            const r = sphere.radius;
-            const c = sphere.center;
-            const n = plane.n;
-            const d = plane.d;
-            const dot = vec3Dot(n, c);
-            // frustum plane normal points to the inside
-            if (dot + r < d) return 0; // completely outside
-            else if (dot - r > d) { continue; }
-            // in case of false positives
-            // has false negatives, still working on it
-            vec3Add(pt, c, vec3MultiplyScalar(pt, n, r));
-            for (let j = 0; j < 6; j++) {
-                if (j === i || j === i + map[i]) { continue; }
-                const test = frustum.planes[j];
-                if (vec3Dot(test.n, pt) < test.d) { return 0; }
-            }
-        }
-        return 1;
-    };
-}());
+// const sphereFrustumAccurate = (function (): (sphere: Sphere, frustum: Frustum) => number {
+//     const pt = v3();
+//     const map = [1, -1, 1, -1, 1, -1];
+//     return function (sphere: Sphere, frustum: Frustum): number {
+//         for (let i = 0; i < 6; i++) {
+//             const plane = frustum.planes[i];
+//             const r = sphere.radius;
+//             const c = sphere.center;
+//             const n = plane.n;
+//             const d = plane.d;
+//             const dot = vec3Dot(n, c);
+//             // frustum plane normal points to the inside
+//             if (dot + r < d) return 0; // completely outside
+//             else if (dot - r > d) { continue; }
+//             // in case of false positives
+//             // has false negatives, still working on it
+//             vec3Add(pt, c, vec3MultiplyScalar(pt, n, r));
+//             for (let j = 0; j < 6; j++) {
+//                 if (j === i || j === i + map[i]) { continue; }
+//                 const test = frustum.planes[j];
+//                 if (vec3Dot(test.n, pt) < test.d) { return 0; }
+//             }
+//         }
+//         return 1;
+//     };
+// }());
 
 /**
  * @en
@@ -1112,10 +1112,10 @@ const sphereFrustumAccurate = (function (): (sphere: Sphere, frustum: Frustum) =
  * @param sphere1 @zh 球 1 @en The sphere B to test
  * @returns @zh 是否发生碰撞 @en true or false which indicates if there is an intersection
  */
-const sphereWithSphere = function (sphere0: Sphere, sphere1: Sphere): boolean {
-    const r = sphere0.radius + sphere1.radius;
-    return vec3SquaredDistance(sphere0.center, sphere1.center) < r * r;
-};
+// const sphereWithSphere = function (sphere0: Sphere, sphere1: Sphere): boolean {
+//     const r = sphere0.radius + sphere1.radius;
+//     return vec3SquaredDistance(sphere0.center, sphere1.center) < r * r;
+// };
 
 /**
  * @en
@@ -1126,32 +1126,32 @@ const sphereWithSphere = function (sphere0: Sphere, sphere1: Sphere): boolean {
  * @param aabb @zh 轴对齐包围盒 @en The aabb to test
  * @returns @zh 是否发生碰撞 @en true or false which indicates if there is an intersection
  */
-const sphereAABB = (function (): (sphere: Sphere, aabb: AABB) => boolean {
-    const pt = v3();
-    return function (sphere: Sphere, aabb: AABB): boolean {
-        const sphereRadius = sphere.radius;
-        distance.pt_point_aabb(pt, sphere.center, aabb);
-        return vec3SquaredDistance(sphere.center, pt) < sphereRadius * sphereRadius;
-    };
-}());
+// const sphereAABB = (function (): (sphere: Sphere, aabb: AABB) => boolean {
+//     const pt = v3();
+//     return function (sphere: Sphere, aabb: AABB): boolean {
+//         const sphereRadius = sphere.radius;
+//         distance.pt_point_aabb(pt, sphere.center, aabb);
+//         return vec3SquaredDistance(sphere.center, pt) < sphereRadius * sphereRadius;
+//     };
+// }());
 
-/**
- * @en
- * sphere-OBB intersect detect.
- * @zh
- * 球和 OBB 的相交性检测。
- * @param sphere @zh 参与测试的球。 @en The sphere to test.
- * @param obb @zh 参与测试的 OBB。 @en The OBB to test.
- * @returns @zh 是否发生碰撞。 @en true or false which indicates if there is an intersection.
- */
-const sphereOBB = (function (): (sphere: Sphere, obb: OBB) => boolean {
-    const pt = v3();
-    return function (sphere: Sphere, obb: OBB): boolean {
-        const sphereRadius = sphere.radius;
-        distance.pt_point_obb(pt, sphere.center, obb);
-        return vec3SquaredDistance(sphere.center, pt) < sphereRadius * sphereRadius;
-    };
-}());
+// /**
+//  * @en
+//  * sphere-OBB intersect detect.
+//  * @zh
+//  * 球和 OBB 的相交性检测。
+//  * @param sphere @zh 参与测试的球。 @en The sphere to test.
+//  * @param obb @zh 参与测试的 OBB。 @en The OBB to test.
+//  * @returns @zh 是否发生碰撞。 @en true or false which indicates if there is an intersection.
+//  */
+// const sphereOBB = (function (): (sphere: Sphere, obb: OBB) => boolean {
+//     const pt = v3();
+//     return function (sphere: Sphere, obb: OBB): boolean {
+//         const sphereRadius = sphere.radius;
+//         distance.pt_point_obb(pt, sphere.center, obb);
+//         return vec3SquaredDistance(sphere.center, pt) < sphereRadius * sphereRadius;
+//     };
+// }());
 
 /**
  * @en
@@ -1162,33 +1162,33 @@ const sphereOBB = (function (): (sphere: Sphere, obb: OBB) => boolean {
  * @param capsule @zh 参与测试的胶囊体。 @en The capsule to test.
  * @returns @zh 是否发生碰撞。 @en true or false which indicates if there is an intersection.
  */
-const sphereCapsule = (function (): (sphere: Sphere, capsule: Capsule) => boolean {
-    const v3_0 = v3();
-    const v3_1 = v3();
-    return function (sphere: Sphere, capsule: Capsule): boolean {
-        const capsuleEllipseCenter0 = capsule.ellipseCenter0;
-        const capsuleEllipseCenter1 = capsule.ellipseCenter1;
-        const sphereCenter = sphere.center;
-        const r = sphere.radius + capsule.radius;
-        const squaredR = r * r;
-        const h = vec3SquaredDistance(capsuleEllipseCenter0, capsuleEllipseCenter1);
-        if (h === 0) {
-            return vec3SquaredDistance(sphereCenter, capsule.center) < squaredR;
-        } else {
-            vec3Subtract(v3_0, sphereCenter, capsuleEllipseCenter0);
-            vec3Subtract(v3_1, capsuleEllipseCenter1, capsuleEllipseCenter0);
-            const t = vec3Dot(v3_0, v3_1) / h;
-            if (t < 0) {
-                return vec3SquaredDistance(sphereCenter, capsuleEllipseCenter0) < squaredR;
-            } else if (t > 1) {
-                return vec3SquaredDistance(sphereCenter, capsuleEllipseCenter1) < squaredR;
-            } else {
-                vec3ScaleAndAdd(v3_0, capsuleEllipseCenter0, v3_1, t);
-                return vec3SquaredDistance(sphereCenter, v3_0) < squaredR;
-            }
-        }
-    };
-}());
+// const sphereCapsule = (function (): (sphere: Sphere, capsule: Capsule) => boolean {
+//     const v3_0 = v3();
+//     const v3_1 = v3();
+//     return function (sphere: Sphere, capsule: Capsule): boolean {
+//         const capsuleEllipseCenter0 = capsule.ellipseCenter0;
+//         const capsuleEllipseCenter1 = capsule.ellipseCenter1;
+//         const sphereCenter = sphere.center;
+//         const r = sphere.radius + capsule.radius;
+//         const squaredR = r * r;
+//         const h = vec3SquaredDistance(capsuleEllipseCenter0, capsuleEllipseCenter1);
+//         if (h === 0) {
+//             return vec3SquaredDistance(sphereCenter, capsule.center) < squaredR;
+//         } else {
+//             vec3Subtract(v3_0, sphereCenter, capsuleEllipseCenter0);
+//             vec3Subtract(v3_1, capsuleEllipseCenter1, capsuleEllipseCenter0);
+//             const t = vec3Dot(v3_0, v3_1) / h;
+//             if (t < 0) {
+//                 return vec3SquaredDistance(sphereCenter, capsuleEllipseCenter0) < squaredR;
+//             } else if (t > 1) {
+//                 return vec3SquaredDistance(sphereCenter, capsuleEllipseCenter1) < squaredR;
+//             } else {
+//                 vec3ScaleAndAdd(v3_0, capsuleEllipseCenter0, v3_1, t);
+//                 return vec3SquaredDistance(sphereCenter, v3_0) < squaredR;
+//             }
+//         }
+//     };
+// }());
 
 // http://www.geomalgorithms.com/a07-_distance.html
 /**
@@ -1200,88 +1200,88 @@ const sphereCapsule = (function (): (sphere: Sphere, capsule: Capsule) => boolea
  * @param capsuleB @zh 要测试的胶囊体 B。 @en The capsule B to test.
  * @returns @zh 如果相交，返回 true，否则返回 false。 @en true if there is an intersection, otherwise returns false.
  */
-const capsuleWithCapsule = (function (): (capsuleA: Capsule, capsuleB: Capsule) => boolean {
-    const v3_0 = v3();
-    const v3_1 = v3();
-    const v3_2 = v3();
-    const v3_3 = v3();
-    const v3_4 = v3();
-    const v3_5 = v3();
-    return function capsuleWithCapsule (capsuleA: Capsule, capsuleB: Capsule): boolean {
-        const capsuleAEllipseCenter0 = capsuleA.ellipseCenter0;
-        const capsuleAEllipseCenter1 = capsuleA.ellipseCenter1;
-        const capsuleBEllipseCenter1 = capsuleB.ellipseCenter1;
-        const capsuleBEllipseCenter0 = capsuleB.ellipseCenter0;
-        const u = vec3Subtract(v3_0, capsuleAEllipseCenter1, capsuleAEllipseCenter0);
-        const v = vec3Subtract(v3_1, capsuleBEllipseCenter1, capsuleBEllipseCenter0);
-        const w = vec3Subtract(v3_2, capsuleAEllipseCenter0, capsuleBEllipseCenter0);
-        const a = vec3Dot(u, u);         // always >= 0
-        const b = vec3Dot(u, v);
-        const c = vec3Dot(v, v);         // always >= 0
-        const d = vec3Dot(u, w);
-        const e = vec3Dot(v, w);
-        const D = a * c - b * b;        // always >= 0
-        let sN: number;
-        let sD = D;       // sc = sN / sD, default sD = D >= 0
-        let tN: number;
-        let tD = D;       // tc = tN / tD, default tD = D >= 0
+// const capsuleWithCapsule = (function (): (capsuleA: Capsule, capsuleB: Capsule) => boolean {
+//     const v3_0 = v3();
+//     const v3_1 = v3();
+//     const v3_2 = v3();
+//     const v3_3 = v3();
+//     const v3_4 = v3();
+//     const v3_5 = v3();
+//     return function capsuleWithCapsule (capsuleA: Capsule, capsuleB: Capsule): boolean {
+//         const capsuleAEllipseCenter0 = capsuleA.ellipseCenter0;
+//         const capsuleAEllipseCenter1 = capsuleA.ellipseCenter1;
+//         const capsuleBEllipseCenter1 = capsuleB.ellipseCenter1;
+//         const capsuleBEllipseCenter0 = capsuleB.ellipseCenter0;
+//         const u = vec3Subtract(v3_0, capsuleAEllipseCenter1, capsuleAEllipseCenter0);
+//         const v = vec3Subtract(v3_1, capsuleBEllipseCenter1, capsuleBEllipseCenter0);
+//         const w = vec3Subtract(v3_2, capsuleAEllipseCenter0, capsuleBEllipseCenter0);
+//         const a = vec3Dot(u, u);         // always >= 0
+//         const b = vec3Dot(u, v);
+//         const c = vec3Dot(v, v);         // always >= 0
+//         const d = vec3Dot(u, w);
+//         const e = vec3Dot(v, w);
+//         const D = a * c - b * b;        // always >= 0
+//         let sN: number;
+//         let sD = D;       // sc = sN / sD, default sD = D >= 0
+//         let tN: number;
+//         let tD = D;       // tc = tN / tD, default tD = D >= 0
 
-        // compute the line parameters of the two closest points
-        if (D < EPSILON) { // the lines are almost parallel
-            sN = 0.0;         // force using point P0 on segment S1
-            sD = 1.0;         // to prevent possible division by 0.0 later
-            tN = e;
-            tD = c;
-        } else {                 // get the closest points on the infinite lines
-            sN = (b * e - c * d);
-            tN = (a * e - b * d);
-            if (sN < 0.0) {        // sc < 0 => the s=0 edge is visible
-                sN = 0.0;
-                tN = e;
-                tD = c;
-            } else if (sN > sD) {  // sc > 1  => the s=1 edge is visible
-                sN = sD;
-                tN = e + b;
-                tD = c;
-            }
-        }
+//         // compute the line parameters of the two closest points
+//         if (D < EPSILON) { // the lines are almost parallel
+//             sN = 0.0;         // force using point P0 on segment S1
+//             sD = 1.0;         // to prevent possible division by 0.0 later
+//             tN = e;
+//             tD = c;
+//         } else {                 // get the closest points on the infinite lines
+//             sN = (b * e - c * d);
+//             tN = (a * e - b * d);
+//             if (sN < 0.0) {        // sc < 0 => the s=0 edge is visible
+//                 sN = 0.0;
+//                 tN = e;
+//                 tD = c;
+//             } else if (sN > sD) {  // sc > 1  => the s=1 edge is visible
+//                 sN = sD;
+//                 tN = e + b;
+//                 tD = c;
+//             }
+//         }
 
-        if (tN < 0.0) {            // tc < 0 => the t=0 edge is visible
-            tN = 0.0;
-            // recompute sc for this edge
-            if (-d < 0.0) {
-                sN = 0.0;
-            } else if (-d > a) {
-                sN = sD;
-            } else {
-                sN = -d;
-                sD = a;
-            }
-        } else if (tN > tD) {      // tc > 1  => the t=1 edge is visible
-            tN = tD;
-            // recompute sc for this edge
-            if ((-d + b) < 0.0) {
-                sN = 0;
-            } else if ((-d + b) > a) {
-                sN = sD;
-            } else {
-                sN = (-d + b);
-                sD = a;
-            }
-        }
-        // finally do the division to get sc and tc
-        const sc = (mathAbs(sN) < EPSILON ? 0.0 : sN / sD);
-        const tc = (mathAbs(tN) < EPSILON ? 0.0 : tN / tD);
+//         if (tN < 0.0) {            // tc < 0 => the t=0 edge is visible
+//             tN = 0.0;
+//             // recompute sc for this edge
+//             if (-d < 0.0) {
+//                 sN = 0.0;
+//             } else if (-d > a) {
+//                 sN = sD;
+//             } else {
+//                 sN = -d;
+//                 sD = a;
+//             }
+//         } else if (tN > tD) {      // tc > 1  => the t=1 edge is visible
+//             tN = tD;
+//             // recompute sc for this edge
+//             if ((-d + b) < 0.0) {
+//                 sN = 0;
+//             } else if ((-d + b) > a) {
+//                 sN = sD;
+//             } else {
+//                 sN = (-d + b);
+//                 sD = a;
+//             }
+//         }
+//         // finally do the division to get sc and tc
+//         const sc = (mathAbs(sN) < EPSILON ? 0.0 : sN / sD);
+//         const tc = (mathAbs(tN) < EPSILON ? 0.0 : tN / tD);
 
-        // get the difference of the two closest points
-        const dP = v3_3;
-        dP.set(w);
-        dP.add(vec3MultiplyScalar(v3_4, u, sc));
-        dP.subtract(vec3MultiplyScalar(v3_5, v, tc));
-        const radius = capsuleA.radius + capsuleB.radius;
-        return dP.lengthSqr() < radius * radius;
-    };
-}());
+//         // get the difference of the two closest points
+//         const dP = v3_3;
+//         dP.set(w);
+//         dP.add(vec3MultiplyScalar(v3_4, u, sc));
+//         dP.subtract(vec3MultiplyScalar(v3_5, v, tc));
+//         const radius = capsuleA.radius + capsuleB.radius;
+//         return dP.lengthSqr() < radius * radius;
+//     };
+// }());
 
 /**
  * @en
@@ -1290,12 +1290,12 @@ const capsuleWithCapsule = (function (): (capsuleA: Capsule, capsuleB: Capsule) 
  * 基础几何的相交性检测算法。
  */
 const intersect = {
-    raySphere,
+    // raySphere,
     rayAABB,
     rayOBB,
     rayPlane,
     rayTriangle,
-    rayCapsule,
+    // rayCapsule,
 
     // As these functions depends on upper modules, so move the implementation to misc/intersect.ts.
     // These functions are defined here to keep compatibility, they will be override in misc/intersect.ts.
@@ -1303,19 +1303,19 @@ const intersect = {
     rayMesh: null as unknown as (ray: Ray, mesh: Mesh, options?: IRayMeshOptions) => number,
     rayModel: null as unknown as (r: Ray, model: Model, options?: IRayModelOptions) => number,
 
-    lineSphere,
+    // lineSphere,
     lineAABB,
     lineOBB,
     linePlane,
     lineTriangle,
 
-    sphereWithSphere,
-    sphereAABB,
-    sphereOBB,
-    spherePlane,
-    sphereFrustum,
-    sphereFrustumAccurate,
-    sphereCapsule,
+    // sphereWithSphere,
+    // sphereAABB,
+    // sphereOBB,
+    // spherePlane,
+    // sphereFrustum,
+    // sphereFrustumAccurate,
+    // sphereCapsule,
 
     aabbWithAABB,
     aabbWithOBB,
@@ -1328,10 +1328,10 @@ const intersect = {
     obbFrustum,
     obbFrustumAccurate,
     obbPoint,
-    obbCapsule,
+    // obbCapsule,
     aabbFrustumCompletelyInside,
 
-    capsuleWithCapsule,
+    // capsuleWithCapsule,
 
     /**
      * @en Check intersection between two geometries, it accept all basic geometry types in [[geometry]] module.
@@ -1349,26 +1349,26 @@ const intersect = {
     },
 };
 
-intersect[ShapeType.SHAPE_RAY | ShapeType.SHAPE_SPHERE] = raySphere;
+// intersect[ShapeType.SHAPE_RAY | ShapeType.SHAPE_SPHERE] = raySphere;
 intersect[ShapeType.SHAPE_RAY | ShapeType.SHAPE_AABB] = rayAABB;
 intersect[ShapeType.SHAPE_RAY | ShapeType.SHAPE_OBB] = rayOBB;
 intersect[ShapeType.SHAPE_RAY | ShapeType.SHAPE_PLANE] = rayPlane;
 intersect[ShapeType.SHAPE_RAY | ShapeType.SHAPE_TRIANGLE] = rayTriangle;
-intersect[ShapeType.SHAPE_RAY | ShapeType.SHAPE_CAPSULE] = rayCapsule;
+// intersect[ShapeType.SHAPE_RAY | ShapeType.SHAPE_CAPSULE] = rayCapsule;
 
-intersect[ShapeType.SHAPE_LINE | ShapeType.SHAPE_SPHERE] = lineSphere;
+// intersect[ShapeType.SHAPE_LINE | ShapeType.SHAPE_SPHERE] = lineSphere;
 intersect[ShapeType.SHAPE_LINE | ShapeType.SHAPE_AABB] = lineAABB;
 intersect[ShapeType.SHAPE_LINE | ShapeType.SHAPE_OBB] = lineOBB;
 intersect[ShapeType.SHAPE_LINE | ShapeType.SHAPE_PLANE] = linePlane;
 intersect[ShapeType.SHAPE_LINE | ShapeType.SHAPE_TRIANGLE] = lineTriangle;
 
-intersect[ShapeType.SHAPE_SPHERE] = sphereWithSphere;
-intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_AABB] = sphereAABB;
-intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_OBB] = sphereOBB;
-intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_PLANE] = spherePlane;
-intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_FRUSTUM] = sphereFrustum;
-intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_FRUSTUM_ACCURATE] = sphereFrustumAccurate;
-intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_CAPSULE] = sphereCapsule;
+// intersect[ShapeType.SHAPE_SPHERE] = sphereWithSphere;
+// intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_AABB] = sphereAABB;
+// intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_OBB] = sphereOBB;
+// intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_PLANE] = spherePlane;
+// intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_FRUSTUM] = sphereFrustum;
+// intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_FRUSTUM_ACCURATE] = sphereFrustumAccurate;
+// intersect[ShapeType.SHAPE_SPHERE | ShapeType.SHAPE_CAPSULE] = sphereCapsule;
 
 intersect[ShapeType.SHAPE_AABB] = aabbWithAABB;
 intersect[ShapeType.SHAPE_AABB | ShapeType.SHAPE_OBB] = aabbWithOBB;
@@ -1380,8 +1380,8 @@ intersect[ShapeType.SHAPE_OBB] = obbWithOBB;
 intersect[ShapeType.SHAPE_OBB | ShapeType.SHAPE_PLANE] = obbPlane;
 intersect[ShapeType.SHAPE_OBB | ShapeType.SHAPE_FRUSTUM] = obbFrustum;
 intersect[ShapeType.SHAPE_OBB | ShapeType.SHAPE_FRUSTUM_ACCURATE] = obbFrustumAccurate;
-intersect[ShapeType.SHAPE_OBB | ShapeType.SHAPE_CAPSULE] = obbCapsule;
+// intersect[ShapeType.SHAPE_OBB | ShapeType.SHAPE_CAPSULE] = obbCapsule;
 
-intersect[ShapeType.SHAPE_CAPSULE] = capsuleWithCapsule;
+// intersect[ShapeType.SHAPE_CAPSULE] = capsuleWithCapsule;
 
 export default intersect;

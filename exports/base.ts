@@ -31,7 +31,7 @@ import '../predefine';
 import '../cocos/core/legacy';
 //TODO(PP): should rename it to render-scene
 import * as renderer from '../cocos/render-scene';
-import * as gfx from '../cocos/gfx';
+// import * as gfx from '../cocos/gfx';
 
 // LOAD ENGINE CORE
 export * from '../cocos/core';
@@ -43,7 +43,7 @@ export * from '../cocos/game';
 export { Root } from '../cocos/root';
 export * from '../cocos/serialization';
 
-export { gfx };
+// export { gfx };
 
 export * from '../cocos/asset/assets';
 export * from '../cocos/asset/asset-manager';

@@ -43,12 +43,12 @@ export * from './data';
 export * from './event';
 export * from './platform';
 export * from './scheduler';
-export * from './curves';
+// export * from './curves';
 export * from './settings';
 export * from './system';
 export * from './algorithm';
 export { cclegacy } from './global-exports';
-export * from './curves/bezier';
+// export * from './curves/bezier';
 
 // TODO: should not include engine internal exports when module mechanism is implemented.
 export * from './internal-index';
