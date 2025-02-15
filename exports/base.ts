@@ -56,7 +56,8 @@ export * from '../extensions/ccpool/node-pool';
 export * from '../cocos/input/types';
 export * from '../cocos/input';
 
-export * from '../cocos/native-binding/index';
+/** @export_if context.buildTimeConstants.NATIVE */
+export * from '../cocos/native-binding';
 
 type Constructor_<T = unknown> = Constructor<T>;
 
