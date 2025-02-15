@@ -25,6 +25,7 @@
 import './intersect';
 
 export { Camera } from './camera-component';
+/** @export_if context.buildTimeConstants.USE_3D */
 export { ModelRenderer } from './model-renderer';
 export { Renderer } from './renderer';
 export { MissingScript } from './missing-script';
