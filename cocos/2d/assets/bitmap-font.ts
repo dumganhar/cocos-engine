@@ -50,6 +50,7 @@ export interface ILetterDefinition {
     [key: string]: FontLetterDefinition;
 }
 
+/** @mangle */
 export class FontAtlas {
     public letterDefinitions: ILetterDefinition = {};
     public _texture: TextureBase | null = null;
