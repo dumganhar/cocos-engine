@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import { EDITOR, EDITOR_NOT_IN_PREVIEW, TEST } from 'internal:constants';
+import { EDITOR, EDITOR_NOT_IN_PREVIEW, TEST, USE_3D } from 'internal:constants';
 import { Asset } from '../assets/asset';
 import { ImageAsset, ImageSource } from '../assets/image-asset';
 import { SpriteFrame } from '../../2d/assets/sprite-frame';
@@ -190,19 +190,21 @@ export class BuiltinResMgr {
         emptyTexture.image = emptyImgAsset;
         resources[emptyTexture._uuid] = emptyTexture;
 
-        // black cube texture
-        const blackCubeTexture = new TextureCube();
-        blackCubeTexture._uuid = 'black-cube-texture';
-        blackCubeTexture.setMipFilter(TextureFilter.NEAREST);
-        blackCubeTexture.image = {
-            front: new ImageAsset(blackMemImageSource),
-            back: new ImageAsset(blackMemImageSource),
-            left: new ImageAsset(blackMemImageSource),
-            right: new ImageAsset(blackMemImageSource),
-            top: new ImageAsset(blackMemImageSource),
-            bottom: new ImageAsset(blackMemImageSource),
-        };
-        resources[blackCubeTexture._uuid] = blackCubeTexture;
+        if (USE_3D) {
+            // black cube texture
+            const blackCubeTexture = new TextureCube();
+            blackCubeTexture._uuid = 'black-cube-texture';
+            blackCubeTexture.setMipFilter(TextureFilter.NEAREST);
+            blackCubeTexture.image = {
+                front: new ImageAsset(blackMemImageSource),
+                back: new ImageAsset(blackMemImageSource),
+                left: new ImageAsset(blackMemImageSource),
+                right: new ImageAsset(blackMemImageSource),
+                top: new ImageAsset(blackMemImageSource),
+                bottom: new ImageAsset(blackMemImageSource),
+            };
+            resources[blackCubeTexture._uuid] = blackCubeTexture;
+        }
 
         // grey texture
         const greyImgAsset = new ImageAsset(greyMemImageSource);
@@ -211,19 +213,21 @@ export class BuiltinResMgr {
         greyTexture.image = greyImgAsset;
         resources[greyTexture._uuid] = greyTexture;
 
-        // grey cube texture
-        const greyCubeTexture = new TextureCube();
-        greyCubeTexture._uuid = 'grey-cube-texture';
-        greyCubeTexture.setMipFilter(TextureFilter.NEAREST);
-        greyCubeTexture.image = {
-            front: new ImageAsset(greyMemImageSource),
-            back: new ImageAsset(greyMemImageSource),
-            left: new ImageAsset(greyMemImageSource),
-            right: new ImageAsset(greyMemImageSource),
-            top: new ImageAsset(greyMemImageSource),
-            bottom: new ImageAsset(greyMemImageSource),
-        };
-        resources[greyCubeTexture._uuid] = greyCubeTexture;
+        if (USE_3D) {
+            // grey cube texture
+            const greyCubeTexture = new TextureCube();
+            greyCubeTexture._uuid = 'grey-cube-texture';
+            greyCubeTexture.setMipFilter(TextureFilter.NEAREST);
+            greyCubeTexture.image = {
+                front: new ImageAsset(greyMemImageSource),
+                back: new ImageAsset(greyMemImageSource),
+                left: new ImageAsset(greyMemImageSource),
+                right: new ImageAsset(greyMemImageSource),
+                top: new ImageAsset(greyMemImageSource),
+                bottom: new ImageAsset(greyMemImageSource),
+            };
+            resources[greyCubeTexture._uuid] = greyCubeTexture;
+        }
 
         // white texture
         const whiteImgAsset = new ImageAsset(whiteMemImageSource);
@@ -232,19 +236,21 @@ export class BuiltinResMgr {
         whiteTexture.image = whiteImgAsset;
         resources[whiteTexture._uuid] = whiteTexture;
 
-        // white cube texture
-        const whiteCubeTexture = new TextureCube();
-        whiteCubeTexture._uuid = 'white-cube-texture';
-        whiteCubeTexture.setMipFilter(TextureFilter.NEAREST);
-        whiteCubeTexture.image = {
-            front: new ImageAsset(whiteMemImageSource),
-            back: new ImageAsset(whiteMemImageSource),
-            left: new ImageAsset(whiteMemImageSource),
-            right: new ImageAsset(whiteMemImageSource),
-            top: new ImageAsset(whiteMemImageSource),
-            bottom: new ImageAsset(whiteMemImageSource),
-        };
-        resources[whiteCubeTexture._uuid] = whiteCubeTexture;
+        if (USE_3D) {
+            // white cube texture
+            const whiteCubeTexture = new TextureCube();
+            whiteCubeTexture._uuid = 'white-cube-texture';
+            whiteCubeTexture.setMipFilter(TextureFilter.NEAREST);
+            whiteCubeTexture.image = {
+                front: new ImageAsset(whiteMemImageSource),
+                back: new ImageAsset(whiteMemImageSource),
+                left: new ImageAsset(whiteMemImageSource),
+                right: new ImageAsset(whiteMemImageSource),
+                top: new ImageAsset(whiteMemImageSource),
+                bottom: new ImageAsset(whiteMemImageSource),
+            };
+            resources[whiteCubeTexture._uuid] = whiteCubeTexture;
+        }
 
         // normal texture
         const normalImgAsset = new ImageAsset(normalMemImageSource);
@@ -260,19 +266,21 @@ export class BuiltinResMgr {
         defaultTexture.image = defaultImgAsset;
         resources[defaultTexture._uuid] = defaultTexture;
 
-        // default cube texture
-        const defaultCubeTexture = new TextureCube();
-        defaultCubeTexture.setMipFilter(TextureFilter.NEAREST);
-        defaultCubeTexture._uuid = 'default-cube-texture';
-        defaultCubeTexture.image = {
-            front: new ImageAsset(defaultMemImageSource),
-            back: new ImageAsset(defaultMemImageSource),
-            left: new ImageAsset(defaultMemImageSource),
-            right: new ImageAsset(defaultMemImageSource),
-            top: new ImageAsset(defaultMemImageSource),
-            bottom: new ImageAsset(defaultMemImageSource),
-        };
-        resources[defaultCubeTexture._uuid] = defaultCubeTexture;
+        if (USE_3D) {
+            // default cube texture
+            const defaultCubeTexture = new TextureCube();
+            defaultCubeTexture.setMipFilter(TextureFilter.NEAREST);
+            defaultCubeTexture._uuid = 'default-cube-texture';
+            defaultCubeTexture.image = {
+                front: new ImageAsset(defaultMemImageSource),
+                back: new ImageAsset(defaultMemImageSource),
+                left: new ImageAsset(defaultMemImageSource),
+                right: new ImageAsset(defaultMemImageSource),
+                top: new ImageAsset(defaultMemImageSource),
+                bottom: new ImageAsset(defaultMemImageSource),
+            };
+            resources[defaultCubeTexture._uuid] = defaultCubeTexture;
+        }
 
         if (cclegacy.SpriteFrame) {
             const spriteFrame = new cclegacy.SpriteFrame() as SpriteFrame;

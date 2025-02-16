@@ -778,6 +778,7 @@
             "cocos/game/splash-screen.ts",
             "cocos/core/utils/jsb-utils.ts",
             "cocos/asset/asset-manager/weak-cache.ts",
+            "cocos/asset/assets/texture-cube.ts",
             "cocos/2d/framework/ui-skew-utils.ts",
             "cocos/2d/renderer/render-draw-info.ts",
             "cocos/2d/renderer/render-entity.ts",

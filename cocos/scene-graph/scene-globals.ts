@@ -401,7 +401,7 @@ export class SkyboxInfo {
      * @zh 使用的立方体贴图
      */
     @editable
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     @tooltip('i18n:skybox.envmap')
     set envmap (val) {
         if (!USE_3D) return;
@@ -472,7 +472,7 @@ export class SkyboxInfo {
     })
     @editable
     @readOnly
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     @displayOrder(100)
     set diffuseMap (val: TextureCube | null) {
         if (!USE_3D) return;
@@ -509,7 +509,7 @@ export class SkyboxInfo {
     })
     @editable
     @readOnly
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     @displayOrder(100)
     set reflectionMap (val: TextureCube | null) {
         if (!USE_3D) return;
@@ -553,17 +553,17 @@ export class SkyboxInfo {
     @serializable
     protected _envLightingType = USE_3D ? EnvironmentLightingType.HEMISPHERE_DIFFUSE : 0;
     @serializable
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     @formerlySerializedAs('_envmap')
     protected _envmapHDR: TextureCube | null = null;
     @serializable
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     protected _envmapLDR: TextureCube | null = null;
     @serializable
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     protected _diffuseMapHDR: TextureCube | null = null;
     @serializable
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     protected _diffuseMapLDR: TextureCube | null = null;
     @serializable
     protected _enabled = false;
@@ -573,10 +573,10 @@ export class SkyboxInfo {
     @type(Material)
     protected _editableMaterial: Material | null = null;
     @serializable
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     protected _reflectionHDR: TextureCube | null = null;
     @serializable
-    @type(TextureCube)
+    @type(USE_3D ? TextureCube : null)
     protected _reflectionLDR: TextureCube | null = null;
     @serializable
     protected _rotationAngle = 0;
@@ -1053,7 +1053,7 @@ export class ShadowsInfo {
     })
     set shadowMapSize (value: number) {
         if (!USE_3D) return;
-	const resource = this._resource;
+        const resource = this._resource;
         this._size.set(value, value);
         if (resource) {
             resource.size.set(value, value);
