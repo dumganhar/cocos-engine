@@ -31,10 +31,11 @@ import { ccwindow } from '../../core/global-exports';
 
 const ccdocument = ccwindow.document;
 
+/** @mangle */
 interface IFontLoadHandle {
     fontFamilyName: string;
     refWidth: number;
-    onComplete: ((err: Error | null, data?: any | null) => void);
+    onComplete: ((err: Error | null, data?: any) => void);
     startTime: number;
 }
 
@@ -196,7 +197,7 @@ export function loadFont (url: string, options: Record<string, any>, onComplete:
     } else {
         const refWidth = safeMeasureText(_canvasContext!, _testString, fontDesc);
         // Save loading font
-        const fontLoadHandle = {
+        const fontLoadHandle: IFontLoadHandle = {
             fontFamilyName,
             refWidth,
             onComplete,
