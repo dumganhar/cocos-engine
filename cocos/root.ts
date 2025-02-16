@@ -260,7 +260,7 @@ export class Root {
     private _modelPools = new Map<Constructor<Model>, Pool<Model>>();
     private _cameraPool: Pool<Camera> | null = null;
     private _lightPools = USE_3D ? new Map<Constructor<Light>, Pool<Light>>() : null!;
-    private _debugView = new DebugView();
+    private _debugView = USE_3D ? new DebugView() : null!;
     private _fpsTime = 0;
     private _frameCount = 0;
     private _fps = 0;

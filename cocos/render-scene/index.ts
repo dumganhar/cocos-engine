@@ -31,6 +31,7 @@ export * from './core/pass-utils';
 export * from './core/pass';
 export type { IProgramInfo, ITemplateInfo } from './core/program-lib';
 export { programLib, getDeviceShaderVersion } from './core/program-lib';
+/** @export_if context.buildTimeConstants.USE_3D */
 export * from './core/texture-buffer-pool';
 export * from './core/material-instance';
 export * from './core/pass-instance';

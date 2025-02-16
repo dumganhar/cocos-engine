@@ -22,7 +22,7 @@
  THE SOFTWARE.
 */
 
-import './intersect';
+// import './intersect';
 
 export { Camera } from './camera-component';
 /** @export_if context.buildTimeConstants.USE_3D */

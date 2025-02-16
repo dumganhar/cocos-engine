@@ -799,6 +799,7 @@
             "cocos/render-scene/scene/sphere-light.ts",
             "cocos/render-scene/scene/spot-light.ts",
             "cocos/render-scene/scene/ranged-directional-light.ts",
+            "cocos/rendering/debug-view.ts",
             "cocos/rendering/scene-culling.ts",
             "cocos/rendering/shadow/csm-layers.ts",
             "cocos/rendering/shadow/shadow-flow.ts",
