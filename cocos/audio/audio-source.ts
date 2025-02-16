@@ -179,10 +179,11 @@ export class AudioSource extends Component {
     }
 
     private _unregisterListener (): void {
-        if (this._player && this._hasRegisterListener) {
-            this._player.offEnded();
-            this._player.offInterruptionBegin();
-            this._player.offInterruptionEnd();
+        const player = this._player;
+        if (player && this._hasRegisterListener) {
+            player.offEnded();
+            player.offInterruptionBegin();
+            player.offInterruptionEnd();
             this._hasRegisterListener = false;
         }
     }
@@ -238,10 +239,8 @@ export class AudioSource extends Component {
         val = clamp(val, 0, 1);
         if (this._player) {
             this._player.volume = val;
-            this._volume = this._player.volume;
-        } else {
-            this._volume = val;
         }
+        this._volume = val;
     }
     get volume (): number {
         return this._volume;
