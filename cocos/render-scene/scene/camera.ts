@@ -994,6 +994,7 @@ export class Camera {
     /**
      * Editor specific gizmo camera logic
      * @internal
+     * @mangle
      */
     public syncCameraEditor (camera: Camera): void {
         if (EDITOR) {
