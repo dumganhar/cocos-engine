@@ -546,7 +546,8 @@ export class Mesh extends Asset {
                 }
 
                 const subMesh = new RenderingSubMesh(vbReference, gfxAttributes, prim.primitiveMode, indexBuffer);
-                subMesh.mesh = this; subMesh.subMeshIdx = i;
+                subMesh.mesh = this;
+                subMesh.subMeshIdx = i;
 
                 subMeshes.push(subMesh);
             }

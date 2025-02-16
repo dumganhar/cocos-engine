@@ -783,6 +783,7 @@
             "cocos/2d/renderer/render-draw-info.ts",
             "cocos/2d/renderer/render-entity.ts",
             "cocos/3d/assets/mesh.ts",
+            "cocos/3d/misc/buffer.ts",
             "cocos/render-scene/scene/fog.ts",
             "cocos/render-scene/scene/ambient.ts",
             "cocos/render-scene/scene/skybox.ts",

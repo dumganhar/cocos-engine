@@ -22,6 +22,7 @@
  THE SOFTWARE.
 */
 
+import { USE_3D } from 'internal:constants';
 import { mapBuffer } from '../../3d/misc/buffer';
 import {
     Attribute, Device, InputAssemblerInfo, Buffer, BufferInfo, AttributeName, BufferUsageBit,
@@ -371,6 +372,7 @@ export class RenderingSubMesh {
      * @zh 骨骼索引按映射表处理后的顶点缓冲。
      */
     get jointMappedBuffers (): Buffer[] {
+        if (!USE_3D) return [];
         if (this._jointMappedBuffers) { return this._jointMappedBuffers; }
         const buffers: Buffer[] = this._jointMappedBuffers = [];
         const indices: number[] = this._jointMappedBufferIndices = [];
