@@ -44,7 +44,7 @@ export { setPropertyEnumType, setPropertyEnumTypeOnAttrs } from './data/utils/at
 export { ENUM_TAG, BITMASK_TAG } from './data/class';
 export { isCCObject, isValid } from './data/object';
 
-export { EasingMethod } from './curves/easing-method';
+// export { EasingMethod } from './curves/easing-method';
 
 export { CallbacksInvoker } from './event/callbacks-invoker';
 export { applyMixins } from './event/event-target-factory';
