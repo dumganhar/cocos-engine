@@ -490,7 +490,10 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
      * @param keepWorldTransform Whether keep node's current world transform unchanged after this operation
      */
     public setParent (value: Node | null, keepWorldTransform = false): void {
-        if (keepWorldTransform) { this.updateWorldTransform(); }
+        if (keepWorldTransform) {
+            this.updateWorldTransform();
+            this.updateWorldSRT();
+        }
 
         if (this._parent === value) {
             return;
@@ -1544,19 +1547,22 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
     /**
      * @engineInternal NOTE: this is engineInternal interface that doesn't have a side effect of updating the transforms
      */
-    public declare _pos: Vec3;
+    public _pos = new Vec3();
     /**
      * @engineInternal NOTE: this is engineInternal interface that doesn't have a side effect of updating the transforms
      */
-    public declare _rot: Quat;
+    public _rot = new Quat();
     /**
      * @engineInternal NOTE: this is engineInternal interface that doesn't have a side effect of updating the transforms
      */
-    public declare _scale: Vec3;
+    public _scale = new Vec3(1, 1, 1);
     /**
      * @engineInternal NOTE: this is engineInternal interface that doesn't have a side effect of updating the transforms
      */
-    public declare _mat: Mat4;
+    public _mat = new Mat4();
+
+    private _originalWorldMat = this._mat;
+    private _worldSRTDirtyFlags = TransformBit.NONE;
 
     // local transform
     @serializable
@@ -1587,11 +1593,6 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
     constructor (name?: string) {
         if (name === undefined) name = 'New Node';
         super(name);
-
-        this._pos = new Vec3();
-        this._rot = new Quat();
-        this._scale = new Vec3(1, 1, 1);
-        this._mat = new Mat4();
     }
 
     /**
@@ -1674,6 +1675,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
     // @constget
     public get worldPosition (): Readonly<Vec3> {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         return this._pos;
     }
 
@@ -1687,6 +1689,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
      */
     get worldPositionX (): number {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         return this._pos.x;
     }
 
@@ -1704,6 +1707,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
      */
     get worldPositionY (): number {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         return this._pos.y;
     }
 
@@ -1721,6 +1725,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
      */
     get worldPositionZ (): number {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         return this._pos.z;
     }
 
@@ -1789,6 +1794,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
     // @constget
     public get worldRotation (): Readonly<Quat> {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         return this._rot;
     }
 
@@ -1816,6 +1822,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
     // @constget
     public get worldScale (): Readonly<Vec3> {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         return this._scale;
     }
 
@@ -2017,10 +2024,12 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
         if (keepWorldTransform) {
             if (parent) {
                 parent.updateWorldTransform();
+                parent.updateWorldSRT();
                 if (approx(Mat4.determinant(parent._mat), 0, EPSILON)) {
                     warnID(14300);
                     self._transformFlags |= TransformBit.TRS;
                     self.updateWorldTransform();
+                    self.updateWorldSRT();
                 } else {
                     let newParentMatWithoutSkew = parent._mat;
                     if (USE_UI_SKEW) {
@@ -2239,6 +2248,20 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
         }
     }
 
+    private updateWorldSRT (): void {
+        const dirtyBits = this._worldSRTDirtyFlags;
+        if (dirtyBits === TransformBit.NONE) return;
+        const rotTmp = dirtyBits & TransformBit.ROTATION ? this._rot : null;
+        Mat4.toSRT(this._originalWorldMat, rotTmp, this._pos, this._scale);
+
+        if (USE_UI_SKEW) { // FIXME(cjh): HOW TO CHECK ? && foundSkewInAncestor) {
+            // NOTE: world position from Mat4.toSRT(originalWorldMatrix, ...) will not consider the skew factor.
+            // So we need to update the world position manually here.
+            Vec3.transformMat4(this._pos, this._lpos, this.parent!._mat);
+        }
+        this._worldSRTDirtyFlags = TransformBit.NONE;
+    }
+
     /**
      * @en Update the world transform information if outdated
      * @zh 更新节点的世界变换信息
@@ -2279,6 +2302,8 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
                 }
                 if (rotationScaleSkewDirty) {
                     let originalWorldMatrix = childMat;
+                    uiSkewComp = null;
+                    foundSkewInAncestor = false;
                     Mat4.fromSRT(m4_1, child._lrot, child._lpos, child._lscale); // m4_1 stores local matrix
                     if (USE_UI_SKEW && skewCompCount > 0) {
                         foundSkewInAncestor = findSkewAndGetOriginalWorldMatrix(cur, m4_2); // m4_2 stores parent's world matrix without skew
@@ -2295,14 +2320,19 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
 
                     Mat4.multiply(childMat, cur._mat, m4_1); // m4_1 stores local matrix with skew
 
-                    const rotTmp = dirtyBits & TransformBit.ROTATION ? child._rot : null;
-                    Mat4.toSRT(originalWorldMatrix, rotTmp, childPos, child._scale);
-
-                    if (USE_UI_SKEW && foundSkewInAncestor) {
-                        // NOTE: world position from Mat4.toSRT(originalWorldMatrix, ...) will not consider the skew factor.
-                        // So we need to update the world position manually here.
-                        Vec3.transformMat4(childPos, child._lpos, cur._mat);
+                    child._worldSRTDirtyFlags = dirtyBits;
+                    if (USE_UI_SKEW && (uiSkewComp || foundSkewInAncestor)) {
+                        child._originalWorldMat = originalWorldMatrix;
                     }
+
+                    // const rotTmp = dirtyBits & TransformBit.ROTATION ? child._rot : null;
+                    // Mat4.toSRT(originalWorldMatrix, rotTmp, childPos, child._scale);
+
+                    // if (USE_UI_SKEW && foundSkewInAncestor) {
+                    //     // NOTE: world position from Mat4.toSRT(originalWorldMatrix, ...) will not consider the skew factor.
+                    //     // So we need to update the world position manually here.
+                    //     Vec3.transformMat4(childPos, child._lpos, cur._mat);
+                    // }
                 }
             } else {
                 if (positionDirty) {
@@ -2590,6 +2620,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
      */
     public getWorldPosition (out?: Vec3): Vec3 {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         if (out) {
             return Vec3.copy(out, this._pos);
         }
@@ -2623,6 +2654,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
 
         if (this._parent) {
             this._parent.updateWorldTransform();
+            this._parent.updateWorldSRT();
             Quat.multiply(this._lrot, Quat.conjugate(this._lrot, this._parent._rot), worldRotation);
         } else {
             Quat.copy(this._lrot, worldRotation);
@@ -2655,6 +2687,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
      */
     public getWorldRotation (out?: Quat): Quat {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         if (out) {
             return Quat.copy(out, this._rot);
         }
@@ -2756,6 +2789,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
      */
     public getWorldScale (out?: Vec3): Vec3 {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         if (out) {
             return Vec3.copy(out, this._scale);
         }
@@ -2796,6 +2830,7 @@ export class Node extends CCObject implements ISchedulable, CustomSerializable {
      */
     public getWorldRT (out?: Mat4): Mat4 {
         this.updateWorldTransform();
+        this.updateWorldSRT();
         const target = out || new Mat4();
         return Mat4.fromRT(target, this._rot, this._pos);
     }
