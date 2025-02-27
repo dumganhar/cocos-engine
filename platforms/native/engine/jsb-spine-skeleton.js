@@ -493,7 +493,6 @@ const cacheManager = require('./jsb-cache-manager');
     };
 
     skeleton.setSkin = function (skinName) {
-        this._skinName = skinName;
         if (this._nativeSkeleton) return this._nativeSkeleton.setSkin(skinName);
         return null;
     };
@@ -699,17 +698,11 @@ const cacheManager = require('./jsb-cache-manager');
             this.attachUtil.init(this);
             this._preCacheMode = this._cacheMode;
 
-            if (this.defaultSkin && this.defaultSkin !== '') {
-                this.setSkin(this.defaultSkin);
-            } else if (this._skinName && this._skinName !== '') {
-                this.setSkin(this._skinName);
-            }
+            this.defaultSkin && this._nativeSkeleton.setSkin(this.defaultSkin);
             if (this.defaultAnimation) {
                 this.animation = this.defaultAnimation;
             } else if (this._animationName) {
                 this.animation = this._animationName;
-            } else {
-                this.animation = '';
             }
         } else if (this._nativeSkeleton) {
             this._nativeSkeleton.stopSchedule();
