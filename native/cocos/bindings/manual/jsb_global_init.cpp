@@ -219,6 +219,7 @@ void jsb_init_file_operation_delegate() { //NOLINT
 }
 
 bool jsb_enable_debugger(const ccstd::string &debuggerServerAddr, uint32_t port, bool isWaitForConnect) { //NOLINT
+    static_assert(SCRIPT_ENGINE_TYPE != SCRIPT_ENGINE_V8, "test jsvm");
 #if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
     if (debuggerServerAddr.empty() || port == 0) {
         return false;
