@@ -39,6 +39,8 @@
 
 #define _EXPOSE_GC "__jsb_gc__"
 
+extern uint32_t gReferenceCount;
+
 namespace se {
 AutoHandleScope::AutoHandleScope() {
     OH_JSVM_OpenHandleScope(ScriptEngine::getEnv(), &_handleScope);
@@ -450,7 +452,7 @@ void ScriptEngine::clearException() {
 }
 
 void ScriptEngine::garbageCollect() {
-    CC_LOG_DEBUG("GC begin ..., (js->native map) size: %d",(int)NativePtrToObjectMap::size());
+    CC_LOG_DEBUG("GC begin ..., (js->native map) size: %d, ref: %u",(int)NativePtrToObjectMap::size(), gReferenceCount);
 
     if(_gcFunc == nullptr) {
         JSVM_Status status;
@@ -459,7 +461,7 @@ void ScriptEngine::garbageCollect() {
         _gcFunc->call({}, nullptr);
     }
     
-    CC_LOG_DEBUG("GC end ..., (js->native map) size: %d",(int)NativePtrToObjectMap::size());
+    CC_LOG_DEBUG("GC end ..., (js->native map) size: %d, ref: %u",(int)NativePtrToObjectMap::size(), gReferenceCount);
 }
 
 bool ScriptEngine::isGarbageCollecting() const {
@@ -496,9 +498,10 @@ bool ScriptEngine::callFunction(Object *targetObj, const char *funcName, uint32_
     }
 
     ValueArray argv;
+    argv.resize(argc);
 
     for (size_t i = 0; i < argc; ++i) {
-        argv.push_back(args[i]);
+        argv[i] = args[i];
     }
 
     objFunc.toObject()->call(argv, targetObj, rval);

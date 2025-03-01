@@ -34,11 +34,17 @@
 
 #define MAX_STRING_LEN 512
 
+bool gEnableStackCatcher = false;
+
 namespace se {
 std::unique_ptr<std::unordered_map<Object*, void*>> __objectMap; // Currently, the value `void*` is always nullptr
 
-Object::Object() {}
+Object::Object(): _objRef(this) {}
 Object::~Object() {
+    if (!_destructInFinalizer && _cls != nullptr) {
+        OH_JSVM_RemoveWrap(_env, _objRef.getValue(_env), nullptr);
+    }
+    
     if (__objectMap) {
         __objectMap->erase(this);
     }
@@ -109,6 +115,10 @@ void Object::setPrivateObject(PrivateObjectBase* data) {
     NODE_API_CALL(status, _env,
                   OH_JSVM_Wrap(_env, tmpThis, this, weakCallback,
                                (void*)this /* finalize_hint */, nullptr));
+    
+    _objRef.decRef(_env);
+    
+    
     //_objRef.setWeakref(_env, result);
     setProperty("__native_ptr__", se::Value(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(data))));
     return;
@@ -528,7 +538,7 @@ bool Object::init(JSVM_Env env, JSVM_Value js_object, Class* cls) {
     assert(env);
     _cls = cls;
     _env = env;
-    _objRef.initWeakref(env, js_object);
+    _objRef.init(env, js_object, cls != nullptr);
 
     if (__objectMap) {
         assert(__objectMap->find(this) == __objectMap->end());
@@ -722,6 +732,7 @@ void Object::weakCallback(JSVM_Env env, void* nativeObject, void* finalizeHint /
                 seObj->_getClass()->_getFinalizeFunction()(env, finalizeHint, finalizeHint);
             }
         }
+        seObj->_destructInFinalizer = true;
         seObj->decRef();
     }
 }
@@ -848,15 +859,6 @@ void Object::clearPrivateData(bool clearMapping) {
     }
 }
 
-JSVM_Value ObjectRef::getValue(JSVM_Env env) const {
-    JSVM_Value  result;
-    JSVM_Status status;
-    NODE_API_CALL(status, env, OH_JSVM_GetReferenceValue(env, _ref, &result));
-    assert(status == JSVM_OK);
-    assert(result != nullptr);
-    return result;
-}
-
 Object* Object::createUTF8String(const std::string& str) {
     JSVM_Status status;
     JSVM_Value result;
@@ -865,4 +867,80 @@ Object* Object::createUTF8String(const std::string& str) {
     return obj;
 }
 
+static JSVM_Value gRefMap = nullptr;
+static uint32_t gRefKeyCounter = 0;
+
+ObjectRef::ObjectRef(Object *parent)
+: _parent(parent) {
+
+}
+
+ObjectRef::~ObjectRef() {
+    deleteRef();
+}
+    
+void ObjectRef::init(JSVM_Env env, JSVM_Value obj, bool isJSBClass) {
+    assert(_ref == nullptr);
+    _obj = obj;
+    _env = env;
+    _isJSB = isJSBClass;
+    
+    OH_JSVM_CreateReference(_env, _obj, 1, &_ref);
+}
+    
+JSVM_Value ObjectRef::getValue(JSVM_Env env) const {
+//    if (_ref) {
+        JSVM_Value r = nullptr;
+        OH_JSVM_GetReferenceValue(_env, _ref, &r);
+        return r;
+//    }
+//    return _obj;
+}
+
+void ObjectRef::incRef(JSVM_Env env) {
+//    if (_refCounts == 0) {
+        OH_JSVM_ReferenceRef(_env, _ref, nullptr);
+//    }
+//    ++_refCounts;
+}
+
+void ObjectRef::decRef(JSVM_Env env) {
+//    --_refCounts;
+//    if (_refCounts == 0 && _ref) {
+        OH_JSVM_ReferenceUnref(_env, _ref, nullptr);
+//    }
+}
+
+void ObjectRef::deleteRef() {
+    if (!_ref) {
+        return;
+    }
+
+    if (!_parent->_destructInFinalizer) {
+        uint32_t refCount = 0;
+        JSVM_Status status = OH_JSVM_ReferenceRef(_env, _ref, &refCount);
+        assert(status == JSVM_OK);
+        if (refCount != 0) {
+            assert(refCount == 2);
+        }
+    
+        OH_JSVM_DeleteReference(_env, _ref);
+    } else {
+        int a = 0;
+        OH_JSVM_DeleteReference(_env, _ref);
+    }
+    _ref = nullptr;
+    _refCounts = 0;
+}
+
 } // namespace se
+
+
+StackCatcher::StackCatcher() {
+    gEnableStackCatcher = true;
+}
+
+StackCatcher::~StackCatcher() {
+    gEnableStackCatcher = false;
+}
+

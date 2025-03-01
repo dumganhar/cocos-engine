@@ -33,6 +33,7 @@
 #include "base/Log.h"
 #include "base/Macros.h"
 #include "base/memory/Memory.h"
+#include "bindings/jswrapper/SeApi.h"
 
 namespace {
 constexpr unsigned CC_REPEAT_FOREVER{UINT_MAX - 1};
@@ -333,6 +334,7 @@ void Scheduler::removeAllFunctionsToBePerformedInCocosThread() {
 }
 
 void Scheduler::runFunctionsToBePerformedInCocosThread() {
+    se::AutoHandleScope hs;
     //
     // Functions allocated from another thread
     //

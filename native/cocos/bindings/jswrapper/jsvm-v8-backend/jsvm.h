@@ -594,7 +594,7 @@ JSVM_EXTERN JSVM_Status OH_JSVM_CreateReference(JSVM_Env env,
                                                 JSVM_Ref* result);
 
 /**
- * @brief his API deletes the reference passed in.
+ * @brief this API deletes the reference passed in.
  *
  * @param env: The environment that the API is invoked under.
  * @param ref: JSVM_Ref to be deleted.

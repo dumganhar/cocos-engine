@@ -216,6 +216,7 @@ void EventDispatcher::dispatchTouchEvent(const TouchEvent &touchEvent) {
 
 void EventDispatcher::dispatchMouseEvent(const MouseEvent &mouseEvent) {
     se::AutoHandleScope scope;
+    StackCatcher sc;
     if (!jsMouseEventObj) {
         jsMouseEventObj = se::Object::createPlainObject();
         jsMouseEventObj->root();

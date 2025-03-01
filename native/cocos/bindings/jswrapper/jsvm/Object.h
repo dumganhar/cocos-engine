@@ -34,8 +34,15 @@
 #include "HelperMacros.h"
 #include "Utils.h"
 
+class StackCatcher {
+public:
+    StackCatcher();
+    ~StackCatcher();
+};
+
 namespace se {
 class Class;
+class Object;
 namespace internal {
 struct PrivateData;
 }
@@ -43,60 +50,22 @@ struct PrivateData;
 class ObjectRef {
 private:
     JSVM_Ref _ref = nullptr;
-    int _refCounts = 0;
     JSVM_Env _env = nullptr;
     JSVM_Value _obj = nullptr;
+    Object* _parent = nullptr;
+    
+    int _refCounts = 0;
+    bool _isJSB = false;
 
 public:
-    ~ObjectRef() {
-        deleteRef();
-    }
+    ObjectRef(Object *parent);
+    ~ObjectRef();
     
     JSVM_Value getValue(JSVM_Env env) const;
-
-    void initWeakref(JSVM_Env env, JSVM_Value obj) {
-        assert(_ref == nullptr);
-        _obj = obj;
-        _env = env;
-        OH_JSVM_CreateReference(env, obj, 0, &_ref);
-    }
-    void setWeakref(JSVM_Env env, JSVM_Ref ref) {
-        assert(_ref == nullptr);
-        _ref = ref;
-    }
-    void initStrongRef(JSVM_Env env, JSVM_Value obj) {
-        assert(_ref == nullptr);
-        _refCounts = 1;
-        _obj = obj;
-        OH_JSVM_CreateReference(env, obj, _refCounts, &_ref);
-        _env = env;
-    }
-    void incRef(JSVM_Env env) {
-        assert(_refCounts == 0);
-        if (_refCounts == 0) {
-            uint32_t result = 0;
-            _refCounts = 1;
-            OH_JSVM_ReferenceRef(env, _ref, &result);
-        }
-    }
-    void decRef(JSVM_Env env) {
-        assert(_refCounts == 1);
-        uint32_t result = 0;
-        if (_refCounts > 0) {
-            _refCounts--;
-            if (_refCounts == 0) {
-                OH_JSVM_ReferenceUnref(env, _ref, &result);
-            }
-        }
-    }
-    void deleteRef() {
-        _refCounts = 0;
-        if (!_ref) {
-            return;
-        }
-        OH_JSVM_DeleteReference(_env, _ref);
-        _ref = nullptr;
-    }
+    void init(JSVM_Env env, JSVM_Value obj, bool isJSBClass);
+    void incRef(JSVM_Env env);
+    void decRef(JSVM_Env env);
+    void deleteRef();
 };
 
 class Object;
@@ -487,6 +456,7 @@ private:
     ObjectRef _objRef;
     JSVM_Finalize _finalizeCb = nullptr;
     bool _clearMappingInFinalizer = true;
+    bool _destructInFinalizer = false;
     void *_privateData = nullptr;
     PrivateObjectBase *_privateObject = nullptr;
     JSVM_Env _env = nullptr;
@@ -495,6 +465,7 @@ private:
     bool _onCleaingPrivateData = false;
     internal::PrivateData *_internalData;
 
+    friend class ObjectRef;
     friend class ScriptEngine;
 };
 }; // namespace se

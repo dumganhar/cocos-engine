@@ -4,6 +4,10 @@
 #include <climits>  // INT_MAX
 #include <cmath>
 #include <assert.h>
+
+#include <execinfo.h>  // for backtrace
+#include <cxxabi.h>   // for demangling
+
 #include "v8-debug.h"
 #include "v8-internal.h"
 #include "v8-local-handle.h"
@@ -82,6 +86,75 @@
         "Invalid typed array length");                                         \
     (out) = v8::type::New((buffer), (byteOffset), (length));                  \
   } while (0)
+
+uint32_t gReferenceCount = 0;
+extern bool gEnableStackCatcher;
+int gDeleteCounter = 0;
+//
+// 反解 mangled 符号
+static std::string demangle(const char* mangled) {
+    int status = 0;
+    char* demangled = abi::__cxa_demangle(mangled, nullptr, nullptr, &status);
+    if (status == 0) {
+        std::string result(demangled);
+        free(demangled);
+        return result;
+    } else {
+        return mangled; // 如果反解失败，返回原始 mangled 名称
+    }
+}
+//
+//// 获取当前调用堆栈并返回为字符串
+//static std::string get_backtrace() {
+//    void* callstack[128];
+//    int frames = backtrace(callstack, 128);
+//    char** strs = backtrace_symbols(callstack, frames);
+//
+//    std::string result;
+//    for (int i = 0; i < frames; ++i) {
+//        std::string str(strs[i]);
+//
+//        // 尝试从堆栈字符串中提取 mangled 符号
+//        // macOS 的堆栈字符串格式通常为：<index> <binary> <address> <mangled symbol> + <offset>
+//        char* mangled_start = strchr(strs[i], '_'); // 找到 mangled 符号的起始位置
+//        char* mangled_end = strchr(strs[i], '+');  // 找到 mangled 符号的结束位置
+//
+//        if (mangled_start && mangled_end && mangled_start < mangled_end) {
+//            *mangled_end = '\0'; // 截断字符串，只保留 mangled 符号
+//            std::string demangled_name = demangle(mangled_start);
+//            str = std::to_string(i) + " " + demangled_name + " + " + (mangled_end + 1);
+//        }
+//
+//        result += str + "\n";
+//    }
+//
+//    free(strs);
+//    return result;
+//}
+
+#include <dlfcn.h> // for dladdr
+
+static std::string get_symbol_info(void* addr) {
+    Dl_info info;
+    if (dladdr(addr, &info) && info.dli_sname) {
+        return demangle(info.dli_sname); // 尝试反解符号
+    }
+    return "???";
+}
+
+static std::string get_backtrace() {
+    void* callstack[128];
+    int frames = backtrace(callstack, 128);
+
+    std::string result;
+    for (int i = 0; i < frames; ++i) {
+        result += std::to_string(i) + " " + get_symbol_info(callstack[i]) + "\n";
+    }
+    return result;
+}
+
+//
+
 
 JSVM_Env__::JSVM_Env__(v8::Isolate* isolate, int32_t module_api_version)
     : isolate(isolate), module_api_version(module_api_version) {
@@ -1276,11 +1349,18 @@ Reference::Reference(JSVM_Env env, v8::Local<v8::Value> value, Args&&... args)
   if (RefCount() == 0) {
     SetWeak();
   }
+          ++gReferenceCount;
+          if (gEnableStackCatcher) {
+              createStack = get_backtrace();
+          }
 }
 
 Reference::~Reference() {
   // Reset the handle. And no weak callback will be invoked.
   persistent_.Reset();
+    --gReferenceCount;
+    
+
 }
 
 Reference* Reference::New(JSVM_Env env,
@@ -1339,6 +1419,13 @@ void Reference::Delete() {
   assert(ownership() == Ownership::kUserland);
   if (!wait_callback) {
     delete this;
+//      deleted = true;
+//      assert(!persistent_.IsWeak());
+//      persistent_.Reset();//cjh added
+//      counter = ++gDeleteCounter;
+//      if (counter > 6500) {
+////          createStack = get_backtrace();
+//      }
   } else {
     deleted_by_user = true;
   }
@@ -1358,7 +1445,7 @@ void Reference::Finalize() {
 void Reference::SetWeak() {
   if (can_be_weak_) {
     wait_callback = true;
-    persistent_.SetWeak(this, WeakCallback, v8::WeakCallbackType::kParameter);
+      persistent_.SetWeak(this, WeakCallback, v8::WeakCallbackType::kParameter);
   } else {
     persistent_.Reset();
   }
@@ -1370,16 +1457,23 @@ void Reference::SetWeak() {
 void Reference::WeakCallback(const v8::WeakCallbackInfo<Reference>& data) {
   Reference* reference = data.GetParameter();
   // The reference must be reset during the weak callback as the API protocol.
+    assert(!reference->deleted);
   reference->persistent_.Reset();
   assert(reference->wait_callback);
+    if (!reference->createStack.empty()) {
+        int a = 0;
+    }
   // For owership == kRuntime, deleted_by_user is always false.
   // Due to reference may be free in InvokeFinalizerFromGC, the status of
   // reference should be set before finalize call.
   bool need_delete = reference->deleted_by_user;
   reference->wait_callback = false;
   reference->env_->InvokeFinalizerFromGC(reference);
+
   if (need_delete) {
     delete reference;
+  } else {
+      int a = 0;
   }
 }
 
