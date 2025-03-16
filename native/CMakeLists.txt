@@ -17,6 +17,7 @@ cc_set_if_undefined(USE_SE_V8                ON)
 cc_set_if_undefined(USE_SE_SM                OFF)
 cc_set_if_undefined(USE_SE_NAPI              OFF)
 cc_set_if_undefined(USE_SE_JSVM              OFF)
+cc_set_if_undefined(USE_SE_QUICKJS           OFF)
 cc_set_if_undefined(USE_V8_DEBUGGER          ON)
 cc_set_if_undefined(USE_V8_DEBUGGER_FORCE    OFF)
 cc_set_if_undefined(USE_SOCKET               ON)
@@ -108,6 +109,22 @@ if(${NET_MODE} EQUAL "0" OR ${NET_MODE} EQUAL "1" OR ${NET_MODE} EQUAL "2")
     add_definitions(-DCC_NETMODE=${NET_MODE})
 else()
     message(FATAL_ERROR "NET_MODE only support setting to 1 2 or 3.")
+endif()
+
+if(USE_SE_QUICKJS)
+    set(USE_SE_V8 OFF)
+    set(USE_V8_DEBUGGER OFF)
+    set(USE_SE_SM OFF)
+    set(USE_SE_NAPI OFF)
+    set(USE_SE_JSVM OFF)
+endif()
+
+if(USE_SE_SM)
+    set(USE_SE_V8 OFF)
+    set(USE_V8_DEBUGGER OFF)
+    set(USE_SE_QUICKJS OFF)
+    set(USE_SE_NAPI OFF)
+    set(USE_SE_JSVM OFF)
 endif()
 
 if(NOT USE_SOCKET)
@@ -211,6 +228,7 @@ cc_inspect_values(
     CC_DEBUG_FORCE
     USE_SE_V8
     USE_SE_JSVM
+    USE_SE_QUICKJS
     USE_V8_DEBUGGER
     USE_V8_DEBUGGER_FORCE
     USE_SE_SM
@@ -2996,6 +3014,23 @@ if(USE_SE_SM)
     )
 endif()
 
+if(USE_SE_QUICKJS)
+    cocos_source_files(MODULE ccbindings
+                    cocos/bindings/jswrapper/quickjs/Base.h
+        NO_WERROR   cocos/bindings/jswrapper/quickjs/Class.cpp
+                    cocos/bindings/jswrapper/quickjs/Class.h
+                    cocos/bindings/jswrapper/quickjs/HelperMacros.h
+        NO_WERROR   cocos/bindings/jswrapper/quickjs/HelperMacros.cpp
+        NO_WERROR   cocos/bindings/jswrapper/quickjs/Object.cpp
+                    cocos/bindings/jswrapper/quickjs/Object.h
+        NO_WERROR   cocos/bindings/jswrapper/quickjs/ScriptEngine.cpp
+                    cocos/bindings/jswrapper/quickjs/ScriptEngine.h
+                    cocos/bindings/jswrapper/quickjs/SeApi.h
+        NO_WERROR   cocos/bindings/jswrapper/quickjs/Utils.cpp
+                    cocos/bindings/jswrapper/quickjs/Utils.h
+    )
+endif()
+
 if(USE_SE_NAPI)
     cocos_source_files(MODULE ccbindings
                      cocos/bindings/jswrapper/napi/Class.cpp
@@ -3429,6 +3464,7 @@ function(cc_apply_definations target)
         $<$<BOOL:${USE_SE_V8}>:SCRIPT_ENGINE_TYPE=2>
         $<$<BOOL:${USE_SE_NAPI}>:SCRIPT_ENGINE_TYPE=5>
         $<$<BOOL:${USE_SE_JSVM}>:SCRIPT_ENGINE_TYPE=6>
+        $<$<BOOL:${USE_SE_QUICKJS}>:SCRIPT_ENGINE_TYPE=7>
         $<$<OR:$<CONFIG:Debug>,$<BOOL:${CC_DEBUG_FORCE}>>:CC_DEBUG=1>
         $<IF:$<BOOL:${USE_ADPF}>,CC_USE_ADPF=1,CC_USE_ADPF=0>
         $<IF:$<BOOL:${USE_GOOGLE_BILLING}>,CC_USE_GOOGLE_BILLING=1,CC_USE_GOOGLE_BILLING=0>
