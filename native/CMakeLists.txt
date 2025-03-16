@@ -3015,6 +3015,9 @@ if(USE_SE_SM)
 endif()
 
 if(USE_SE_QUICKJS)
+    include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/quickjs-src)
+    add_definitions(-DCONFIG_VERSION=\"2024-02-14\" -DCONFIG_BIGNUM=1)
+
     cocos_source_files(MODULE ccbindings
                     cocos/bindings/jswrapper/quickjs/Base.h
         NO_WERROR   cocos/bindings/jswrapper/quickjs/Class.cpp
@@ -3028,6 +3031,24 @@ if(USE_SE_QUICKJS)
                     cocos/bindings/jswrapper/quickjs/SeApi.h
         NO_WERROR   cocos/bindings/jswrapper/quickjs/Utils.cpp
                     cocos/bindings/jswrapper/quickjs/Utils.h
+
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/cutils.c
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/cutils.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/libbf.c
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/libbf.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp-opcode.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp.c
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode-table.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode.c
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/list.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-atom.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-libc.c
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-libc.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-opcode.h
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs.c
+                    cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs.h
     )
 endif()
 
