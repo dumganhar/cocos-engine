@@ -231,53 +231,48 @@ Object *Object::createTypedArrayWithBuffer(TypedArrayType type, const Object *ob
         return nullptr;
     }
 
-    if (type == TypedArrayType::UINT8_CLAMPED) {
-        SE_LOGE("Doesn't support to create Uint8ClampedArray with Object::createTypedArray API!");
-        return nullptr;
+    #define CREATE_TYPEDARRAY(_name, _classId, bytesPerElement)                                                                               \
+        {                                                                                                                    \
+            JSValue argv[1] = { JS_NewInt64(__cx, byteLength / bytesPerElement) }; \
+            JSValue typedArray = JS_NewTypedArray(__cx, 1, argv, _classId);                   \
+            size_t pbyte_offset = 0; \
+            size_t pbyte_length = 0; \
+            size_t pbytes_per_element = 0; \
+            JSValue ab = JS_GetTypedArrayBuffer(__cx, typedArray, &pbyte_offset, &pbyte_length, &pbytes_per_element); \
+            size_t abSize = 0; \
+            uint8_t *mem = JS_GetArrayBuffer(__cx, &abSize, ab); \
+            assert(abSize == byteLength); \
+            memcpy(mem, data, abSize); \
+            Object *obj = Object::_createJSObject(nullptr, typedArray);                                                              \
+            return obj;                                                                                                      \
+        }
+
+    switch (type) {
+        case TypedArrayType::INT8:
+            CREATE_TYPEDARRAY(Int8Array, JS_TYPED_ARRAY_INT8, 1)
+        case TypedArrayType::INT16:
+            CREATE_TYPEDARRAY(Int16Array, JS_TYPED_ARRAY_INT16, 2)
+        case TypedArrayType::INT32:
+            CREATE_TYPEDARRAY(Int32Array, JS_TYPED_ARRAY_INT32, 4)
+        case TypedArrayType::UINT8:
+            CREATE_TYPEDARRAY(Uint8Array, JS_TYPED_ARRAY_UINT8, 1)
+        case TypedArrayType::UINT8_CLAMPED:
+            CREATE_TYPEDARRAY(Uint8Array, JS_TYPED_ARRAY_UINT8C, 1)
+        case TypedArrayType::UINT16:
+            CREATE_TYPEDARRAY(Uint16Array, JS_TYPED_ARRAY_UINT16, 2)
+        case TypedArrayType::UINT32:
+            CREATE_TYPEDARRAY(Uint32Array, JS_TYPED_ARRAY_UINT32, 4)
+        case TypedArrayType::FLOAT32:
+            CREATE_TYPEDARRAY(Float32Array, JS_TYPED_ARRAY_FLOAT32, 4)
+        case TypedArrayType::FLOAT64:
+            CREATE_TYPEDARRAY(Float64Array, JS_TYPED_ARRAY_FLOAT64, 8)
+        default:
+            assert(false); // Should never go here.
+            break;
     }
 
-    assert(obj->isArrayBuffer());
-    //    JS::RootedObject jsobj(__cx, obj->_getJSObject());
-    //
-    //    switch (type) {
-    //        case TypedArrayType::INT8: {
-    //            JS::RootedObject typeArray(__cx, JS_NewInt8ArrayWithBuffer(__cx, jsobj, offset, byteLength));
-    //            return Object::_createJSObject(nullptr, typeArray);
-    //        }
-    //        case TypedArrayType::INT16: {
-    //            JS::RootedObject typeArray(__cx, JS_NewInt16ArrayWithBuffer(__cx, jsobj, offset, byteLength / 2));
-    //            return Object::_createJSObject(nullptr, typeArray);
-    //        }
-    //        case TypedArrayType::INT32: {
-    //            JS::RootedObject typeArray(__cx, JS_NewInt32ArrayWithBuffer(__cx, jsobj, offset, byteLength / 4));
-    //            return Object::_createJSObject(nullptr, typeArray);
-    //        }
-    //        case TypedArrayType::UINT8: {
-    //            JS::RootedObject typeArray(__cx, JS_NewUint8ArrayWithBuffer(__cx, jsobj, offset, byteLength));
-    //            return Object::_createJSObject(nullptr, typeArray);
-    //        }
-    //        case TypedArrayType::UINT16: {
-    //            JS::RootedObject typeArray(__cx, JS_NewUint16ArrayWithBuffer(__cx, jsobj, offset, byteLength / 2));
-    //            return Object::_createJSObject(nullptr, typeArray);
-    //        }
-    //        case TypedArrayType::UINT32: {
-    //            JS::RootedObject typeArray(__cx, JS_NewUint32ArrayWithBuffer(__cx, jsobj, offset, byteLength / 4));
-    //            return Object::_createJSObject(nullptr, typeArray);
-    //        }
-    //        case TypedArrayType::FLOAT32: {
-    //            JS::RootedObject typeArray(__cx, JS_NewFloat32ArrayWithBuffer(__cx, jsobj, offset, byteLength / 4));
-    //            return Object::_createJSObject(nullptr, typeArray);
-    //        }
-    //        case TypedArrayType::FLOAT64: {
-    //            JS::RootedObject typeArray(__cx, JS_NewFloat64ArrayWithBuffer(__cx, jsobj, offset, byteLength / 8));
-    //            return Object::_createJSObject(nullptr, typeArray);
-    //        }
-    //        default:
-    //            assert(false); // Should never go here.
-    //            break;
-    //    }
-
     return nullptr;
+    #undef CREATE_TYPEDARRAY
 }
 
 Object *Object::createUint8TypedArray(uint8_t *data, size_t dataCount) {
