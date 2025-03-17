@@ -420,11 +420,22 @@ bool Object::isFunction() const {
 }
 
 bool Object::isTypedArray() const {
-    if (hasProperty("byteLength") && hasProperty("buffer")) {
-        return true;
-    }
-    
-    return false;
+    bool result = false;
+    auto context = __cx;
+    JSValue constructor = JS_GetPropertyStr(context, _obj, "constructor");
+    JSValue name = JS_GetPropertyStr(context, constructor, "name");
+    const char* cName = JS_ToCString(context, name);
+    result = !strcmp("Uint8ClampedArray", cName ? cName : "") || !strcmp("Int8Array", cName ? cName : "") ||
+             !strcmp("Uint8Array", cName ? cName : "") || !strcmp("Int16Array", cName ? cName : "") ||
+             !strcmp("Uint16Array", cName ? cName : "") || !strcmp("Int32Array", cName ? cName : "") ||
+             !strcmp("Uint32Array", cName ? cName : "") || !strcmp("BigInt64Array", cName ? cName : "") ||
+             !strcmp("BigUint64Array", cName ? cName : "") || !strcmp("Float32Array", cName ? cName : "") ||
+             !strcmp("Float64Array", cName ? cName : "");
+
+    JS_FreeCString(context, cName);
+    JS_FreeValue(context, name);
+    JS_FreeValue(context, constructor);
+    return result;
 }
 
 bool Object::isProxy() const {
@@ -478,11 +489,16 @@ bool Object::isArray() const {
 }
 
 bool Object::isArrayBuffer() const {
-    if (hasProperty("byteLength") && !hasProperty("buffer")) {
-        return true;
-    }
-
-    return false;
+    bool result = false;
+    auto context = __cx;
+    JSValue constructor = JS_GetPropertyStr(context, _obj, "constructor");
+    JSValue name = JS_GetPropertyStr(context, constructor, "name");
+    const char* cName = JS_ToCString(context, name);
+    result = !strcmp("ArrayBuffer", cName ? cName : "");
+    JS_FreeCString(context, cName);
+    JS_FreeValue(context, name);
+    JS_FreeValue(context, constructor);
+    return result;
 }
 
 bool Object::hasProperty(const char *name) const {
