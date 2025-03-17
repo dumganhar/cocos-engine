@@ -30,7 +30,10 @@
 
 #if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_QUICKJS
 
+#include "../Define.h"
     #include "Base.h"
+
+#include "base/std/optional.h"
 
 namespace se {
 
@@ -89,6 +92,15 @@ public:
     bool defineStaticProperty(const char *name, JSPropGetter getter, JSPropSetter setter);
 
     /**
+     *  @brief Defines a static property with a value. Only JavaScript constructor object will have this property.
+     *  @param[in] name A null-terminated UTF8 string containing the property name.
+     *  @param[in] value A value to be set on the constructor.
+     *  @param[in] attribute An attribute to describe the property.
+     *  @return true if succeed, otherwise false.
+     */
+    bool defineStaticProperty(const char *name, const Value &value, PropertyAttribute attribute = PropertyAttribute::NONE);
+
+    /**
          *  @brief Defines the finalize function with a callback.
          *  @param[in] func The callback to invoke when a JavaScript object is garbage collected.
          *  @return true if succeed, otherwise false.
@@ -118,6 +130,9 @@ public:
     // Private API used in wrapper
     JSClassFinalizer *_getFinalizeCb() const;
     JSClassID         _getClassID() const { return _classId; };
+    
+    void _setCtor(Object *obj);                                                // NOLINT(readability-identifier-naming)
+    inline const ccstd::optional<Object *> &_getCtor() const { return _ctorObj; } // NOLINT(readability-identifier-naming)
     //
 private:
     Class();
@@ -135,6 +150,7 @@ private:
     Object *    _parent{nullptr};
     Object *    _proto{nullptr};
     Object *    _parentProto{nullptr};
+    ccstd::optional<Object *> _ctorObj{nullptr};
 
     JSCFunction *     _ctor{nullptr};
     JSClassFinalizer *_finalizeOp{nullptr};

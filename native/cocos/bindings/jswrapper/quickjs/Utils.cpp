@@ -91,11 +91,14 @@ void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal) {
         } break;
 
         case Value::Type::Null: {
+            *outVal = JS_NULL;
         } break;
 
         case Value::Type::Undefined: {
+            *outVal = JS_UNDEFINED;
         } break;
         case Value::Type::BigInt: {
+            *outVal = JS_NewBigInt64(cx, arg.toInt64());
         } break;
         default:
             assert(false);

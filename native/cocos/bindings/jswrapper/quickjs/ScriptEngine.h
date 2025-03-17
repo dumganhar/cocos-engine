@@ -160,7 +160,7 @@ public:
      * @brief Grab a snapshot of the current JavaScript execution stack.
      * @return current stack trace string
      */
-    std::string getCurrentStackTrace() { return ""; } //cjh
+    std::string getCurrentStackTrace() const;
 
     /**
          *  Delegate class for file operation
@@ -300,10 +300,10 @@ public:
     void       _setGarbageCollecting(bool isGarbageCollecting);
     void       _debugProcessInput(const std::string &str);
     //
-private:
+
     ScriptEngine();
     ~ScriptEngine();
-
+private:
     JSRuntime *_rt{nullptr};
     JSContext *_cx{nullptr};
 

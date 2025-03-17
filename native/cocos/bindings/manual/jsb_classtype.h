@@ -25,6 +25,7 @@
 #pragma once
 
 #include "bindings/jswrapper/SeApi.h"
+#include "base/std/container/unordered_map.h"
 
 #include <typeinfo>
 

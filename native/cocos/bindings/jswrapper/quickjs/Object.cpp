@@ -32,6 +32,8 @@
     #include "ScriptEngine.h"
     #include "Utils.h"
 
+#include "base/UTF8.h"
+
 namespace se {
 
 std::unordered_map<Object *, void *> __objectMap; // Currently, the value `void*` is always nullptr
@@ -45,13 +47,10 @@ Object::Object() {
 }
 
 Object::~Object() {
-    if (_cls == nullptr) {
-        unroot();
-    }
-
-    if (_rootCount > 0) {
-        unprotect();
-    }
+    unroot();
+    
+    delete _privateObject;
+    _privateObject = nullptr;
 
     auto iter = __objectMap.find(this);
     if (iter != __objectMap.end()) {
@@ -92,6 +91,12 @@ Object *Object::createObjectWithClass(Class *cls) {
     JSValue jsobj = Class::_createJSObjectWithClass(cls);
     Object *obj   = Object::_createJSObject(cls, jsobj);
     return obj;
+}
+
+/* static */
+Object *Object::createProxyTarget(se::Object *proxy) {
+    //TODO:
+    return nullptr;
 }
 
 Object *Object::getObjectWithPtr(void *ptr) {
@@ -162,40 +167,41 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
         return nullptr;
     }
 
-    if (type == TypedArrayType::UINT8_CLAMPED) {
-        SE_LOGE("Doesn't support to create Uint8ClampedArray with Object::createTypedArray API!");
-        return nullptr;
-    }
-
-    #define CREATE_TYPEDARRAY(_name, _classId)                                                                               \
+    #define CREATE_TYPEDARRAY(_name, _classId, bytesPerElement)                                                                               \
         {                                                                                                                    \
-            se::Value ctorVal;                                                                                               \
-            se::ScriptEngine::getInstance()->getGlobalObject()->getProperty(#_name, &ctorVal);                               \
-            JSValue ab = JS_NewArrayBufferCopy(__cx, reinterpret_cast<const uint8_t *>(data), byteLength);                   \
-            JS_DupValue(__cx, ab);                                                                                           \
-            JSValue ta = js_typed_array_constructor_ta(__cx, ctorVal.toObject()->_getJSObject(), ab, JS_CLASS_UINT8C_ARRAY); \
-            JS_FreeValue(__cx, ab);                                                                                          \
-            Object *obj = Object::_createJSObject(nullptr, ta);                                                              \
+            JSValue argv[1] = { JS_NewInt64(__cx, byteLength / bytesPerElement) }; \
+            JSValue typedArray = JS_NewTypedArray(__cx, 1, argv, _classId);                   \
+            size_t pbyte_offset = 0; \
+            size_t pbyte_length = 0; \
+            size_t pbytes_per_element = 0; \
+            JSValue ab = JS_GetTypedArrayBuffer(__cx, typedArray, &pbyte_offset, &pbyte_length, &pbytes_per_element); \
+            size_t abSize = 0; \
+            uint8_t *mem = JS_GetArrayBuffer(__cx, &abSize, ab); \
+            assert(abSize == byteLength); \
+            memcpy(mem, data, abSize); \
+            Object *obj = Object::_createJSObject(nullptr, typedArray);                                                              \
             return obj;                                                                                                      \
         }
 
     switch (type) {
         case TypedArrayType::INT8:
-            CREATE_TYPEDARRAY(Int8Array, JS_CLASS_INT8C_ARRAY)
+            CREATE_TYPEDARRAY(Int8Array, JS_TYPED_ARRAY_INT8, 1)
         case TypedArrayType::INT16:
-            CREATE_TYPEDARRAY(Int16Array, JS_CLASS_INT16C_ARRAY)
+            CREATE_TYPEDARRAY(Int16Array, JS_TYPED_ARRAY_INT16, 2)
         case TypedArrayType::INT32:
-            CREATE_TYPEDARRAY(Int32Array, JS_CLASS_INT32C_ARRAY)
+            CREATE_TYPEDARRAY(Int32Array, JS_TYPED_ARRAY_INT32, 4)
         case TypedArrayType::UINT8:
-            CREATE_TYPEDARRAY(Uint8Array, JS_CLASS_UINT8C_ARRAY)
+            CREATE_TYPEDARRAY(Uint8Array, JS_TYPED_ARRAY_UINT8, 1)
+        case TypedArrayType::UINT8_CLAMPED:
+            CREATE_TYPEDARRAY(Uint8Array, JS_TYPED_ARRAY_UINT8C, 1)
         case TypedArrayType::UINT16:
-            CREATE_TYPEDARRAY(Uint16Array, JS_CLASS_UINT16C_ARRAY)
+            CREATE_TYPEDARRAY(Uint16Array, JS_TYPED_ARRAY_UINT16, 2)
         case TypedArrayType::UINT32:
-            CREATE_TYPEDARRAY(Uint32Array, JS_CLASS_UINT32C_ARRAY)
+            CREATE_TYPEDARRAY(Uint32Array, JS_TYPED_ARRAY_UINT32, 4)
         case TypedArrayType::FLOAT32:
-            CREATE_TYPEDARRAY(Float32Array, JS_CLASS_FLOAT32C_ARRAY)
+            CREATE_TYPEDARRAY(Float32Array, JS_TYPED_ARRAY_FLOAT32, 4)
         case TypedArrayType::FLOAT64:
-            CREATE_TYPEDARRAY(Float64Array, JS_CLASS_FLOAT64C_ARRAY)
+            CREATE_TYPEDARRAY(Float64Array, JS_TYPED_ARRAY_FLOAT64, 8)
         default:
             assert(false); // Should never go here.
             break;
@@ -289,6 +295,14 @@ Object *Object::createJSONObject(const std::string &jsonStr) {
     return obj;
 }
 
+Object *Object::createJSONObject(std::u16string &&jsonStr) {
+    std::string utf8Str;
+    if (cc::StringUtils::UTF16ToUTF8(jsonStr, utf8Str)) {
+        return Object::createJSONObject(utf8Str);
+    }
+    return nullptr;
+}
+
 void Object::_setFinalizeCallback(JSClassFinalizer finalizeCb) {
     _finalizeCb = finalizeCb;
 }
@@ -347,8 +361,10 @@ bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = n
     JSValue *jsArgs = reinterpret_cast<JSValue *>(alloca(args.size() * sizeof(JSValue)));
     internal::seToJsArgs(__cx, args, jsArgs);
     JSValue jsRet = JS_Call(__cx, _obj, (thisObject != nullptr ? thisObject->_getJSObject() : JS_UNDEFINED), args.size(), jsArgs);
-    if (!JS_IsException(jsRet) && rval != nullptr) {
-        internal::jsToSeValue(__cx, jsRet, rval);
+    if (!JS_IsException(jsRet)) {
+        if (rval) {
+            internal::jsToSeValue(__cx, jsRet, rval);
+        }
         return true;
     }
 
@@ -407,8 +423,13 @@ bool Object::isTypedArray() const {
     if (hasProperty("byteLength") && hasProperty("buffer")) {
         return true;
     }
-
+    
     return false;
+}
+
+bool Object::isProxy() const {
+    //TODO:
+    return false;//
 }
 
 Object::TypedArrayType Object::getTypedArrayType() const {
@@ -437,8 +458,19 @@ Object::TypedArrayType Object::getTypedArrayType() const {
 }
 
 bool Object::getTypedArrayData(uint8_t **ptr, size_t *length) const {
-    assert(false);
-    return false;
+    size_t byte_offset = 0;
+    size_t byte_length = 0;
+    size_t bytes_per_element = 0;
+    JSValue typedArray = JS_GetTypedArrayBuffer(__cx, _obj, &byte_offset, &byte_length, &bytes_per_element);
+    size_t size = 0;
+    uint8_t* buf = JS_GetArrayBuffer(__cx, &size, typedArray);
+    if (ptr) {
+        *ptr = buf;
+    }
+    if (length) {
+        *length = size;
+    }
+    return true;
 }
 
 bool Object::isArray() const {
@@ -479,22 +511,20 @@ bool Object::getAllKeys(std::vector<std::string> *allKeys) const {
     assert(allKeys != nullptr);
     allKeys->clear();
 
-    uint32_t        len, i;
-    JSPropertyEnum *tab;
-    char **         envp, *pair;
-    const char *    key, *str;
-    JSValue         val;
-    size_t          key_len, str_len;
+    uint32_t        len = 0;
+    JSPropertyEnum *tab = nullptr;
+    const char *    key = nullptr;
 
     if (JS_GetOwnPropertyNames(__cx, &tab, &len, _obj, JS_GPN_STRING_MASK | JS_GPN_ENUM_ONLY) < 0) {
         return false;
     }
 
     do {
-        for (i = 0; i < len; i++) {
+        allKeys->reserve(len);
+        for (uint32_t i = 0; i < len; i++) {
             key = JS_AtomToCString(__cx, tab[i].atom);
             if (key != nullptr) {
-                allKeys->emplace_back(str);
+                allKeys->emplace_back(key);
                 JS_FreeCString(__cx, key);
             } else {
                 break;
@@ -506,45 +536,47 @@ bool Object::getAllKeys(std::vector<std::string> *allKeys) const {
 }
 
 void Object::setPrivateObject(PrivateObjectBase *data) {
-    assert(_privateObject == nullptr);
+    CC_ASSERT_NULL(_privateObject);
     #if CC_DEBUG
-    //assert(NativePtrToObjectMap::find(data->getRaw()) == NativePtrToObjectMap::end());
-    auto it = NativePtrToObjectMap::find(data->getRaw());
-    if (it != NativePtrToObjectMap::end()) {
-        auto *pri = it->second->getPrivateObject();
-        SE_LOGE("Already exists object %s/[%s], trying to add %s/[%s]\n", pri->getName(), typeid(*pri).name(), data->getName(), typeid(*data).name());
+    // CC_ASSERT(!NativePtrToObjectMap::contains(data->getRaw()));
+    if (data != nullptr) {
+        NativePtrToObjectMap::filter(data->getRaw(), _getClass())
+            .forEach([&](se::Object *seObj) {
+                auto *pri = seObj->getPrivateObject();
+                SE_LOGE("Already exists object %s/[%s], trying to add %s/[%s]\n", pri->getName(), typeid(*pri).name(), data->getName(), typeid(*data).name());
         #if JSB_TRACK_OBJECT_CREATION
-        SE_LOGE(" previous object created at %s\n", it->second->_objectCreationStackFrame.c_str());
+                SE_LOGE(" previous object created at %s\n", it->second->_objectCreationStackFrame.c_str());
         #endif
-        assert(false);
+                CC_ABORT();
+            });
     }
     #endif
     internal::setPrivate(_obj, this);
-    NativePtrToObjectMap::emplace(data->getRaw(), this);
     _privateObject = data;
-    defineOwnProperty("__native_ptr__", se::Value(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(data->getRaw()))), false, false, false);
+
+    if (data != nullptr) {
+        _privateData = data->getRaw();
+        NativePtrToObjectMap::emplace(_privateData, this);
+    } else {
+        _privateData = nullptr;
+    }
 }
 
 PrivateObjectBase *Object::getPrivateObject() const {
-    if (_privateObject == nullptr) {
-        const_cast<Object *>(this)->_privateObject = static_cast<PrivateObjectBase *>(internal::getPrivate(_obj));
-    }
     return _privateObject;
 }
 
 void Object::clearPrivateData(bool clearMapping) {
     if (_privateObject != nullptr) {
         if (clearMapping) {
-            NativePtrToObjectMap::erase(_privateObject->getRaw());
+            NativePtrToObjectMap::erase(_privateData, this);
         }
-
         internal::clearPrivate(_obj);
-        defineOwnProperty("__native_ptr__", se::Value(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(nullptr))), false, false, false);
         delete _privateObject;
         _privateObject = nullptr;
+        _privateData = nullptr;
     }
 }
-
 void Object::setContext(JSContext *cx) {
     __cx = cx;
 }
@@ -571,27 +603,15 @@ JSValue Object::_getJSObject() const {
 }
 
 void Object::root() {
-    if (_rootCount == 0) {
-        protect();
-    }
+    JS_DupValue(__cx, _obj);
     ++_rootCount;
 }
 
 void Object::unroot() {
     if (_rootCount > 0) {
         --_rootCount;
-        if (_rootCount == 0) {
-            unprotect();
-        }
+//        JS_FreeValue(__cx, _obj);
     }
-}
-
-void Object::protect() {
-    JS_DupValue(__cx, _obj);
-}
-
-void Object::unprotect() {
-    JS_FreeValue(__cx, _obj);
 }
 
 void Object::reset() {

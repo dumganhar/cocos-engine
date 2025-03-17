@@ -127,12 +127,27 @@ public:
     static Object *createJSONObject(const std::string &jsonStr);
 
     /**
+     *  @brief Creates a JavaScript Object from a JSON formatted string.
+     *  @param[in] jsonStr The utf-16 string containing the JSON string to be parsed.
+     *  @return A JavaScript Object containing the parsed value, or nullptr if the input is invalid.
+     *  @note The return value (non-null) has to be released manually. In order to avoid memory copy, use std::u16string reference directly without const, after this method is invoked, jsonStr will be empty since it was moved.
+     */
+    static Object *createJSONObject(std::u16string &&jsonStr);
+
+    /**
          *  @brief Creates a JavaScript Native Binding Object from an existing se::Class instance.
          *  @param[in] cls The se::Class instance which stores native callback informations.
          *  @return A JavaScript Native Binding Object, or nullptr if there is an error.
          *  @note The return value (non-null) has to be released manually.
          */
     static Object *createObjectWithClass(Class *cls);
+    
+    /**
+     * Gets the Proxy Target object
+     * @param proxy The JavaScript Proxy object.
+     * @return The target JavaScript object of the parameter.
+     */
+    static Object *createProxyTarget(se::Object *proxy);
 
     /**
          *  @brief Gets a se::Object from an existing native object pointer.
@@ -237,6 +252,11 @@ public:
          *  @return true if object is a typed array, otherwise false.
          */
     bool isTypedArray() const;
+    
+    /** @brief Tests whether an object is a proxy object.
+         *  @return true if object is a proxy object, otherwise false.
+         */
+    bool isProxy() const;
 
     /**
          *  @brief Gets the type of a typed array object.
@@ -273,21 +293,37 @@ public:
          */
     bool getAllKeys(std::vector<std::string> *allKeys) const;
 
-    void               setPrivateObject(PrivateObjectBase *data);
+    void setPrivateObject(PrivateObjectBase *data);
+
+    template <typename T>
+    inline void setPrivateObject(TypedPrivateObject<T> *data) {
+        setPrivateObject(static_cast<PrivateObjectBase *>(data));
+        if constexpr (cc::has_setScriptObject<T, void(Object *)>::value) {
+            data->template get<T>()->setScriptObject(this);
+        }
+    }
+
     PrivateObjectBase *getPrivateObject() const;
 
-    /**
+    /*
      *  @brief Gets an object's private data.
      *  @return A void* that is the object's private data, if the object has private data, otherwise nullptr.
      */
     inline void *getPrivateData() const {
-        return _privateObject ? _privateObject->getRaw() : nullptr;
+        return _privateData;
     }
 
     /**
-     *  @brief Sets a pointer to private data on an object.
+     *  @brief Sets a pointer to private data on an object and use smart pointer to hold it.
+     *
+     *  If the pointer is an instance of `cc::RefCounted`, an `cc::IntrusivePtr` will be created to hold
+     *  the reference to the object, otherwise a `std::shared_ptr` object will be used.
+     *  When the JS object is freed by GC, the corresponding smart pointer `IntrusivePtr/shared_ptr` will also be destroyed.
+     *
+     *  If you do not want the pointer to be released by GC, you can call `setRawPrivateData`.
+     *
      *  @param[in] data A void* to set as the object's private data.
-     *  @note This method will associate private data with se::Object by std::unordered_map::emplace.
+     *  @note This method will associate private data with se::Object by ccstd::unordered_map::emplace.
      *        It's used for search a se::Object via a void* private data.
      */
     template <typename T>
@@ -296,9 +332,67 @@ public:
         setPrivateObject(se::make_shared_private_object(data));
     }
 
+    /**
+     * @brief Use a InstrusivePtr to hold private data on the se::Object.
+     *
+     * @tparam T
+     * @param data A intrusive pointer object
+     */
     template <typename T>
-    inline T *getTypedPrivateData() const {
-        return reinterpret_cast<T *>(getPrivateData());
+    inline void setPrivateData(const cc::IntrusivePtr<T> &data) {
+        setPrivateObject(se::ccintrusive_ptr_private_object(data));
+    }
+
+    /**
+     * @brief Use a std::shared_ptr to hold private data on the se::Object.
+     *
+     * @tparam T
+     * @param data A shared_ptr object
+     */
+    template <typename T>
+    inline void setPrivateData(const std::shared_ptr<T> &data) {
+        setPrivateObject(se::shared_ptr_private_object(data));
+    }
+
+    /**
+     * @brief Set pointer to the private data on an object and will not use smart pointer to hold it.
+     *
+     * @tparam T
+     * @param data
+     * @param tryDestroyInGC When GCing the JS object, whether to `delete` the `data` pointer.
+     */
+    template <typename T>
+    inline void setRawPrivateData(T *data, bool tryDestroyInGC = false) {
+        static_assert(!std::is_void<T>::value, "void * is not allowed for private data");
+        auto *privateObject = se::rawref_private_object(data);
+        if (tryDestroyInGC) {
+            privateObject->tryAllowDestroyInGC();
+        }
+        setPrivateObject(privateObject);
+    }
+
+    /**
+     * @brief Get the underlying private data as std::shared_ptr
+     *
+     * @tparam T
+     * @return std::shared_ptr<T>
+     */
+    template <typename T>
+    inline std::shared_ptr<T> getPrivateSharedPtr() const {
+        assert(_privateObject->isSharedPtr());
+        return static_cast<se::SharedPtrPrivateObject<T> *>(_privateObject)->getData();
+    }
+
+    /**
+     * @brief Get the underlying private data as InstrusivePtr
+     *
+     * @tparam T
+     * @return cc::IntrusivePtr<T>
+     */
+    template <typename T>
+    inline cc::IntrusivePtr<T> getPrivateInstrusivePtr() const {
+        assert(_privateObject->isCCIntrusivePtr());
+        return static_cast<se::CCIntrusivePtrPrivateObject<T> *>(_privateObject)->getData();
     }
 
     /**
@@ -420,14 +514,13 @@ private:
     static void setContext(JSContext *cx);
     static void cleanup();
 
-    void protect();
-    void unprotect();
     void reset();
     bool hasProperty(const char *name) const;
 
     JSValue _obj{JS_UNDEFINED};
 
     PrivateObjectBase *_privateObject{nullptr};
+    void *_privateData{nullptr};
 
     Class *           _cls{nullptr};
     JSClassFinalizer *_finalizeCb{nullptr};

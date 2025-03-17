@@ -28,6 +28,8 @@
 #include "../ValueArrayPool.h"
 #include "../config.h"
 
+#include "quickjs.h"
+
 //#define RECORD_JSB_INVOKING
 
 #ifndef CC_DEBUG
@@ -78,6 +80,41 @@ void printJSBInvoke();
 
 void printJSBInvokeAtFrame(int n);
 
+namespace se {
+class Class;
+class Object;
+class State;
+} // namespace se
+
+using se_function_ptr = bool (*)(se::State &state);
+using se_finalize_ptr = void (*)(JSRuntime *_rt, JSValue _thisVal);
+
+JSValue jsbFunctionWrapper(JSContext *_ctx, JSValueConst _thisVal, int argc, JSValueConst *argv,
+                        se_function_ptr,
+                        const char *);
+void jsbFinalizeWrapper(JSRuntime *_rt, JSValue _thisVal,
+                        se_function_ptr,
+                        const char *);
+JSValue jsbConstructorWrapper(JSContext *_ctx, JSValueConst new_target, int argc, JSValueConst *argv,
+                           se_function_ptr,
+                           se_finalize_ptr finalizeCb,
+                           se::Class *,
+                           const char *);
+JSValue jsbGetterWrapper(JSContext *_ctx, JSValueConst _thizObj,
+                      se_function_ptr,
+                      const char *);
+JSValue jsbSetterWrapper(JSContext *_ctx, JSValueConst _thizObj, JSValueConst _jsval,
+                      se_function_ptr,
+                      const char *);
+
+#ifdef __GNUC__
+    #define SE_UNUSED __attribute__((unused))
+    #define SE_HOT    __attribute__((hot))
+#else
+    #define SE_UNUSED
+    #define SE_HOT
+#endif
+
     #define SAFE_INC_REF(obj) \
         if (obj != nullptr) obj->incRef()
     #define SAFE_DEC_REF(obj)   \
@@ -93,30 +130,12 @@ void printJSBInvokeAtFrame(int n);
 
     #define SE_BIND_FUNC(funcName)                                                                         \
         JSValue funcName##Registry(JSContext *_ctx, JSValueConst _thisVal, int argc, JSValueConst *argv) { \
-            SE_LOGD(">>> %s\n", #funcName);                                                                \
             JsbInvokeScope(#funcName);                                                                     \
-            JSValue                _jsRet = JS_UNDEFINED;                                                  \
-            se::ValueArray &       args   = se::gValueArrayPool.get(argc);                                 \
-            se::CallbackDepthGuard depthGuard{args, se::gValueArrayPool._depth};                           \
-            se::internal::jsToSeArgs(_ctx, argc, argv, args);                                              \
-                                                                                                           \
-            se::Value seThisVal;                                                                           \
-            se::internal::jsObjectToSeObject(_thisVal, &seThisVal);                                        \
-            se::Object *thisObject = seThisVal.toObject();                                                 \
-                                                                                                           \
-            se::State state(thisObject, args);                                                             \
-            bool      ret = funcName(state);                                                               \
-            if (!ret) {                                                                                    \
-                SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__);  \
-            } else {                                                                                       \
-                se::internal::seToJsValue(_ctx, state.rval(), &_jsRet);                                    \
-            }                                                                                              \
-            return _jsRet;                                                                                 \
+            return jsbFunctionWrapper(_ctx, _thisVal, argc, argv, funcName, #funcName); \
         }
 
     #define SE_BIND_FUNC_FAST(funcName)                                                                    \
         JSValue funcName##Registry(JSContext *_ctx, JSValueConst _thisVal, int argc, JSValueConst *argv) { \
-            SE_LOGD(">>> %s\n", #funcName);                                                                \
             JsbInvokeScope(#funcName);                                                                     \
             se::Object *seObj = (se::Object *)se::internal::getPrivate(_thisVal);                          \
             if (seObj) {                                                                                   \
@@ -132,73 +151,20 @@ void printJSBInvokeAtFrame(int n);
 
     #define SE_BIND_FINALIZE_FUNC(funcName)                                                               \
         void funcName##Registry(JSRuntime *_rt, JSValue _thisVal) {                                       \
-            SE_LOGD(">>> %s\n", #funcName);                                                               \
             JsbInvokeScope(#funcName);                                                                    \
-                                                                                                          \
-            se::Value seThisVal;                                                                          \
-            se::internal::jsObjectToSeObject(_thisVal, &seThisVal);                                       \
-            se::Object *seObj = seThisVal.toObject();                                                     \
-                                                                                                          \
-            void *nativeObj = seObj->getPrivateData();                                                    \
-            bool  ret       = false;                                                                      \
-            if (seObj == nullptr)                                                                         \
-                return;                                                                                   \
-            se::State state(seObj);                                                                       \
-            ret = funcName(state);                                                                        \
-            if (!ret) {                                                                                   \
-                SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__); \
-            }                                                                                             \
-            if (seObj->isClearMappingInFinalizer() && nativeObj != nullptr) {                             \
-                auto iter = se::NativePtrToObjectMap::find(nativeObj);                                    \
-                if (iter != se::NativePtrToObjectMap::end()) {                                            \
-                    se::NativePtrToObjectMap::erase(iter);                                                \
-                }                                                                                         \
-            }                                                                                             \
-            seObj->decRef();                                                                              \
+            jsbFinalizeWrapper(_rt, _thisVal, funcName, #funcName); \
         }
 
     #define SE_BIND_CTOR(funcName, cls, finalizeCb)                                                          \
         JSValue funcName##Registry(JSContext *_ctx, JSValueConst new_target, int argc, JSValueConst *argv) { \
-            SE_LOGD(">>> %s\n", #funcName);                                                                  \
             JsbInvokeScope(#funcName);                                                                       \
-            se::ValueArray &       args = se::gValueArrayPool.get(argc);                                     \
-            se::CallbackDepthGuard depthGuard{args, se::gValueArrayPool._depth};                             \
-            se::internal::jsToSeArgs(_ctx, argc, argv, args);                                                \
-            JSValue proto = JS_GetPropertyStr(_ctx, new_target, "prototype");                                \
-            JSValue jsobj = JS_NewObjectProtoClass(_ctx, proto, cls->_getClassID());                         \
-            JS_FreeValue(_ctx, proto);                                                                       \
-            se::Object *thisObject = se::Object::_createJSObject(cls, jsobj);                                \
-            se::State   state(thisObject, args);                                                             \
-            bool        ret = funcName(state);                                                               \
-            if (ret) {                                                                                       \
-                se::Value _property;                                                                         \
-                bool      _found = false;                                                                    \
-                _found           = thisObject->getProperty("_ctor", &_property);                             \
-                if (_found) _property.toObject()->call(args, thisObject);                                    \
-            } else {                                                                                         \
-                SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__);    \
-            }                                                                                                \
-            return jsobj;                                                                                    \
+            return jsbConstructorWrapper(_ctx, new_target, argc, argv, funcName, _SE(finalizeCb), cls, #funcName); \
         }
 
     #define SE_BIND_PROP_GET_IMPL(funcName, postFix)                                                      \
         JSValue funcName##postFix##Registry(JSContext *_ctx, JSValueConst _thizObj) {                     \
-            SE_LOGD(">>> %s\n", #funcName);                                                               \
             JsbInvokeScope(#funcName);                                                                    \
-            JSValue _jsRet = JS_UNDEFINED;                                                                \
-                                                                                                          \
-            se::Value seThisVal;                                                                          \
-            se::internal::jsObjectToSeObject(_thizObj, &seThisVal);                                       \
-            se::Object *thisObject = seThisVal.toObject();                                                \
-                                                                                                          \
-            se::State state(thisObject);                                                                  \
-            bool      ret = funcName(state);                                                              \
-            if (!ret) {                                                                                   \
-                SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__); \
-            } else {                                                                                      \
-                se::internal::seToJsValue(_ctx, state.rval(), &_jsRet);                                   \
-            }                                                                                             \
-            return _jsRet;                                                                                \
+            return jsbGetterWrapper(_ctx, _thizObj, funcName, #funcName); \
         }
 
     #define SE_BIND_PROP_GET(funcName)         SE_BIND_PROP_GET_IMPL(funcName, )
@@ -206,23 +172,8 @@ void printJSBInvokeAtFrame(int n);
 
     #define SE_BIND_PROP_SET_IMPL(funcName, postFix)                                                       \
         JSValue funcName##postFix##Registry(JSContext *_ctx, JSValueConst _thizObj, JSValueConst _jsval) { \
-            SE_LOGD(">>> %s\n", #funcName);                                                                \
             JsbInvokeScope(#funcName);                                                                     \
-                                                                                                           \
-            se::Value seThisVal;                                                                           \
-            se::internal::jsObjectToSeObject(_thizObj, &seThisVal);                                        \
-            se::Object *thisObject = seThisVal.toObject();                                                 \
-                                                                                                           \
-            se::ValueArray &       args = se::gValueArrayPool.get(1);                                      \
-            se::CallbackDepthGuard depthGuard{args, se::gValueArrayPool._depth};                           \
-            se::Value &            data{args[0]};                                                          \
-            se::internal::jsToSeValue(_ctx, _jsval, &data);                                                \
-            se::State state(thisObject, args);                                                             \
-            bool      ret = funcName(state);                                                               \
-            if (!ret) {                                                                                    \
-                SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__);  \
-            }                                                                                              \
-            return JS_UNDEFINED;                                                                           \
+            return jsbSetterWrapper(_ctx, _thizObj, _jsval, funcName, #funcName); \
         }
 
     #define SE_BIND_PROP_SET(funcName)         SE_BIND_PROP_SET_IMPL(funcName, )

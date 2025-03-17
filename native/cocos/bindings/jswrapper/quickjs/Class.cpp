@@ -27,6 +27,7 @@
 #include "Object.h"
 #include "ScriptEngine.h"
 #include "Utils.h"
+#include "base/Macros.h"
 
 #if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_QUICKJS
 
@@ -63,7 +64,7 @@ Class *Class::create(const std::initializer_list<const char *> &classPath, se::O
     se::Value           tmp;
     for (auto i = 0; i < classPath.size() - 1; i++) {
         bool ok = currentParent->getProperty(*(classPath.begin() + i), &tmp);
-        CCASSERT(ok, "class or namespace in path is not defined");
+        CC_ASSERTF_TRUE(ok, "class or namespace in path is not defined");
         currentParent = tmp.toObject();
     }
     return create(*(classPath.end() - 1), currentParent, parentProto, ctor);
@@ -166,6 +167,17 @@ bool Class::defineStaticProperty(const char *name, JSPropGetter getter, JSPropSe
     return true;
 }
 
+bool Class::defineStaticProperty(const char *name, const Value &value, PropertyAttribute attribute /* = PropertyAttribute::NONE */) {
+//    JSValue jsVal;
+//    internal::seToJsValue(_ctx, value, &jsVal);
+    JSCFunctionListEntry cb = JS_CGETSET_DEF(name, [](JSContext *ctx, JSValueConst this_val) -> JSValue {
+        //TODO:
+        return JS_UNDEFINED;
+    }, nullptr);
+    _staticPropertiesOrStaticFuncs.emplace_back(cb);
+    return true;
+}
+
 bool Class::defineFinalizeFunction(JSClassFinalizer func) {
     _finalizeOp = func;
     return true;
@@ -199,6 +211,15 @@ void Class::cleanup() {
         }
         __allClasses.clear();
     });
+}
+
+void Class::_setCtor(Object *obj) {
+    assert(!_ctorObj.has_value());
+    _ctorObj = obj;
+    if (obj != nullptr) {
+        obj->root();
+        obj->incRef();
+    }
 }
 
 } // namespace se

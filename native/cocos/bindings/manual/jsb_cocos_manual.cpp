@@ -827,8 +827,34 @@ static void js_readFile_invokeCallback(bool doJobSucceed, const typename ReadFil
     SE_BIND_FUNC(funcName)
 
 JSB_READ_FILE(js_readTextFile, ccstd::string, false)
-JSB_READ_FILE(js_readJsonFile, ccstd::string, true)
+//JSB_READ_FILE(js_readJsonFile, ccstd::string, true)
 JSB_READ_FILE(js_readDataFile, cc::Data, false)
+
+static bool js_readJsonFile(se::State &s) {
+    ccstd::string fullPath;
+    std::shared_ptr<se::Value> callbackPtr;
+    bool ok = js_readFile_getParameters(s, fullPath, callbackPtr);
+    if (!ok) return false;
+                                                                                                     
+    gIOThreadPool->pushTask([fullPath, callbackPtr](int /* tid */) {
+        ReadFileDoJobReturnType<ccstd::string, true>::value content;
+        bool doJobSucceed = js_readFile_doJob<ccstd::string, true>(fullPath, content);
+        auto app = CC_CURRENT_APPLICATION();
+        if (!app) {
+            return;
+        }
+        auto engine = app->getEngine();
+        if (!engine) {
+            return;
+        }
+        engine->getScheduler()->performFunctionInCocosThread([doJobSucceed, content, callbackPtr]() {
+            js_readFile_invokeCallback<ccstd::string, true>(doJobSucceed, content, callbackPtr);
+        });
+    });
+                                                                                                     
+    return true;
+}
+SE_BIND_FUNC(js_readJsonFile)
 
 static bool register_filetuils_ext(se::Object * /*obj*/) { // NOLINT(readability-identifier-naming)
     __jsb_cc_FileUtils_proto->defineFunction("listFilesRecursively", _SE(js_engine_FileUtils_listFilesRecursively));

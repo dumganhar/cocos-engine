@@ -162,19 +162,14 @@ AutoHandleScope::~AutoHandleScope() {
 }
 
 ScriptEngine *ScriptEngine::getInstance() {
-    if (__instance == nullptr) {
-        __instance = new ScriptEngine();
-    }
-
     return __instance;
 }
 
 void ScriptEngine::destroyInstance() {
-    delete __instance;
-    __instance = nullptr;
 }
 
 ScriptEngine::ScriptEngine() {
+    __instance = this;
 }
 
 bool ScriptEngine::init() {
@@ -256,6 +251,7 @@ bool ScriptEngine::init() {
 
 ScriptEngine::~ScriptEngine() {
     cleanup();
+    __instance = nullptr;
 }
 
 void ScriptEngine::cleanup() {
@@ -439,11 +435,29 @@ bool ScriptEngine::isDebuggerEnabled() const {
 }
 
 void ScriptEngine::mainLoopUpdate() {
-    JSContext *ctx{nullptr};
-    JS_ExecutePendingJob(_rt, &ctx);
+    JSContext* cx = nullptr;
+    JS_ExecutePendingJob(_rt, &cx);
+}
+
+std::string ScriptEngine::getCurrentStackTrace() const {
+    JSValue error = JS_NewError(_cx);
+    JSValue stack = JS_GetPropertyStr(_cx, error, "stack");
+    const char *stackStr = JS_ToCString(_cx, stack);
+    return stackStr;
 }
 
 bool ScriptEngine::callFunction(Object *targetObj, const char *funcName, uint32_t argc, Value *args, Value *rval /* = nullptr*/) {
+    ValueArray argv;
+    argv.reserve(argc);
+    for (uint32_t i = 0; i < argc; ++i) {
+        argv.emplace_back(args[i]);
+    }
+    
+    Value funcVal;
+    if (targetObj->getProperty(funcName, &funcVal)) {
+        return funcVal.toObject()->call(argv, targetObj, rval);
+    }
+
     return false;
 }
 

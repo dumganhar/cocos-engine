@@ -24,6 +24,12 @@
 ****************************************************************************/
 
 #include "HelperMacros.h"
+#include "../State.h"
+#include "../ValueArrayPool.h"
+#include "../MappingUtils.h"
+#include "Class.h"
+#include "Object.h"
+#include "Utils.h"
 
 #if defined(RECORD_JSB_INVOKING)
 
@@ -79,4 +85,110 @@ void printJSBInvoke() {
     pairs.clear();
     cc::Log::logMessage(cc::LogType::KERNEL, cc::LogLevel::LEVEL_DEBUG, "End print JSB function record info.......\n");
 #endif
+}
+
+
+SE_HOT JSValue jsbFunctionWrapper(JSContext *_ctx, JSValueConst _thisVal, int argc, JSValueConst *argv, se_function_ptr func,
+                                  const char *funcName) {
+    JSValue                _jsRet = JS_UNDEFINED;
+    bool needDeleteValueArray{false};
+    se::ValueArray &       args   = se::gValueArrayPool.get(argc, needDeleteValueArray);
+    se::CallbackDepthGuard depthGuard{args, se::gValueArrayPool._depth, needDeleteValueArray};
+    se::internal::jsToSeArgs(_ctx, argc, argv, args);
+
+    se::Value seThisVal;
+    se::internal::jsObjectToSeObject(_thisVal, &seThisVal);
+    se::Object *thisObject = seThisVal.toObject();
+
+    se::State state(thisObject, args);
+    bool      ret = func(state);
+    if (!ret) {
+        SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
+    } else {
+        se::internal::seToJsValue(_ctx, state.rval(), &_jsRet);
+    }
+    return _jsRet;
+}
+
+SE_HOT void jsbFinalizeWrapper(JSRuntime *_rt, JSValue _thisVal, se_function_ptr func, const char *funcName) {
+    se::Value seThisVal;
+    se::internal::jsObjectToSeObject(_thisVal, &seThisVal);
+    se::Object *seObj = seThisVal.toObject();
+
+    void *nativeObj = seObj->getPrivateData();
+    bool  ret       = false;
+    if (seObj == nullptr)
+        return;
+    se::State state(seObj);
+    ret = func(state);
+    if (!ret) {
+        SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
+    }
+    if (seObj->isClearMappingInFinalizer() && nativeObj != nullptr) {
+        auto iter = se::NativePtrToObjectMap::find(nativeObj);
+        if (iter != se::NativePtrToObjectMap::end()) {
+            se::NativePtrToObjectMap::erase(iter);
+        }
+    }
+    seObj->decRef();
+}
+
+SE_HOT JSValue jsbConstructorWrapper(JSContext *_ctx, JSValueConst new_target, int argc, JSValueConst *argv,
+                      se_function_ptr func, se_finalize_ptr finalizeCb, se::Class *cls, const char *funcName) {
+    bool needDeleteValueArray{false};
+    se::ValueArray &       args = se::gValueArrayPool.get(argc, needDeleteValueArray);
+    se::CallbackDepthGuard depthGuard{args, se::gValueArrayPool._depth, needDeleteValueArray};
+    se::internal::jsToSeArgs(_ctx, argc, argv, args);
+    JSValue proto = JS_GetPropertyStr(_ctx, new_target, "prototype");
+    JSValue jsobj = JS_NewObjectProtoClass(_ctx, proto, cls->_getClassID());
+    JS_FreeValue(_ctx, proto);
+    se::Object *thisObject = se::Object::_createJSObject(cls, jsobj);
+    se::State   state(thisObject, args);
+    bool        ret = func(state);
+    if (ret) {
+        se::Value _property;
+        bool      _found = false;
+        _found           = thisObject->getProperty("_ctor", &_property);
+        if (_found) _property.toObject()->call(args, thisObject);
+    } else {
+        SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
+    }
+    return jsobj;
+}
+
+SE_HOT JSValue jsbGetterWrapper(JSContext *_ctx, JSValueConst _thizObj,
+                      se_function_ptr func,
+                         const char *funcName) {
+    JSValue _jsRet = JS_UNDEFINED;
+
+    se::Value seThisVal;
+    se::internal::jsObjectToSeObject(_thizObj, &seThisVal);
+    se::Object *thisObject = seThisVal.toObject();
+
+    se::State state(thisObject);
+    bool      ret = func(state);
+    if (!ret) {
+        SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
+    } else {
+        se::internal::seToJsValue(_ctx, state.rval(), &_jsRet);
+    }
+    return _jsRet;
+}
+
+SE_HOT JSValue jsbSetterWrapper(JSContext *_ctx, JSValueConst _thizObj, JSValueConst _jsval, se_function_ptr func, const char *funcName) {
+    bool needDeleteValueArray{false};
+    se::Value seThisVal;
+    se::internal::jsObjectToSeObject(_thizObj, &seThisVal);
+    se::Object *thisObject = seThisVal.toObject();
+
+    se::ValueArray &       args = se::gValueArrayPool.get(1, needDeleteValueArray);
+    se::CallbackDepthGuard depthGuard{args, se::gValueArrayPool._depth, needDeleteValueArray};
+    se::Value &            data{args[0]};
+    se::internal::jsToSeValue(_ctx, _jsval, &data);
+    se::State state(thisObject, args);
+    bool      ret = func(state);
+    if (!ret) {
+        SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
+    }
+    return JS_UNDEFINED;
 }
