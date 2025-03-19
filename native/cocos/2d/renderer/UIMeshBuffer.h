@@ -85,8 +85,6 @@ private:
     uint32_t* _sharedBuffer{nullptr};
 
     uint32_t _vertexFormatBytes{0};
-    uint32_t _initVDataCount{0};
-    uint32_t _initIDataCount{0};
 
     ccstd::vector<gfx::Attribute> _attributes;
     IntrusivePtr<gfx::InputAssembler> _ia;

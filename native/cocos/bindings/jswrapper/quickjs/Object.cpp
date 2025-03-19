@@ -38,6 +38,62 @@ namespace se {
 
 std::unordered_map<Object *, void *> __objectMap; // Currently, the value `void*` is always nullptr
 
+bool seTypedArrayTypeToQuickJSTypeArrayType(Object::TypedArrayType type, JSTypedArrayEnum &classId, int &bytesPerElement) {
+    bool ret = true;
+    switch (type) {
+        case Object::TypedArrayType::INT8: {
+            classId = JS_TYPED_ARRAY_INT8;
+            bytesPerElement = 1;
+            break;
+        }
+        case Object::TypedArrayType::INT16: {
+            classId = JS_TYPED_ARRAY_INT16;
+            bytesPerElement = 2;
+            break;
+        }
+        case Object::TypedArrayType::INT32: {
+            classId = JS_TYPED_ARRAY_INT32;
+            bytesPerElement = 4;
+            break;
+        }
+        case Object::TypedArrayType::UINT8: {
+            classId = JS_TYPED_ARRAY_UINT8;
+            bytesPerElement = 1;
+            break;
+        }
+        case Object::TypedArrayType::UINT8_CLAMPED: {
+            classId = JS_TYPED_ARRAY_UINT8C;
+            bytesPerElement = 1;
+            break;
+        }
+        case Object::TypedArrayType::UINT16: {
+            classId = JS_TYPED_ARRAY_UINT16;
+            bytesPerElement = 2;
+            break;
+        }
+        case Object::TypedArrayType::UINT32: {
+            classId = JS_TYPED_ARRAY_UINT32;
+            bytesPerElement = 4;
+            break;
+        }
+        case Object::TypedArrayType::FLOAT32: {
+            classId = JS_TYPED_ARRAY_FLOAT32;
+            bytesPerElement = 4;
+            break;
+        }
+        case Object::TypedArrayType::FLOAT64: {
+            classId = JS_TYPED_ARRAY_FLOAT64;
+            bytesPerElement = 8;
+            break;
+        }
+        default:
+            assert(false); // Should never go here.
+            ret = false;
+            break;
+    }
+    return ret;
+}
+
 namespace {
 JSContext *__cx = nullptr;
 } // namespace
@@ -100,12 +156,11 @@ Object *Object::createProxyTarget(se::Object *proxy) {
 }
 
 Object *Object::getObjectWithPtr(void *ptr) {
-    Object *obj  = nullptr;
-    auto    iter = NativePtrToObjectMap::find(ptr);
-    if (iter != NativePtrToObjectMap::end()) {
-        obj = iter->second;
+    Object *obj = nullptr;
+    NativePtrToObjectMap::forEach(ptr, [&obj](se::Object *foundObj) {
+        obj = foundObj;
         obj->incRef();
-    }
+    });
     return obj;
 }
 
@@ -167,48 +222,22 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
         return nullptr;
     }
 
-    #define CREATE_TYPEDARRAY(_name, _classId, bytesPerElement)                                                                               \
-        {                                                                                                                    \
-            JSValue argv[1] = { JS_NewInt64(__cx, byteLength / bytesPerElement) }; \
-            JSValue typedArray = JS_NewTypedArray(__cx, 1, argv, _classId);                   \
-            size_t pbyte_offset = 0; \
-            size_t pbyte_length = 0; \
-            size_t pbytes_per_element = 0; \
-            JSValue ab = JS_GetTypedArrayBuffer(__cx, typedArray, &pbyte_offset, &pbyte_length, &pbytes_per_element); \
-            size_t abSize = 0; \
-            uint8_t *mem = JS_GetArrayBuffer(__cx, &abSize, ab); \
-            assert(abSize == byteLength); \
-            memcpy(mem, data, abSize); \
-            Object *obj = Object::_createJSObject(nullptr, typedArray);                                                              \
-            return obj;                                                                                                      \
-        }
+    JSTypedArrayEnum classId = JS_TYPED_ARRAY_UINT8C;
+    int bytesPerElement = 0;
+    
+    seTypedArrayTypeToQuickJSTypeArrayType(type, classId, bytesPerElement);
 
-    switch (type) {
-        case TypedArrayType::INT8:
-            CREATE_TYPEDARRAY(Int8Array, JS_TYPED_ARRAY_INT8, 1)
-        case TypedArrayType::INT16:
-            CREATE_TYPEDARRAY(Int16Array, JS_TYPED_ARRAY_INT16, 2)
-        case TypedArrayType::INT32:
-            CREATE_TYPEDARRAY(Int32Array, JS_TYPED_ARRAY_INT32, 4)
-        case TypedArrayType::UINT8:
-            CREATE_TYPEDARRAY(Uint8Array, JS_TYPED_ARRAY_UINT8, 1)
-        case TypedArrayType::UINT8_CLAMPED:
-            CREATE_TYPEDARRAY(Uint8Array, JS_TYPED_ARRAY_UINT8C, 1)
-        case TypedArrayType::UINT16:
-            CREATE_TYPEDARRAY(Uint16Array, JS_TYPED_ARRAY_UINT16, 2)
-        case TypedArrayType::UINT32:
-            CREATE_TYPEDARRAY(Uint32Array, JS_TYPED_ARRAY_UINT32, 4)
-        case TypedArrayType::FLOAT32:
-            CREATE_TYPEDARRAY(Float32Array, JS_TYPED_ARRAY_FLOAT32, 4)
-        case TypedArrayType::FLOAT64:
-            CREATE_TYPEDARRAY(Float64Array, JS_TYPED_ARRAY_FLOAT64, 8)
-        default:
-            assert(false); // Should never go here.
-            break;
-    }
-
-    return nullptr;
-    #undef CREATE_TYPEDARRAY
+    JSValue argv[1] = { JS_NewInt64(__cx, byteLength / bytesPerElement) };
+    JSValue typedArray = JS_NewTypedArray(__cx, 1, argv, classId);
+    size_t byte_offset = 0;
+    size_t byte_length = 0;
+    size_t bytes_per_element = 0;
+    JSValue ab = JS_GetTypedArrayBuffer(__cx, typedArray, &byte_offset, &byte_length, &bytes_per_element);
+    size_t abSize = 0;
+    uint8_t *mem = JS_GetArrayBuffer(__cx, &abSize, ab);
+    assert(abSize == byteLength);
+    memcpy(mem, data, abSize);
+    return Object::_createJSObject(nullptr, typedArray);
 }
 
 /* static */
@@ -230,49 +259,19 @@ Object *Object::createTypedArrayWithBuffer(TypedArrayType type, const Object *ob
         SE_LOGE("Don't pass se::Object::TypedArrayType::NONE to createTypedArray API!");
         return nullptr;
     }
-
-    #define CREATE_TYPEDARRAY(_name, _classId, bytesPerElement)                                                                               \
-        {                                                                                                                    \
-            JSValue argv[1] = { JS_NewInt64(__cx, byteLength / bytesPerElement) }; \
-            JSValue typedArray = JS_NewTypedArray(__cx, 1, argv, _classId);                   \
-            size_t pbyte_offset = 0; \
-            size_t pbyte_length = 0; \
-            size_t pbytes_per_element = 0; \
-            JSValue ab = JS_GetTypedArrayBuffer(__cx, typedArray, &pbyte_offset, &pbyte_length, &pbytes_per_element); \
-            size_t abSize = 0; \
-            uint8_t *mem = JS_GetArrayBuffer(__cx, &abSize, ab); \
-            assert(abSize == byteLength); \
-            memcpy(mem, data, abSize); \
-            Object *obj = Object::_createJSObject(nullptr, typedArray);                                                              \
-            return obj;                                                                                                      \
-        }
-
-    switch (type) {
-        case TypedArrayType::INT8:
-            CREATE_TYPEDARRAY(Int8Array, JS_TYPED_ARRAY_INT8, 1)
-        case TypedArrayType::INT16:
-            CREATE_TYPEDARRAY(Int16Array, JS_TYPED_ARRAY_INT16, 2)
-        case TypedArrayType::INT32:
-            CREATE_TYPEDARRAY(Int32Array, JS_TYPED_ARRAY_INT32, 4)
-        case TypedArrayType::UINT8:
-            CREATE_TYPEDARRAY(Uint8Array, JS_TYPED_ARRAY_UINT8, 1)
-        case TypedArrayType::UINT8_CLAMPED:
-            CREATE_TYPEDARRAY(Uint8Array, JS_TYPED_ARRAY_UINT8C, 1)
-        case TypedArrayType::UINT16:
-            CREATE_TYPEDARRAY(Uint16Array, JS_TYPED_ARRAY_UINT16, 2)
-        case TypedArrayType::UINT32:
-            CREATE_TYPEDARRAY(Uint32Array, JS_TYPED_ARRAY_UINT32, 4)
-        case TypedArrayType::FLOAT32:
-            CREATE_TYPEDARRAY(Float32Array, JS_TYPED_ARRAY_FLOAT32, 4)
-        case TypedArrayType::FLOAT64:
-            CREATE_TYPEDARRAY(Float64Array, JS_TYPED_ARRAY_FLOAT64, 8)
-        default:
-            assert(false); // Should never go here.
-            break;
-    }
-
-    return nullptr;
-    #undef CREATE_TYPEDARRAY
+    
+    JSTypedArrayEnum classId = JS_TYPED_ARRAY_UINT8C;
+    int bytesPerElement = 0;
+    
+    seTypedArrayTypeToQuickJSTypeArrayType(type, classId, bytesPerElement);
+    
+    JSValue argv[3] = {
+        obj->_obj,
+        JS_NewInt64(__cx, offset),
+        JS_NewInt64(__cx, byteLength / bytesPerElement)
+    };
+    JSValue typedArray = JS_NewTypedArray(__cx, 3, argv, classId);
+    return Object::_createJSObject(nullptr, typedArray);
 }
 
 Object *Object::createUint8TypedArray(uint8_t *data, size_t dataCount) {
@@ -471,10 +470,10 @@ bool Object::getTypedArrayData(uint8_t **ptr, size_t *length) const {
     size_t size = 0;
     uint8_t* buf = JS_GetArrayBuffer(__cx, &size, typedArray);
     if (ptr) {
-        *ptr = buf;
+        *ptr = buf + byte_offset;
     }
     if (length) {
-        *length = size;
+        *length = byte_length;
     }
     return true;
 }
