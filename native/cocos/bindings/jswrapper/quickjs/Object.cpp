@@ -121,9 +121,8 @@ bool Object::init(Class *cls, JSValue obj) {
     assert(__objectMap.find(this) == __objectMap.end());
     __objectMap.emplace(this, nullptr);
 
-    if (_cls == nullptr) {
-        root();
-    }
+    root();
+    root();
 
     return true;
 }
@@ -563,6 +562,8 @@ void Object::setPrivateObject(PrivateObjectBase *data) {
     #endif
     internal::setPrivate(_obj, this);
     _privateObject = data;
+    
+//    unroot();
 
     if (data != nullptr) {
         _privateData = data->getRaw();
@@ -620,7 +621,7 @@ void Object::root() {
 void Object::unroot() {
     if (_rootCount > 0) {
         --_rootCount;
-//        JS_FreeValue(__cx, _obj);
+        JS_FreeValue(__cx, _obj);
     }
 }
 

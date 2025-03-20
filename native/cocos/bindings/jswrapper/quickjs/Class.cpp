@@ -170,6 +170,9 @@ bool Class::defineStaticProperty(const char *name, JSPropGetter getter, JSPropSe
 bool Class::defineStaticProperty(const char *name, const Value &value, PropertyAttribute attribute /* = PropertyAttribute::NONE */) {
 //    JSValue jsVal;
 //    internal::seToJsValue(_ctx, value, &jsVal);
+    if (strcmp(name, "__isJSB") != 0) {
+        int a = 0;
+    }
     JSCFunctionListEntry cb = JS_CGETSET_DEF(name, [](JSContext *ctx, JSValueConst this_val) -> JSValue {
         //TODO:
         return JS_UNDEFINED;

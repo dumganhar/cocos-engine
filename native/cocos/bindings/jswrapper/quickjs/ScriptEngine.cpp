@@ -157,8 +157,8 @@ AutoHandleScope::AutoHandleScope() {
 }
 
 AutoHandleScope::~AutoHandleScope() {
-    JSContext *ctx = nullptr;
-    JS_ExecutePendingJob(se::ScriptEngine::getInstance()->_getRuntime(), &ctx);
+//    JSContext *ctx = nullptr;
+//    JS_ExecutePendingJob(se::ScriptEngine::getInstance()->_getRuntime(), &ctx);
 }
 
 ScriptEngine *ScriptEngine::getInstance() {

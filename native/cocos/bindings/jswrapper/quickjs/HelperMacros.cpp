@@ -125,10 +125,7 @@ SE_HOT void jsbFinalizeWrapper(JSRuntime *_rt, JSValue _thisVal, se_function_ptr
         SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
     }
     if (seObj->isClearMappingInFinalizer() && nativeObj != nullptr) {       
-        auto iter = se::NativePtrToObjectMap::find(nativeObj);
-        if (iter != se::NativePtrToObjectMap::end()) {
-            se::NativePtrToObjectMap::erase(iter);
-        }
+        se::NativePtrToObjectMap::erase(nativeObj, seObj);
     }
     seObj->decRef();
 }
