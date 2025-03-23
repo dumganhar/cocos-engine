@@ -27,6 +27,7 @@ export function initWasm (wasmFactory, wasmUrl: string): Promise<void> {
             ) {
                 // NOTE: the Promise return by instantiateWasm hook can't be caught.
                 instantiateWasm(wasmUrl, importObject).then((result) => {
+                    globalThis.wasmOffsetConverter = new globalThis.WasmOffsetConverter(globalThis.myWasmBinary, result.module);
                     receiveInstance(result.instance, result.module);
                 }).catch((err) => reject(errorMessage(err)));
             },

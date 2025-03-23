@@ -28,7 +28,11 @@ import { checkPalIntegrity, withImpl } from '../integrity-check';
 declare const require: any;
 
 export function instantiateWasm (wasmUrl: string, importObject: WebAssembly.Imports): Promise<any> {
-    return fetchBuffer(wasmUrl).then((arrayBuffer) => WebAssembly.instantiate(arrayBuffer, importObject));
+    return fetchBuffer(wasmUrl).then((arrayBuffer) => {
+        const ret = WebAssembly.instantiate(arrayBuffer, importObject);
+        globalThis.myWasmBinary = arrayBuffer;
+        return ret;
+    });
 }
 
 export function fetchBuffer (binaryUrl: string): Promise<ArrayBuffer> {
