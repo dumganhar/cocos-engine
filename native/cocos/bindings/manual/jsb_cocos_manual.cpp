@@ -388,9 +388,9 @@ static bool js_CanvasRenderingContext2D_setCanvasBufferUpdatedCallback(se::State
                 };
                 // Add an unroot to avoid the root of the copy constructor caused by the internal reference of Lambda.
                 if (thisObj) {
-                    thisObj->unroot();
+//                    thisObj->unroot();
                 }
-                jsFunc.toObject()->unroot();
+//                jsFunc.toObject()->unroot();
                 arg0 = lambda;
             } else {
                 arg0 = nullptr;
@@ -732,6 +732,8 @@ static bool js_readFile_doJob(const ccstd::string &fullPath, typename ReadFileDo
     if (fs == nullptr) {
         return false;
     }
+    
+    printf("js_readFile_doJob: %s\n", fullPath.c_str());
 
     auto content = std::make_shared<T>();
     if (cc::FileUtils::Status::OK != fs->getContents(fullPath, content.get())) {

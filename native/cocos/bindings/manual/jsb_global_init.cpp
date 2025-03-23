@@ -65,7 +65,7 @@ static ccstd::string removeFileExt(const ccstd::string &filePath) {
     return filePath;
 }
 
-#if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
+#if 0//SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
 static int selectPort(int port) {
     struct sockaddr_in addr;
     static uv_tcp_t server;
@@ -221,7 +221,7 @@ void jsb_init_file_operation_delegate() { //NOLINT
 }
 
 bool jsb_enable_debugger(const ccstd::string &debuggerServerAddr, uint32_t port, bool isWaitForConnect) { //NOLINT
-#if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
+#if 0//SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
     if (debuggerServerAddr.empty() || port == 0) {
         return false;
     }
