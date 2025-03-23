@@ -36,6 +36,7 @@ namespace se {
 class Object;
 class Class;
 class Value;
+class ScriptEngine;
 
 /**
      * A stack-allocated class that governs a number of local handles.
@@ -47,6 +48,16 @@ class AutoHandleScope {
 public:
     AutoHandleScope();
     ~AutoHandleScope();
+
+private:
+    void push(JSValue v);
+    
+    static AutoHandleScope* getCurrent();
+    
+    std::vector<JSValue> _jsValuesInScope;
+    
+    friend class Object;
+    friend class ScriptEngine;
 };
 
 /**

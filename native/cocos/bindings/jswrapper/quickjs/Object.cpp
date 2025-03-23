@@ -117,12 +117,12 @@ Object::~Object() {
 bool Object::init(Class *cls, JSValue obj) {
     _cls = cls;
     _obj = obj;
+ //   JS_DupValue(__cx, _obj);
 
     assert(__objectMap.find(this) == __objectMap.end());
     __objectMap.emplace(this, nullptr);
 
-    root();
-    root();
+    AutoHandleScope::getCurrent()->push(_obj);
 
     return true;
 }
@@ -235,7 +235,12 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
     size_t abSize = 0;
     uint8_t *mem = JS_GetArrayBuffer(__cx, &abSize, ab);
     assert(abSize == byteLength);
-    memcpy(mem, data, abSize);
+    // If data has content,then will copy data into buffer,or will only clear buffer.
+    if (data) {
+        memcpy(mem, data, byteLength);
+    } else {
+        memset(mem, 0, byteLength);
+    }
     return Object::_createJSObject(nullptr, typedArray);
 }
 
@@ -563,8 +568,6 @@ void Object::setPrivateObject(PrivateObjectBase *data) {
     internal::setPrivate(_obj, this);
     _privateObject = data;
     
-//    unroot();
-
     if (data != nullptr) {
         _privateData = data->getRaw();
         NativePtrToObjectMap::emplace(_privateData, this);

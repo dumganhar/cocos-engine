@@ -94,7 +94,6 @@ private:
 
     inline void fillVertexBuffers(RenderEntity* entity, RenderDrawInfo* drawInfo) { // NOLINT(readability-convert-member-functions-to-static)
         Node* node = entity->getNode();
-        printf("fillVertexBuffers: %s\n", node->getName().c_str());
         const Mat4& matrix = node->getWorldMatrix();
         uint8_t stride = drawInfo->getStride();
         uint32_t size = drawInfo->getVbCount() * stride;
@@ -106,8 +105,6 @@ private:
             // cast to reduce value copy instructions
             Vec3 *v3 = reinterpret_cast<Vec3*>(vbBuffer + i);
             reinterpret_cast<Vec3*>(vbBuffer + i)->transformMat4(curLayout->position, matrix);
-            printf("cjh entity: %p, drawInfo: %p, v3ptr: %p, curLayout: %p, fill Vertex: pos: (%02f, %02f, %02f)\n", entity, drawInfo, v3, curLayout, v3->x, v3->y, v3->z);
-            int a = 0;
         }
     }
 
@@ -136,8 +133,6 @@ private:
             vbBuffer[offset++] = static_cast<float>(temp.g) / 255.0F;
             vbBuffer[offset++] = static_cast<float>(temp.b) / 255.0F;
             vbBuffer[offset++] = entity->getOpacity();
-            printf("cjh fillColor: (%02f, %02f, %02f, %02f)\n", vbBuffer[cur+0], vbBuffer[cur+1], vbBuffer[cur+2], vbBuffer[cur+3]);
-            int aa = 0;
         }
     }
 

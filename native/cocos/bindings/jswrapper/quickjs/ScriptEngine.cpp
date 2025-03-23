@@ -153,12 +153,35 @@ SE_BIND_FUNC(JSB_console_timeEnd)
 
 } // namespace
 
+static std::stack<AutoHandleScope*> __scopeStack;
+
+AutoHandleScope __globalScope;
+
 AutoHandleScope::AutoHandleScope() {
+    __scopeStack.push(this);
+    _jsValuesInScope.reserve(1024);
 }
 
 AutoHandleScope::~AutoHandleScope() {
 //    JSContext *ctx = nullptr;
 //    JS_ExecutePendingJob(se::ScriptEngine::getInstance()->_getRuntime(), &ctx);
+    for (auto &e : _jsValuesInScope) {
+        JS_FreeValue(ScriptEngine::getInstance()->_getContext(), e);
+    }
+    
+    __scopeStack.pop();
+}
+
+void AutoHandleScope::push(JSValue v) {
+    JS_DupValue(ScriptEngine::getInstance()->_getContext(), v);
+//    _jsValuesInScope.emplace_back(v);
+}
+
+AutoHandleScope* AutoHandleScope::getCurrent() {
+    if (!__scopeStack.empty()) {
+        return __scopeStack.top();
+    }
+    return &__globalScope;
 }
 
 ScriptEngine *ScriptEngine::getInstance() {
@@ -387,7 +410,7 @@ const ScriptEngine::FileOperationDelegate &ScriptEngine::getFileOperationDelegat
 
 bool ScriptEngine::runScript(const std::string &path, Value *ret /* = nullptr */) {
     assert(_fileOperationDelegate.isValid());
-
+    printf("cjh runScript: %s\n", path.c_str());
     std::string scriptBuffer = _fileOperationDelegate.onGetStringFromFile(path);
     if (!scriptBuffer.empty()) {
         return evalString(scriptBuffer.c_str(), static_cast<ssize_t>(scriptBuffer.length()), ret, path.c_str());
@@ -437,6 +460,16 @@ bool ScriptEngine::isDebuggerEnabled() const {
 void ScriptEngine::mainLoopUpdate() {
     JSContext* cx = nullptr;
     JS_ExecutePendingJob(_rt, &cx);
+    
+    auto& scope = __globalScope;
+    if (!scope._jsValuesInScope.empty()) {
+        for (auto &e : scope._jsValuesInScope) {
+            JS_FreeValue(_cx, e);
+        }
+        scope._jsValuesInScope.clear();
+    }
+    
+   // JS_RunGC(_rt);
 }
 
 std::string ScriptEngine::getCurrentStackTrace() const {

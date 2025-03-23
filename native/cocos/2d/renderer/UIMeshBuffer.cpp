@@ -101,14 +101,6 @@ void UIMeshBuffer::uploadBuffers() {
     uint32_t indexCount = getIndexOffset();
     uint32_t byteCount = getByteOffset();
     
-    for (int i = 0; i < byteCount; i += 9) {
-        printf("pos: (%02f, %02f, %02f), uv: (%02f, %02f), color(%02f, %02f, %02f, %02f)\n",
-               _vData[i], _vData[i+1], _vData[i+2], _vData[i+3], _vData[i+4], _vData[i+5], _vData[i+6], _vData[i+7], _vData[i+8]);
-        if (_vData[i] == 0) {
-            int a = 0;
-        }
-    }
-
     gfx::BufferList vBuffers = _ia->getVertexBuffers();
     if (!vBuffers.empty()) {
         gfx::Buffer* vBuffer = vBuffers[0];
@@ -121,11 +113,7 @@ void UIMeshBuffer::uploadBuffers() {
     if (indexCount * 2 > iBuffer->getSize()) {
         iBuffer->resize(indexCount * 2);
     }
-    
-    for (int i = 0; i < indexCount; i+=6) {
-        printf("indics: (%u, %u, %u, %u, %u, %u)\n", _iData[i], _iData[i+1], _iData[i+2], _iData[i+3], _iData[i+4], _iData[i+5]);
-    }
-    
+       
     iBuffer->update(_iData);
 
     setDirty(false);
