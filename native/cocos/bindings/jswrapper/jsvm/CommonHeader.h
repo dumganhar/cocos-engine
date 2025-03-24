@@ -29,6 +29,7 @@
 #include "ark_runtime/jsvm.h"
 #else
 #include "jsvm.h"
+#include "v8.h"
 #endif
 #include "platform/openharmony/napi/native_common.h"
 

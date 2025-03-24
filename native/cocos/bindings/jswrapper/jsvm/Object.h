@@ -57,6 +57,8 @@ public:
     void incRef(JSVM_Env env);
     void decRef(JSVM_Env env);
     void deleteRef();
+    void createRef();
+    inline bool isValid() const { return _ref != nullptr; }
 };
 
 class Object : public RefCounter {
@@ -440,6 +442,10 @@ private:
     static void weakCallback(JSVM_Env env, void *nativeObject, void * /*finalize_hint*/);
     static void setup();
     static void cleanup();
+    
+#ifdef V8_MAJOR_VERSION
+    v8::Local<v8::Value> getProxyTarget() const;
+#endif
 
 private:
     ObjectRef _objRef;

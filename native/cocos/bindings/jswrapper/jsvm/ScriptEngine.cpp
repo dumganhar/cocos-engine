@@ -31,15 +31,67 @@
 #include "Utils.h"
 #include "CommonHeader.h"
 
-#if CC_PLATFORM == CC_PLATFORM_OPENHARMONY
-#include "ark_runtime/jsvm.h"
-#else
-#include "jsvm.h"
-#endif
-
 #define _EXPOSE_GC "__jsb_gc__"
 
 namespace se {
+
+const unsigned int JSB_STACK_FRAME_LIMIT = 20;
+
+#ifdef V8_MAJOR_VERSION
+
+ccstd::string stackTraceToString(v8::Local<v8::StackTrace> stack) {
+    ccstd::string stackStr;
+    if (stack.IsEmpty()) {
+        return stackStr;
+    }
+
+    char tmp[100] = {0};
+    for (int i = 0, e = stack->GetFrameCount(); i < e; ++i) {
+        v8::Local<v8::StackFrame> const frame = stack->GetFrame(v8::Isolate::GetCurrent(), i);
+        v8::Local<v8::String> const script = frame->GetScriptName();
+        ccstd::string scriptName;
+        if (!script.IsEmpty()) {
+            scriptName = *v8::String::Utf8Value(v8::Isolate::GetCurrent(), script);
+        }
+
+        v8::Local<v8::String> const func = frame->GetFunctionName();
+        ccstd::string funcName;
+        if (!func.IsEmpty()) {
+            funcName = *v8::String::Utf8Value(v8::Isolate::GetCurrent(), func);
+        }
+
+        stackStr += " - [";
+        snprintf(tmp, sizeof(tmp), "%d", i);
+        stackStr += tmp;
+        stackStr += "]";
+
+        // Add function name
+        stackStr += (funcName.empty() ? "anonymous" : funcName.c_str());
+
+        // Add script file name
+        stackStr += "@";
+        stackStr += (scriptName.empty() ? "(no filename)" : scriptName.c_str());
+
+        // Add line number
+        stackStr += ":";
+        snprintf(tmp, sizeof(tmp), "%d", frame->GetLineNumber());
+        stackStr += tmp;
+
+        // Add colume number
+        stackStr += ":";
+        snprintf(tmp, sizeof(tmp), "%d", frame->GetColumn());
+        stackStr += tmp;
+
+        if (i < (e - 1)) {
+            stackStr += "\n";
+        }
+    }
+
+    return stackStr;
+}
+
+#endif // #ifdef V8_MAJOR_VERSION
+
 AutoHandleScope::AutoHandleScope() {
     OH_JSVM_OpenHandleScope(ScriptEngine::getEnv(), &_handleScope);
 }
@@ -485,6 +537,17 @@ void ScriptEngine::addAfterInitHook(const std::function<void()> &hook) {
 }
 
 std::string ScriptEngine::getCurrentStackTrace() {
+#ifdef V8_MAJOR_VERSION
+    if (!_isValid) {
+        return {};
+    }
+    
+    auto *isolate = v8::Isolate::GetCurrent();
+
+    v8::HandleScope const hs(isolate);
+    v8::Local<v8::StackTrace> const stack = v8::StackTrace::CurrentStackTrace(isolate, JSB_STACK_FRAME_LIMIT, v8::StackTrace::kOverview);
+    return stackTraceToString(stack);
+#endif
     //not impl
     return "";
 }

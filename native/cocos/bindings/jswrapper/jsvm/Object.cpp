@@ -32,6 +32,10 @@
 #include "Utils.h"
 #include "application/ApplicationManager.h"
 
+#ifdef V8_MAJOR_VERSION
+#include "bindings/jswrapper/jsvm-v8-backend/js_native_api_v8.h"
+#endif
+
 #define MAX_STRING_LEN 512
 
 namespace se {
@@ -46,7 +50,7 @@ Object::~Object() {
         // We just do this if `_cls` is not null since only JSB objects get wrapped,
         OH_JSVM_RemoveWrap(_env, _objRef.getValue(_env), nullptr);
     }
-    
+       
     if (__objectSet) {
         __objectSet->erase(this);
     }
@@ -172,12 +176,6 @@ bool Object::isTypedArray() const {
     bool ret = false;
     NODE_API_CALL(status, _env, OH_JSVM_IsTypedarray(_env, _objRef.getValue(_env), &ret));
     return ret;
-}
-
-bool Object::isProxy() const {
-    //return const_cast<Object *>(this)->_obj.handle(__isolate)->IsProxy();
-    // todo:
-    return false;
 }
 
 Object::TypedArrayType Object::getTypedArrayType() const {
@@ -516,6 +514,7 @@ bool Object::getAllKeys(std::vector<std::string>* allKeys) const {
     }
     uint32_t name_len = 0;
     NODE_API_CALL(status, _env, OH_JSVM_GetArrayLength(_env, names, &name_len));
+    allKeys->reserve(name_len);
     for (uint32_t i = 0; i < name_len; i++) {
         JSVM_Value val;
         NODE_API_CALL(status, _env, OH_JSVM_GetElement(_env, names, i, &val));
@@ -593,8 +592,9 @@ bool Object::attachObject(Object* obj) {
     }
 
     ValueArray args;
-    args.push_back(Value(this));
-    args.push_back(Value(obj));
+    args.reserve(2);
+    args.emplace_back(Value(this));
+    args.emplace_back(Value(obj));
     func.toObject()->call(args, global);
     return true;
 }
@@ -616,8 +616,9 @@ bool Object::detachObject(Object* obj) {
     }
 
     ValueArray args;
-    args.push_back(Value(this));
-    args.push_back(Value(obj));
+    args.reserve(2);
+    args.emplace_back(Value(this));
+    args.emplace_back(Value(obj));
     func.toObject()->call(args, global);
     return true;
 }
@@ -642,7 +643,6 @@ std::string Object::toString() const {
 
 void Object::root() {
     if (_rootCount == 0) {
-        uint32_t result = 0;
         _objRef.incRef(_env);
     }
     ++_rootCount;
@@ -714,12 +714,7 @@ void Object::weakCallback(JSVM_Env env, void* nativeObject, void* finalizeHint /
             return;
         }
         if (seObj->_clearMappingInFinalizer && rawPtr != nullptr) {
-            auto iter = NativePtrToObjectMap::find(rawPtr);
-            if (iter != NativePtrToObjectMap::end()) {
-                NativePtrToObjectMap::erase(iter);
-            } else {
-                SE_LOGE("not find ptr in NativePtrToObjectMap");
-            }
+            NativePtrToObjectMap::erase(rawPtr, seObj);
         }
 
         if (seObj->_finalizeCb != nullptr) {
@@ -808,13 +803,35 @@ Object* Object::createJSONObject(std::u16string&& jsonStr) {
 }
 
 Object* Object::createProxyTarget(se::Object* proxy) {
-    // SE_ASSERT(proxy->isProxy(), "parameter is not a Proxy object");
-    // v8::Local<v8::Object> jsobj = proxy->getProxyTarget().As<v8::Object>();
-    // Object *obj = Object::_createJSObject(nullptr, jsobj);
-    // return obj;
+#ifdef V8_MAJOR_VERSION
+    CC_ASSERTF(proxy->isProxy(), "parameter is not a Proxy object");
+    v8::Local<v8::Object> jsobj = proxy->getProxyTarget().As<v8::Object>();
+    JSVM_Value jsvmVal = v8impl::JsValueFromV8LocalValue(jsobj);
+    Object *obj = Object::_createJSObject(ScriptEngine::getEnv(), jsvmVal, nullptr);
+    return obj;
+#else
     assert(false); // NOT SUPPORTED NOW.
     return nullptr;
+#endif
 }
+
+bool Object::isProxy() const {
+#ifdef V8_MAJOR_VERSION
+    v8::Local<v8::Value> value = v8impl::V8LocalValueFromJsValue(const_cast<Object *>(this)->_objRef.getValue(_env));
+    return value->IsProxy();
+#else
+    return false;
+#endif
+}
+
+#ifdef V8_MAJOR_VERSION
+v8::Local<v8::Value> Object::getProxyTarget() const {
+    v8::Local<v8::Value> value = v8impl::V8LocalValueFromJsValue(const_cast<Object *>(this)->_objRef.getValue(_env));
+    CC_ASSERTF(value->IsProxy(), "Object is not a Proxy");
+    v8::Proxy *proxy = v8::Proxy::Cast(*value);
+    return proxy->GetTarget();
+}
+#endif
 
 void Object::clearPrivateData(bool clearMapping) {
     if (_privateObject != nullptr) {
@@ -854,7 +871,10 @@ void ObjectRef::init(JSVM_Env env, JSVM_Value obj) {
     assert(_ref == nullptr);
     _obj = obj;
     _env = env;
-    
+    createRef();
+}
+
+void ObjectRef::createRef() {
     // There is a bug in JSVM implementation:
     // If we initialize the reference to 0 which means weak reference in JSVM,
     // then we call the JSVM API in the following order:
