@@ -235,11 +235,13 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
     size_t abSize = 0;
     uint8_t *mem = JS_GetArrayBuffer(__cx, &abSize, ab);
     assert(abSize == byteLength);
-    // If data has content,then will copy data into buffer,or will only clear buffer.
-    if (data) {
-        memcpy(mem, data, byteLength);
-    } else {
-        memset(mem, 0, byteLength);
+    if (mem != nullptr) {
+        // If data has content,then will copy data into buffer,or will only clear buffer.
+        if (data) {
+            memcpy(mem, data, byteLength);
+        } else {
+            memset(mem, 0, byteLength);
+        }
     }
     return Object::_createJSObject(nullptr, typedArray);
 }
@@ -442,6 +444,7 @@ bool Object::isProxy() const {
 }
 
 Object::TypedArrayType Object::getTypedArrayType() const {
+    assert(false);
     TypedArrayType ret = TypedArrayType::NONE;
     //    JSValue     obj = _getJSObject();
     //    if (JS_IsInit(obj))
@@ -474,12 +477,16 @@ bool Object::getTypedArrayData(uint8_t **ptr, size_t *length) const {
     size_t size = 0;
     uint8_t* buf = JS_GetArrayBuffer(__cx, &size, typedArray);
     if (ptr) {
-        *ptr = buf + byte_offset;
+        if (buf) {
+            *ptr = buf + byte_offset;
+        } else {
+            *ptr = nullptr;
+        }
     }
     if (length) {
         *length = byte_length;
     }
-    return true;
+    return buf != nullptr;
 }
 
 bool Object::isArray() const {
@@ -514,11 +521,12 @@ bool Object::getArrayBufferData(uint8_t **ptr, size_t *length) const {
     assert(isArrayBuffer());
     assert(ptr != nullptr);
     size_t byteLength{0};
-    *ptr = JS_GetArrayBuffer(__cx, &byteLength, _obj);
+    uint8_t *ab = JS_GetArrayBuffer(__cx, &byteLength, _obj);
+    *ptr = ab;
     if (length != nullptr) {
         *length = byteLength;
     }
-    return false;
+    return ab != nullptr;
 }
 
 bool Object::getAllKeys(std::vector<std::string> *allKeys) const {

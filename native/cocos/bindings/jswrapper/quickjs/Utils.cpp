@@ -88,6 +88,7 @@ void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal) {
 
         case Value::Type::Object: {
             *outVal = arg.toObject()->_getJSObject();
+            JS_DupValue(cx, *outVal);
         } break;
 
         case Value::Type::Null: {

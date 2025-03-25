@@ -315,6 +315,9 @@ public:
     ScriptEngine();
     ~ScriptEngine();
 private:
+    
+    void executePendingJobs();
+    
     JSRuntime *_rt{nullptr};
     JSContext *_cx{nullptr};
 
@@ -341,6 +344,8 @@ private:
     bool _isValid{false};
     bool _isInCleanup{false};
     bool _isErrorHandleWorking{false};
+    
+    friend class AutoHandleScope;
 };
 
 } // namespace se

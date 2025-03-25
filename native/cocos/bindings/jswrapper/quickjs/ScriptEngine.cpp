@@ -163,18 +163,18 @@ AutoHandleScope::AutoHandleScope() {
 }
 
 AutoHandleScope::~AutoHandleScope() {
-//    JSContext *ctx = nullptr;
-//    JS_ExecutePendingJob(se::ScriptEngine::getInstance()->_getRuntime(), &ctx);
     for (auto &e : _jsValuesInScope) {
         JS_FreeValue(ScriptEngine::getInstance()->_getContext(), e);
     }
+    
+    ScriptEngine::getInstance()->executePendingJobs();
     
     __scopeStack.pop();
 }
 
 void AutoHandleScope::push(JSValue v) {
     JS_DupValue(ScriptEngine::getInstance()->_getContext(), v);
-//    _jsValuesInScope.emplace_back(v);
+    _jsValuesInScope.emplace_back(v);
 }
 
 AutoHandleScope* AutoHandleScope::getCurrent() {
@@ -457,8 +457,7 @@ bool ScriptEngine::isDebuggerEnabled() const {
     return false;
 }
 
-void ScriptEngine::mainLoopUpdate() {
-    
+void ScriptEngine::executePendingJobs() {
     JSContext* cx = nullptr;
     int ret = 0;
     while (true) {
@@ -470,6 +469,10 @@ void ScriptEngine::mainLoopUpdate() {
             break;
         }
     }
+}
+
+void ScriptEngine::mainLoopUpdate() {
+    executePendingJobs();
     
     auto& scope = __globalScope;
     if (!scope._jsValuesInScope.empty()) {
