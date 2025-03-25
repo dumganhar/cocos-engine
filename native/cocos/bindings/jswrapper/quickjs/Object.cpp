@@ -117,7 +117,6 @@ Object::~Object() {
 bool Object::init(Class *cls, JSValue obj) {
     _cls = cls;
     _obj = obj;
- //   JS_DupValue(__cx, _obj);
 
     assert(__objectMap.find(this) == __objectMap.end());
     __objectMap.emplace(this, nullptr);

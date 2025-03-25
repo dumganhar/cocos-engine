@@ -105,8 +105,7 @@ bool Class::install() {
 
     JSValue protoObj = JS_UNDEFINED;
     if (_parentProto != nullptr) {
-        const auto parentProtoVal = JS_DupValue(__cx, _parentProto->_getJSObject());
-        protoObj = JS_NewObjectProtoClass(__cx, parentProtoVal, _classId);
+        protoObj = JS_NewObjectProtoClass(__cx, _parentProto->_getJSObject(), _classId);
         se::ScriptEngine::getInstance()->clearException();
     } else {
         protoObj = JS_NewObject(__cx);
@@ -125,7 +124,6 @@ bool Class::install() {
     JS_SetPropertyFunctionList(__cx, ctorVal, _staticPropertiesOrStaticFuncs.data(), _staticPropertiesOrStaticFuncs.size());
     se::ScriptEngine::getInstance()->clearException();
 
-    JS_DupValue(__cx, _parent->_getJSObject());
     JS_SetPropertyStr(__cx, _parent->_getJSObject(), _name, ctorVal);
     se::ScriptEngine::getInstance()->clearException();
 
@@ -192,7 +190,6 @@ JSValue Class::_createJSObjectWithClass(Class *cls) {
     JSValue protoVal;
     if (cls->_proto != nullptr) {
         protoVal = cls->_proto->_getJSObject();
-        JS_DupValue(__cx, protoVal);
     } else {
         protoVal = JS_UNDEFINED;
     }
