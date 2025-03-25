@@ -458,8 +458,18 @@ bool ScriptEngine::isDebuggerEnabled() const {
 }
 
 void ScriptEngine::mainLoopUpdate() {
+    
     JSContext* cx = nullptr;
-    JS_ExecutePendingJob(_rt, &cx);
+    int ret = 0;
+    while (true) {
+        ret = JS_ExecutePendingJob(_rt, &cx);
+        if (ret == -1) {
+            clearException();
+            break;
+        } else if (ret == 0) {
+            break;
+        }
+    }
     
     auto& scope = __globalScope;
     if (!scope._jsValuesInScope.empty()) {
