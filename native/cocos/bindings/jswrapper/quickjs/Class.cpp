@@ -91,14 +91,6 @@ void Class::destroy() {
     SAFE_DEC_REF(_parent);
     SAFE_DEC_REF(_proto);
     SAFE_DEC_REF(_parentProto);
-    
-    if (_ctorObj.has_value()) {
-        if (_ctorObj.value() != nullptr) {
-            _ctorObj.value()->unroot();
-            _ctorObj.value()->decRef();
-        }
-        _ctorObj.reset();
-    }
 }
 
 bool Class::install() {
