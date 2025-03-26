@@ -120,6 +120,13 @@ bool Object::init(Class *cls, JSValue obj) {
 
     assert(__objectMap.find(this) == __objectMap.end());
     __objectMap.emplace(this, nullptr);
+    
+    if (_cls) {
+//        printf("Create binding object: %p, %s\n", this, _cls->getName());
+        if (0 == strcmp(_cls->getName(), "ShadowsInfo")) {
+            int a = 0;
+        }
+    }
 
     AutoHandleScope::getCurrent()->push(_obj);
 
@@ -309,7 +316,8 @@ void Object::_setFinalizeCallback(JSClassFinalizer finalizeCb) {
 bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) {
     assert(data != nullptr);
 
-    bool    ret   = false;
+    bool ret = false;
+    
     JSValue jsval = JS_UNDEFINED;
 
     JSAtom atom = JS_NewAtom(__cx, name);
@@ -320,7 +328,9 @@ bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) 
     }
 
     JS_FreeAtom(__cx, atom);
+   
     internal::jsToSeValue(__cx, jsval, data);
+    JS_FreeValue(__cx, jsval);
     return ret;
 }
 
@@ -351,12 +361,14 @@ bool Object::defineOwnProperty(const char *name, const se::Value &value, bool wr
         flags |= JS_PROP_CONFIGURABLE;
     }
 
-    return JS_DefinePropertyValueStr(__cx, _obj, name, jsval, flags) > 0;
+    bool ret = JS_DefinePropertyValueStr(__cx, _obj, name, jsval, flags) > 0;
+    JS_FreeValue(__cx, jsval);
+    return ret;
 }
 
 bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = nullptr*/) {
     assert(isFunction());
-
+    bool ret = false;
     JSValue *jsArgs = reinterpret_cast<JSValue *>(alloca(args.size() * sizeof(JSValue)));
     internal::seToJsArgs(__cx, args, jsArgs);
     JSValue jsRet = JS_Call(__cx, _obj, (thisObject != nullptr ? thisObject->_getJSObject() : JS_UNDEFINED), args.size(), jsArgs);
@@ -364,11 +376,18 @@ bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = n
         if (rval) {
             internal::jsToSeValue(__cx, jsRet, rval);
         }
-        return true;
+        
+        ret = true;
+    } else {
+        ScriptEngine::getInstance()->clearException();
     }
-
-    ScriptEngine::getInstance()->clearException();
-    return false;
+    
+    JS_FreeValue(__cx, jsRet);
+    for (size_t i = 0, len = args.size(); i < len; ++i) {
+        JS_FreeValue(__cx, jsArgs[i]);
+    }
+    
+    return ret;
 }
 
 bool Object::defineFunction(const char *funcName, JSCFunction *func) {
@@ -384,7 +403,9 @@ bool Object::getArrayLength(uint32_t *length) const {
 
     JSValue lengthVal = JS_GetPropertyStr(__cx, _obj, "length");
     assert(JS_IsNumber(lengthVal));
-    return 0 == JS_ToUint32(__cx, length, lengthVal);
+    bool ret = 0 == JS_ToUint32(__cx, length, lengthVal);
+    JS_FreeValue(__cx, lengthVal);
+    return ret;
 }
 
 bool Object::getArrayElement(uint32_t index, Value *data) const {
@@ -399,6 +420,7 @@ bool Object::getArrayElement(uint32_t index, Value *data) const {
     if (length > 0 && index < length) {
         JSValue jsval = JS_GetPropertyUint32(__cx, _obj, index);
         internal::jsToSeValue(__cx, jsval, data);
+        JS_FreeValue(__cx, jsval);
         return true;
     }
     return false;
@@ -602,11 +624,36 @@ void Object::setContext(JSContext *cx) {
     __cx = cx;
 }
 
+void Object::tryFreeValues() {
+    auto objectMapCopied = __objectMap;
+//    for (const auto &e: objectMapCopied) {
+//        printf("%p, %s, ptr: %p to be cleanup!\n", e.first, e.first->_cls ? e.first->_cls->getName() : "[no name]", e.first->_obj.u.ptr);
+//    }
+    
+    for (const auto &e : objectMapCopied) {
+        if (__objectMap.find(e.first) != __objectMap.end()) {
+            e.first->_freeValue();
+        } else {
+            printf("Object %p was freed\n", e.first);
+        }
+    }
+}
+
 // static
 void Object::cleanup() {
-    for (const auto &e : __objectMap) {
-        e.first->reset();
-    }
+//    for (size_t i = 0; ; ++i) {
+//        if (!__objectMap.empty()) {
+            tryFreeValues();
+//        }
+//    }
+    
+//    JSValue globalVal = ScriptEngine::getInstance()->getGlobalObject()->_getJSObject();
+//    for (int i = 0; i < 8; ++i) {
+//        JS_FreeValue(__cx, globalVal);
+//    }
+//
+    JS_RunGC(JS_GetRuntime(__cx));
+    JS_RunGC(JS_GetRuntime(__cx));
 
     ScriptEngine::getInstance()->addAfterCleanupHook([]() {
         __objectMap.clear();
@@ -635,8 +682,20 @@ void Object::unroot() {
     }
 }
 
-void Object::reset() {
-    _obj = JS_UNDEFINED;
+void Object::_freeValue() {
+    while (isRooted()) {
+        unroot();
+    }
+    
+//    if (JS_VALUE_HAS_REF_COUNT(_obj)) {
+//        JSRefCountHeader *p = (JSRefCountHeader *)JS_VALUE_GET_PTR(_obj);
+//        if (p->ref_count == 1) {
+//            printf("Free value: %p, cls: %s, ptr: %p\n", this, _cls ? _cls->getName() : "[no name]", _obj.u.ptr);
+//            JS_FreeValue(__cx, _obj);
+//        }
+//    }
+    
+//    JS_FreeValue(__cx, _obj);
 }
 
 bool Object::isRooted() const {

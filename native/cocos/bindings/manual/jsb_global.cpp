@@ -1642,7 +1642,7 @@ bool jsb_register_global_variables(se::Object *global) { // NOLINT
 
         DeferredReleasePool::clear();
     });
-
+    
     se::ScriptEngine::getInstance()->addAfterCleanupHook([]() {
         DeferredReleasePool::clear();
 

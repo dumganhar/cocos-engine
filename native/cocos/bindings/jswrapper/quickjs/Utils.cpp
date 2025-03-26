@@ -88,7 +88,7 @@ void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal) {
 
         case Value::Type::Object: {
             *outVal = arg.toObject()->_getJSObject();
-            JS_DupValue(cx, *outVal);
+           JS_DupValue(cx, *outVal);
         } break;
 
         case Value::Type::Null: {
@@ -164,7 +164,6 @@ void clearPrivate(JSValue obj) {
 }
 
 void jsObjectToSeObject(JSValueConst jsval, Value *v) {
-    Value   ret;
     Object *seObj = static_cast<Object *>(getPrivate(jsval));
     if (seObj == nullptr) {
         seObj = Object::_createJSObject(nullptr, jsval);

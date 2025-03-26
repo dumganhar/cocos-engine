@@ -111,11 +111,17 @@ SE_HOT JSValue jsbFunctionWrapper(JSContext *_ctx, JSValueConst _thisVal, int ar
 }
 
 SE_HOT void jsbFinalizeWrapper(JSRuntime *_rt, JSValue _thisVal, se_function_ptr func, const char *funcName) {
+    
     se::Value seThisVal;
     se::internal::jsObjectToSeObject(_thisVal, &seThisVal);
     se::Object *seObj = seThisVal.toObject();
 
     void *nativeObj = seObj->getPrivateData();
+    
+    CC_LOG_INFO("jsbFinalizeWrapper, %s, seObj: %p, nativeObj: %p", funcName, seObj, nativeObj);
+    if (0 == strcmp("js_delete_cc_scene_SkyboxInfo", funcName)) {
+        int a = 0;
+    }
     bool  ret       = false;
     if (seObj == nullptr)
         return;

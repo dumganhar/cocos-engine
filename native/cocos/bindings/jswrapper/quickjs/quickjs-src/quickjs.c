@@ -92,11 +92,11 @@
  */
 //#define DUMP_BYTECODE  (1)
 /* dump the occurence of the automatic GC */
-//#define DUMP_GC
+#define DUMP_GC
 /* dump objects freed by the garbage collector */
 //#define DUMP_GC_FREE
 /* dump objects leaking when freeing the runtime */
-//#define DUMP_LEAKS  1
+//#define DUMP_LEAKS  0
 /* dump memory usage before running the garbage collector */
 //#define DUMP_MEM
 //#define DUMP_OBJECTS    /* dump objects in JS_FreeContext */
@@ -2234,6 +2234,9 @@ static void js_free_modules(JSContext *ctx, JSFreeModuleEnum flag)
 JSContext *JS_DupContext(JSContext *ctx)
 {
     ctx->header.ref_count++;
+    if (ctx->header.ref_count > 10000) {
+        int a = 0;
+    }
     return ctx;
 }
 
@@ -2276,8 +2279,7 @@ static void JS_MarkContext(JSRuntime *rt, JSContext *ctx,
         mark_func(rt, &ctx->array_shape->header);
 }
 
-void JS_FreeContext(JSContext *ctx)
-{
+void JS_FreeContext(JSContext *ctx) {
     JSRuntime *rt = ctx->rt;
     int i;
 

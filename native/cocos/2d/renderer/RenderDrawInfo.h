@@ -210,7 +210,6 @@ public:
 
     inline void setRender2dBufferToNative(uint8_t* buffer) { // NOLINT(bugprone-easily-swappable-parameters)
         CC_ASSERT(_drawInfoAttrs._drawInfoType == RenderDrawInfoType::COMP && !_drawInfoAttrs._isMeshBuffer);
-        printf("_sharedBuffer: %p\n", buffer);
         _sharedBuffer = buffer;
     }
 

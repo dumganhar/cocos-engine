@@ -95,42 +95,32 @@ void Class::destroy() {
 
 bool Class::install() {
     JS_NewClassID(&_classId);
-    se::ScriptEngine::getInstance()->clearException();
     _classOps.class_name = _name;
-    se::ScriptEngine::getInstance()->clearException();
     _classOps.finalizer = _finalizeOp;
-    se::ScriptEngine::getInstance()->clearException();
     JS_NewClass(JS_GetRuntime(__cx), _classId, &_classOps);
-    se::ScriptEngine::getInstance()->clearException();
 
     JSValue protoObj = JS_UNDEFINED;
     if (_parentProto != nullptr) {
         protoObj = JS_NewObjectProtoClass(__cx, _parentProto->_getJSObject(), _classId);
-        se::ScriptEngine::getInstance()->clearException();
     } else {
         protoObj = JS_NewObject(__cx);
-        se::ScriptEngine::getInstance()->clearException();
     }
 
     JS_SetPropertyFunctionList(__cx, protoObj, _propertiesOrFuncs.data(), _propertiesOrFuncs.size());
-    se::ScriptEngine::getInstance()->clearException();
+
     JSValue ctorVal = JS_NewCFunction2(__cx, _ctor, _name, 0, JS_CFUNC_constructor, 0);
-    se::ScriptEngine::getInstance()->clearException();
     JS_SetConstructor(__cx, ctorVal, protoObj);
-    se::ScriptEngine::getInstance()->clearException();
-    JS_SetClassProto(__cx, _classId, protoObj);
-    se::ScriptEngine::getInstance()->clearException();
+    JS_SetClassProto(__cx, _classId, JS_DupValue(__cx, protoObj));
 
     JS_SetPropertyFunctionList(__cx, ctorVal, _staticPropertiesOrStaticFuncs.data(), _staticPropertiesOrStaticFuncs.size());
-    se::ScriptEngine::getInstance()->clearException();
 
     JS_SetPropertyStr(__cx, _parent->_getJSObject(), _name, ctorVal);
-    se::ScriptEngine::getInstance()->clearException();
 
     _proto = Object::_createJSObject(this, protoObj);
-    se::ScriptEngine::getInstance()->clearException();
     _proto->root();
-    se::ScriptEngine::getInstance()->clearException();
+    
+    JS_FreeValue(__cx, protoObj);
+//    JS_FreeValue(__cx, ctorVal);
 
     return true;
 }
@@ -170,9 +160,6 @@ bool Class::defineStaticProperty(const char *name, JSPropGetter getter, JSPropSe
 bool Class::defineStaticProperty(const char *name, const Value &value, PropertyAttribute attribute /* = PropertyAttribute::NONE */) {
 //    JSValue jsVal;
 //    internal::seToJsValue(_ctx, value, &jsVal);
-    if (strcmp(name, "__isJSB") != 0) {
-        int a = 0;
-    }
     JSCFunctionListEntry cb = JS_CGETSET_DEF(name, [](JSContext *ctx, JSValueConst this_val) -> JSValue {
         //TODO:
         return JS_UNDEFINED;
@@ -190,6 +177,7 @@ JSValue Class::_createJSObjectWithClass(Class *cls) {
     JSValue protoVal;
     if (cls->_proto != nullptr) {
         protoVal = cls->_proto->_getJSObject();
+//        JS_DupValue(__cx, protoVal);
     } else {
         protoVal = JS_UNDEFINED;
     }

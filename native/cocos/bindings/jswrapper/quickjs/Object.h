@@ -504,6 +504,8 @@ public:
     void           _setFinalizeCallback(JSClassFinalizer finalizeCb);
     JSValue        _getJSObject() const;
     Class *        _getClass() const { return _cls; }
+    void _freeValue();
+    
     //
 
 private:
@@ -513,8 +515,8 @@ private:
 
     static void setContext(JSContext *cx);
     static void cleanup();
+    static void tryFreeValues();
 
-    void reset();
     bool hasProperty(const char *name) const;
 
     JSValue _obj{JS_UNDEFINED};

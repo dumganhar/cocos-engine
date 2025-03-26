@@ -53,6 +53,7 @@ JSValue __log(JSContext *ctx, JSValueConst thisVal, int argc, JSValueConst *argv
         const char *string = JS_ToCString(ctx, argv[0]);
         if (string != nullptr) {
             SE_LOGD("JS: %s\n", string);
+            JS_FreeCString(ctx, string);
         }
     }
     return JS_UNDEFINED;
@@ -259,8 +260,7 @@ bool ScriptEngine::init() {
     JS_SetPropertyFunctionList(_cx, globalObj, funcs, countof(funcs));
 
     JS_FreeValue(_cx, globalObj);
-
-    evalString("log(window.scriptEngineType); if (console) { log(console.debug); } function AAA(){}; log(AAA);  ");
+    globalObj = JS_UNDEFINED;
 
     _isValid = true;
 
@@ -286,11 +286,14 @@ void ScriptEngine::cleanup() {
         hook();
     }
     _beforeCleanupHookArray.clear();
+    
+    executePendingJobs();
 
-    SAFE_DEC_REF(_globalObj);
     Class::cleanup();
     Object::cleanup();
-
+    
+    SAFE_DEC_REF(_globalObj);
+    
     JS_FreeContext(_cx);
     JS_FreeRuntime(_rt);
 
@@ -397,6 +400,8 @@ bool ScriptEngine::evalString(const char *script, ssize_t length /* = -1 */, Val
     if (ret != nullptr) {
         internal::jsToSeValue(_cx, jsRet, ret);
     }
+    
+    JS_FreeValue(_cx, jsRet);
     return true;
 }
 
@@ -488,8 +493,12 @@ void ScriptEngine::mainLoopUpdate() {
 std::string ScriptEngine::getCurrentStackTrace() const {
     JSValue error = JS_NewError(_cx);
     JSValue stack = JS_GetPropertyStr(_cx, error, "stack");
-    const char *stackStr = JS_ToCString(_cx, stack);
-    return stackStr;
+    const char* stackCStr = JS_ToCString(_cx, stack);
+    std::string ret = stackCStr;
+    JS_FreeCString(_cx, stackCStr);
+    JS_FreeValue(_cx, stack);
+    JS_FreeValue(_cx, error);
+    return ret;
 }
 
 bool ScriptEngine::callFunction(Object *targetObj, const char *funcName, uint32_t argc, Value *args, Value *rval /* = nullptr*/) {

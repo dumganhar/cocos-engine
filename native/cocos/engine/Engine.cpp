@@ -283,8 +283,8 @@ void Engine::tick() {
     ++gcCounter;
     if (gcCounter > 60) {
         gcCounter = 0;
-//        se::AutoHandleScope hs;
-//        _scriptEngine->garbageCollect();
+        se::AutoHandleScope hs;
+        _scriptEngine->garbageCollect();
     }
     CC_PROFILER_BEGIN_FRAME;
     {
