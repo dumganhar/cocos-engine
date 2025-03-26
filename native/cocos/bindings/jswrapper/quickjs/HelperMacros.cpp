@@ -148,14 +148,32 @@ SE_HOT JSValue jsbConstructorWrapper(JSContext *_ctx, JSValueConst new_target, i
     se::Object *thisObject = se::Object::_createJSObject(cls, jsobj);
     se::State   state(thisObject, args);
     bool        ret = func(state);
+    
     if (ret) {
-        se::Value _property;
-        bool      _found = false;
-        _found           = thisObject->getProperty("_ctor", &_property);
-        if (_found) _property.toObject()->call(args, thisObject);
+        se::Value property;
+        bool foundCtor = false;
+        if (!cls->_getCtor().has_value()) {
+            foundCtor = thisObject->getProperty("_ctor", &property, true);
+            if (foundCtor) {
+                cls->_setCtor(property.toObject());
+            } else {
+                cls->_setCtor(nullptr);
+            }
+        } else {
+            auto *ctorObj = cls->_getCtor().value();
+            if (ctorObj != nullptr) {
+                property.setObject(ctorObj);
+                foundCtor = true;
+            }
+        }
+
+        if (foundCtor) {
+            property.toObject()->call(args, thisObject);
+        }
     } else {
         SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
     }
+    
     return jsobj;
 }
 
