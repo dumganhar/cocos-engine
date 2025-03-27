@@ -511,7 +511,7 @@ bool Object::getTypedArrayData(uint8_t **ptr, size_t *length) const {
 }
 
 bool Object::isArray() const {
-    return JS_IsArray(__cx, _obj) != 0;
+    return JS_IsArray(_obj) != 0;
 }
 
 bool Object::isArrayBuffer() const {
