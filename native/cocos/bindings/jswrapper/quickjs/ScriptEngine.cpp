@@ -287,7 +287,7 @@ void ScriptEngine::cleanup() {
     }
     _beforeCleanupHookArray.clear();
     
-    executePendingJobs();
+    mainLoopUpdate();
 
     Class::cleanup();
     Object::cleanup();
