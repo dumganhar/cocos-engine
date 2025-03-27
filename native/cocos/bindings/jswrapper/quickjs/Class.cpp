@@ -102,7 +102,7 @@ void Class::destroy() {
 }
 
 bool Class::install() {
-    JS_NewClassID(JS_GetRuntime(__cx), &_classId);
+    JS_NewClassID(&_classId);
     _classOps.class_name = _name;
     _classOps.finalizer = _finalizeOp;
     JS_NewClass(JS_GetRuntime(__cx), _classId, &_classOps);
