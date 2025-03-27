@@ -150,7 +150,7 @@ private:
     Object *    _parent{nullptr};
     Object *    _proto{nullptr};
     Object *    _parentProto{nullptr};
-    ccstd::optional<Object *> _ctorObj{nullptr};
+    ccstd::optional<Object *> _ctorObj;
 
     JSCFunction *     _ctor{nullptr};
     JSClassFinalizer *_finalizeOp{nullptr};
