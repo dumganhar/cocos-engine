@@ -59,7 +59,6 @@ Class *Class::create(const char *className, Object *obj, Object *parentProto, JS
 }
 
 Class *Class::create(const std::initializer_list<const char *> &classPath, se::Object *parent, Object *parentProto, JSCFunction *ctor) {
-    se::AutoHandleScope scope;
     se::Object *        currentParent = parent;
     se::Value           tmp;
     for (auto i = 0; i < classPath.size() - 1; i++) {
@@ -118,7 +117,7 @@ bool Class::install() {
 
     JSValue ctorVal = JS_NewCFunction2(__cx, _ctor, _name, 0, JS_CFUNC_constructor, 0);
     JS_SetConstructor(__cx, ctorVal, protoObj);
-    JS_SetClassProto(__cx, _classId, JS_DupValue(__cx, protoObj));
+    JS_SetClassProto(__cx, _classId, protoObj);
 
     JS_SetPropertyFunctionList(__cx, ctorVal, _staticPropertiesOrStaticFuncs.data(), _staticPropertiesOrStaticFuncs.size());
 
@@ -127,7 +126,7 @@ bool Class::install() {
     _proto = Object::_createJSObject(this, protoObj);
     _proto->root();
     
-    JS_FreeValue(__cx, protoObj);
+//    JS_FreeValue(__cx, protoObj);
 //    JS_FreeValue(__cx, ctorVal);
 
     return true;
@@ -168,11 +167,11 @@ bool Class::defineStaticProperty(const char *name, JSPropGetter getter, JSPropSe
 bool Class::defineStaticProperty(const char *name, const Value &value, PropertyAttribute attribute /* = PropertyAttribute::NONE */) {
 //    JSValue jsVal;
 //    internal::seToJsValue(_ctx, value, &jsVal);
-    JSCFunctionListEntry cb = JS_CGETSET_DEF(name, [](JSContext *ctx, JSValueConst this_val) -> JSValue {
-        //TODO:
-        return JS_UNDEFINED;
-    }, nullptr);
-    _staticPropertiesOrStaticFuncs.emplace_back(cb);
+//    JSCFunctionListEntry cb = JS_CGETSET_DEF(name, [](JSContext *ctx, JSValueConst this_val) -> JSValue {
+//        //TODO:
+//        return JS_UNDEFINED;
+//    }, nullptr);
+//    _staticPropertiesOrStaticFuncs.emplace_back(cb);
     return true;
 }
 

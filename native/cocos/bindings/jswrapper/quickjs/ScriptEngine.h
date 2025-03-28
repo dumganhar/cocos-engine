@@ -57,6 +57,7 @@ private:
     std::vector<JSValue> _jsValuesInScope;
     
     friend class Object;
+    friend class Class;
     friend class ScriptEngine;
 };
 

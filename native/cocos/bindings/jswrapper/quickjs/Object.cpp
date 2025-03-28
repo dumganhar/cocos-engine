@@ -103,7 +103,9 @@ Object::Object() {
 }
 
 Object::~Object() {
-    unroot();
+    while (isRooted()) {
+        unroot();
+    }
     
     delete _privateObject;
     _privateObject = nullptr;
@@ -171,8 +173,9 @@ Object *Object::getObjectWithPtr(void *ptr) {
 
 Object *Object::createArrayObject(size_t length) {
     JSValue jsobj = JS_NewArray(__cx);
-    for (size_t i = 0; i < length; ++i) {
-        JS_SetPropertyUint32(__cx, jsobj, i, JS_UNDEFINED);
+    if (length > 0) {
+        JS_SetLength(__cx, jsobj, length);
+        
     }
     Object *obj = Object::_createJSObject(nullptr, jsobj);
     return obj;
@@ -249,7 +252,9 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
             memset(mem, 0, byteLength);
         }
     }
-    return Object::_createJSObject(nullptr, typedArray);
+    auto *ret = Object::_createJSObject(nullptr, typedArray);
+    JS_FreeValue(__cx, ab);
+    return ret;
 }
 
 /* static */
@@ -298,6 +303,7 @@ Object *Object::createJSONObject(const std::string &jsonStr) {
     } else {
         ScriptEngine::getInstance()->clearException();
     }
+//    JS_FreeValue(__cx, jsval);
     return obj;
 }
 
@@ -337,6 +343,7 @@ bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) 
 bool Object::setProperty(const char *name, const Value &v) {
     JSValue jsval = JS_UNDEFINED;
     internal::seToJsValue(__cx, v, &jsval);
+    JS_DupValue(__cx, jsval);
     return 1 == JS_SetPropertyStr(__cx, _obj, name, jsval);
 }
 
@@ -347,23 +354,24 @@ bool Object::defineProperty(const char *name, JSPropGetter getter, JSPropSetter 
 }
 
 bool Object::defineOwnProperty(const char *name, const se::Value &value, bool writable, bool enumerable, bool configurable) {
-    JSValue jsval = JS_UNDEFINED;
-    internal::seToJsValue(__cx, value, &jsval);
-
-    int flags = 0;
-    if (writable) {
-        flags |= JS_PROP_WRITABLE;
-    }
-    if (enumerable) {
-        flags |= JS_PROP_ENUMERABLE;
-    }
-    if (configurable) {
-        flags |= JS_PROP_CONFIGURABLE;
-    }
-
-    bool ret = JS_DefinePropertyValueStr(__cx, _obj, name, jsval, flags) > 0;
-    JS_FreeValue(__cx, jsval);
-    return ret;
+    return false;
+//    JSValue jsval = JS_UNDEFINED;
+//    internal::seToJsValue(__cx, value, &jsval);
+//
+//    int flags = 0;
+//    if (writable) {
+//        flags |= JS_PROP_WRITABLE;
+//    }
+//    if (enumerable) {
+//        flags |= JS_PROP_ENUMERABLE;
+//    }
+//    if (configurable) {
+//        flags |= JS_PROP_CONFIGURABLE;
+//    }
+//
+//    bool ret = JS_DefinePropertyValueStr(__cx, _obj, name, jsval, flags) > 0;
+//    JS_FreeValue(__cx, jsval);
+//    return ret;
 }
 
 bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = nullptr*/) {
@@ -383,9 +391,9 @@ bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = n
     }
     
     JS_FreeValue(__cx, jsRet);
-    for (size_t i = 0, len = args.size(); i < len; ++i) {
-        JS_FreeValue(__cx, jsArgs[i]);
-    }
+//    for (size_t i = 0, len = args.size(); i < len; ++i) {
+//        JS_FreeValue(__cx, jsArgs[i]);
+//    }
     
     return ret;
 }
@@ -401,11 +409,10 @@ bool Object::getArrayLength(uint32_t *length) const {
     if (!isArray())
         return false;
 
-    JSValue lengthVal = JS_GetPropertyStr(__cx, _obj, "length");
-    assert(JS_IsNumber(lengthVal));
-    bool ret = 0 == JS_ToUint32(__cx, length, lengthVal);
-    JS_FreeValue(__cx, lengthVal);
-    return ret;
+    int64_t length64 = 0;
+    int ret = JS_GetLength(__cx, _obj, &length64);
+    *length = length64;
+    return ret == 0;
 }
 
 bool Object::getArrayElement(uint32_t index, Value *data) const {
@@ -507,6 +514,7 @@ bool Object::getTypedArrayData(uint8_t **ptr, size_t *length) const {
     if (length) {
         *length = byte_length;
     }
+    JS_FreeValue(__cx, typedArray);
     return buf != nullptr;
 }
 
@@ -574,6 +582,10 @@ bool Object::getAllKeys(std::vector<std::string> *allKeys) const {
             }
         }
     } while (false);
+    
+    for(int i = 0; i < len; i++)
+        JS_FreeAtom(__cx, tab[i].atom);
+    js_free(__cx, tab);
 
     return true;
 }
@@ -652,8 +664,8 @@ void Object::cleanup() {
 //        JS_FreeValue(__cx, globalVal);
 //    }
 //
-    JS_RunGC(JS_GetRuntime(__cx));
-    JS_RunGC(JS_GetRuntime(__cx));
+//    JS_RunGC(JS_GetRuntime(__cx));
+//    JS_RunGC(JS_GetRuntime(__cx));
 
     ScriptEngine::getInstance()->addAfterCleanupHook([]() {
         __objectMap.clear();

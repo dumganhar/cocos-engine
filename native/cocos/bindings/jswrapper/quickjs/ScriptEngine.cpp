@@ -152,6 +152,20 @@ bool JSB_console_timeEnd(State &s) {
 }
 SE_BIND_FUNC(JSB_console_timeEnd)
 
+void test() {
+    auto runtime = JS_NewRuntime();
+    JS_SetDumpFlags(runtime, JS_DUMP_LEAKS);
+    auto context = JS_NewContext(runtime);
+
+    std::string source =
+        "function foo() {}\n"
+        "foo.prototype.bar = function() {};";
+    auto ret = JS_Eval(context, source.c_str(), source.size(), "", JS_EVAL_TYPE_GLOBAL);
+    JS_FreeValue(context, ret);
+    JS_FreeContext(context);
+    JS_FreeRuntime(runtime);
+}
+
 } // namespace
 
 static std::stack<AutoHandleScope*> __scopeStack;
@@ -197,6 +211,7 @@ ScriptEngine::ScriptEngine() {
 }
 
 bool ScriptEngine::init() {
+//    test();
     cleanup();
     SE_LOGD("Initializing QuickJS, version: %s\n", "2021-03-27");
     ++_vmId;
@@ -209,6 +224,8 @@ bool ScriptEngine::init() {
     _rt = JS_NewRuntime();
     if (nullptr == _rt)
         return false;
+    
+    JS_SetDumpFlags(_rt, JS_DUMP_LEAKS);
 
     _cx = JS_NewContext(_rt);
     if (nullptr == _cx) {
@@ -240,6 +257,7 @@ bool ScriptEngine::init() {
     assert(!hasConsole);
 
     HandleObject consoleObj(Object::createPlainObject());
+    int ref = JS_ValueRefCount(_cx, consoleObj->_getJSObject());
     consoleObj->defineFunction("log", _SE(JSB_console_log));
     consoleObj->defineFunction("debug", _SE(JSB_console_debug));
     consoleObj->defineFunction("info", _SE(JSB_console_info));
@@ -250,6 +268,7 @@ bool ScriptEngine::init() {
     consoleObj->defineFunction("timeEnd", _SE(JSB_console_info)); //TODO(cjh)
 
     _globalObj->setProperty("console", Value(consoleObj));
+    ref = JS_ValueRefCount(_cx, consoleObj->_getJSObject());
 
     _globalObj->setProperty("scriptEngineType", Value("quickjs"));
 
@@ -261,6 +280,8 @@ bool ScriptEngine::init() {
 
     JS_FreeValue(_cx, globalObj);
     globalObj = JS_UNDEFINED;
+    
+    
 
     _isValid = true;
 
@@ -268,6 +289,8 @@ bool ScriptEngine::init() {
         hook();
     }
     _afterInitHookArray.clear();
+    
+    ref = JS_ValueRefCount(_cx, consoleObj->_getJSObject());
 
     return true;
 }
@@ -287,8 +310,10 @@ void ScriptEngine::cleanup() {
     }
     _beforeCleanupHookArray.clear();
     
+    _globalObj->setProperty("window", Value::Undefined);
+    
     mainLoopUpdate();
-
+    
     Class::cleanup();
     Object::cleanup();
     
@@ -358,6 +383,11 @@ bool ScriptEngine::start() {
 
     if (isDebuggerEnabled() && _debugGlobalObj == nullptr) {
     }
+    
+    Value consoleVal;
+    _globalObj->getProperty("console", &consoleVal);
+    
+    int a = JS_ValueRefCount(_cx, consoleVal.toObject()->_getJSObject());
 
     bool ok    = false;
     _startTime = std::chrono::steady_clock::now();
