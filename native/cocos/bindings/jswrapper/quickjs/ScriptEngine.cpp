@@ -33,6 +33,8 @@
     #include "Object.h"
     #include "Utils.h"
 
+#include <stack>
+
 namespace se {
 
 namespace {
