@@ -280,12 +280,12 @@ void Engine::setPreferredFramesPerSecond(int fps) {
 }
 
 void Engine::tick() {
-//    ++gcCounter;
-//    if (gcCounter > 60) {
-//        gcCounter = 0;
-//        se::AutoHandleScope hs;
-//        _scriptEngine->garbageCollect();
-//    }
+    ++gcCounter;
+    if (gcCounter > 60) {
+        gcCounter = 0;
+        se::AutoHandleScope hs;
+        _scriptEngine->garbageCollect();
+    }
     CC_PROFILER_BEGIN_FRAME;
     {
         CC_PROFILE(EngineTick);

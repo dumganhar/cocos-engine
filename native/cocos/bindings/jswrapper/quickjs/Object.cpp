@@ -362,7 +362,9 @@ bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) 
 bool Object::setProperty(const char *name, const Value &v) {
     JSValue jsval = JS_UNDEFINED;
     internal::seToJsValue(__cx, v, &jsval);
-    JS_DupValue(__cx, jsval);
+    if (v.isObject()) {
+        JS_DupValue(__cx, jsval);
+    }
     bool ret = 1 == JS_SetPropertyStr(__cx, _obj, name, jsval);
     return ret;
 }
@@ -374,24 +376,25 @@ bool Object::defineProperty(const char *name, JSPropGetter getter, JSPropSetter 
 }
 
 bool Object::defineOwnProperty(const char *name, const se::Value &value, bool writable, bool enumerable, bool configurable) {
-    return false;
-//    JSValue jsval = JS_UNDEFINED;
-//    internal::seToJsValue(__cx, value, &jsval);
-//
-//    int flags = 0;
-//    if (writable) {
-//        flags |= JS_PROP_WRITABLE;
-//    }
-//    if (enumerable) {
-//        flags |= JS_PROP_ENUMERABLE;
-//    }
-//    if (configurable) {
-//        flags |= JS_PROP_CONFIGURABLE;
-//    }
-//
-//    bool ret = JS_DefinePropertyValueStr(__cx, _obj, name, jsval, flags) > 0;
-//    JS_FreeValue(__cx, jsval);
-//    return ret;
+    JSValue jsval = JS_UNDEFINED;
+    internal::seToJsValue(__cx, value, &jsval);
+    if (value.isObject()) {
+        JS_DupValue(__cx, jsval);
+    }
+
+    int flags = 0;
+    if (writable) {
+        flags |= JS_PROP_WRITABLE;
+    }
+    if (enumerable) {
+        flags |= JS_PROP_ENUMERABLE;
+    }
+    if (configurable) {
+        flags |= JS_PROP_CONFIGURABLE;
+    }
+
+    bool ret = JS_DefinePropertyValueStr(__cx, _obj, name, jsval, flags) > 0;
+    return ret;
 }
 
 bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = nullptr*/) {
@@ -461,7 +464,9 @@ bool Object::setArrayElement(uint32_t index, const Value &data) {
 
     JSValue jsval = JS_UNDEFINED;
     internal::seToJsValue(__cx, data, &jsval);
-    JS_DupValue(__cx, jsval);
+    if (data.isObject()) {
+        JS_DupValue(__cx, jsval);
+    }
     JS_SetPropertyUint32(__cx, _obj, index, jsval);
     return true;
 }

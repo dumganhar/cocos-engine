@@ -123,7 +123,7 @@ SE_HOT void jsbFinalizeWrapper(JSRuntime *_rt, JSValue _thisVal, se_function_ptr
     se::Value seThisVal;
     se::internal::jsObjectToSeObject(_thisVal, &seThisVal);
     se::Object *seObj = seThisVal.isObject() ? seThisVal.toObject() : nullptr;
-    CC_LOG_INFO("jsbFinalizeWrapper, %s, seObj: %p", funcName, seObj);
+//    CC_LOG_INFO("jsbFinalizeWrapper, %s, seObj: %p", funcName, seObj);
 
     bool  ret       = false;
     if (seObj == nullptr)
