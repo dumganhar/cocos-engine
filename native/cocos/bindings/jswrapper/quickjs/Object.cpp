@@ -342,9 +342,12 @@ bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) 
 
 bool Object::setProperty(const char *name, const Value &v) {
     JSValue jsval = JS_UNDEFINED;
-    internal::seToJsValue(__cx, v, &jsval);
-    JS_DupValue(__cx, jsval);
-    return 1 == JS_SetPropertyStr(__cx, _obj, name, jsval);
+    bool isFirstGet = false;
+    internal::seToJsValue(__cx, v, &jsval, &isFirstGet);
+    bool ret = 1 == JS_SetPropertyStr(__cx, _obj, name, jsval);
+    if (!isFirstGet) {
+        JS_FreeValue(__cx, jsval);
+    }
 }
 
 bool Object::defineProperty(const char *name, JSPropGetter getter, JSPropSetter setter) {
@@ -378,8 +381,10 @@ bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = n
     assert(isFunction());
     bool ret = false;
     JSValue *jsArgs = reinterpret_cast<JSValue *>(alloca(args.size() * sizeof(JSValue)));
-    internal::seToJsArgs(__cx, args, jsArgs);
-    JSValue jsRet = JS_Call(__cx, _obj, (thisObject != nullptr ? thisObject->_getJSObject() : JS_UNDEFINED), args.size(), jsArgs);
+    bool *isFirstGetArr = reinterpret_cast<bool *>(alloca(args.size() * sizeof(bool)));
+    internal::seToJsArgs(__cx, args, jsArgs, isFirstGetArr);
+    bool isFirstGet = false;
+    JSValue jsRet = JS_Call(__cx, _obj, (thisObject != nullptr ? thisObject->_getJSObject(&isFirstGet) : JS_UNDEFINED), args.size(), jsArgs);
     if (!JS_IsException(jsRet)) {
         if (rval) {
             internal::jsToSeValue(__cx, jsRet, rval);
@@ -391,9 +396,14 @@ bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = n
     }
     
     JS_FreeValue(__cx, jsRet);
-//    for (size_t i = 0, len = args.size(); i < len; ++i) {
-//        JS_FreeValue(__cx, jsArgs[i]);
-//    }
+    if (thisObject && isFirstGet) {
+        thisObject->_jsFreeValue();
+    }
+    for (size_t i = 0, len = args.size(); i < len; ++i) {
+        if (!isFirstGetArr[i]) {
+            JS_FreeValue(__cx, jsArgs[i]);
+        }
+    }
     
     return ret;
 }
@@ -438,8 +448,12 @@ bool Object::setArrayElement(uint32_t index, const Value &data) {
         return false;
 
     JSValue jsval = JS_UNDEFINED;
-    internal::seToJsValue(__cx, data, &jsval);
+    bool isFirstGet = false;
+    internal::seToJsValue(__cx, data, &jsval, &isFirstGet);
     JS_SetPropertyUint32(__cx, _obj, index, jsval);
+    if (!isFirstGet) {
+        JS_FreeValue(__cx, jsval);
+    }
     return true;
 }
 
@@ -678,8 +692,19 @@ void Object::cleanup() {
     });
 }
 
-JSValue Object::_getJSObject() const {
+JSValue Object::_getJSObject(bool *isFirstGet) const {
+    *isFirstGet = _firstGet;
+    if (_firstGet) {
+        const_cast<Object*>(this)->_firstGet = false;
+    }
+    else {
+        JS_DupValue(__cx, _obj);
+    }
     return _obj;
+}
+
+void Object::_jsFreeValue() {
+    //JS_FreeValue(__cx, _obj);
 }
 
 void Object::root() {

@@ -107,12 +107,16 @@ bool Class::install() {
     JS_NewClass(JS_GetRuntime(__cx), _classId, &_classOps);
 
     JSValue protoObj = JS_UNDEFINED;
+    bool isFirstGet = false;
     if (_parentProto != nullptr) {
-        protoObj = JS_NewObjectProtoClass(__cx, _parentProto->_getJSObject(), _classId);
+        protoObj = JS_NewObjectProtoClass(__cx, _parentProto->_getJSObject(&isFirstGet), _classId);
+        if (!isFirstGet) {
+            _parentProto->_jsFreeValue();
+        }
     } else {
         protoObj = JS_NewObject(__cx);
     }
-
+    
     JS_SetPropertyFunctionList(__cx, protoObj, _propertiesOrFuncs.data(), _propertiesOrFuncs.size());
 
     JSValue ctorVal = JS_NewCFunction2(__cx, _ctor, _name, 0, JS_CFUNC_constructor, 0);
@@ -121,7 +125,10 @@ bool Class::install() {
 
     JS_SetPropertyFunctionList(__cx, ctorVal, _staticPropertiesOrStaticFuncs.data(), _staticPropertiesOrStaticFuncs.size());
 
-    JS_SetPropertyStr(__cx, _parent->_getJSObject(), _name, ctorVal);
+    JS_SetPropertyStr(__cx, _parent->_getJSObject(&isFirstGet), _name, ctorVal);
+    if (!isFirstGet) {
+        _parent->_jsFreeValue();
+    }
 
     _proto = Object::_createJSObject(this, protoObj);
     _proto->root();
@@ -182,13 +189,18 @@ bool Class::defineFinalizeFunction(JSClassFinalizer func) {
 
 JSValue Class::_createJSObjectWithClass(Class *cls) {
     JSValue protoVal;
+    bool isFirstGet = false;
     if (cls->_proto != nullptr) {
-        protoVal = cls->_proto->_getJSObject();
+        protoVal = cls->_proto->_getJSObject(&isFirstGet);
 //        JS_DupValue(__cx, protoVal);
     } else {
         protoVal = JS_UNDEFINED;
     }
-    return JS_NewObjectProtoClass(__cx, protoVal, cls->_classId);
+    auto ret = JS_NewObjectProtoClass(__cx, protoVal, cls->_classId);
+    if (cls->_proto && isFirstGet) {
+        cls->_proto->_jsFreeValue();
+    }
+    return ret;
 }
 
 void Class::setContext(JSContext *cx) {

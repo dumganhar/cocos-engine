@@ -62,17 +62,18 @@ void jsToSeArgs(JSContext *cx, int argc, JSValueConst *argv, ValueArray &outArr)
     }
 }
 
-void seToJsArgs(JSContext *cx, const ValueArray &args, JSValue *outArr) {
+void seToJsArgs(JSContext *cx, const ValueArray &args, JSValue *outArr, bool* isFirstGetArr) {
     uint32_t i = 0;
     for (const auto &arg : args) {
         JSValue v;
-        seToJsValue(cx, arg, &v);
+        seToJsValue(cx, arg, &v, &isFirstGetArr[i]);
         outArr[i] = v;
         ++i;
     }
 }
 
-void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal) {
+void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal, bool *isFirstGet) {
+    *isFirstGet = true;
     switch (arg.getType()) {
         case Value::Type::Number: {
             *outVal = JS_NewFloat64(cx, arg.toDouble());
@@ -87,7 +88,7 @@ void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal) {
         } break;
 
         case Value::Type::Object: {
-            *outVal = arg.toObject()->_getJSObject();
+            *outVal = arg.toObject()->_getJSObject(isFirstGet);
 //           JS_DupValue(cx, *outVal);
         } break;
 
@@ -170,7 +171,7 @@ void jsObjectToSeObject(JSValueConst jsval, Value *v) {
         v->setObject(seObj, true);
         seObj->decRef();
     } else {
-        v->setObject(seObj, false);
+        v->setObject(seObj, true);
     }
 }
 
