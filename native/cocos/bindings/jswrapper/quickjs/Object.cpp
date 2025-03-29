@@ -109,8 +109,14 @@ Object::~Object() {
     
     if (!_cls) {
         if (_isCreateInCpp) {
+            _isCreateInCpp = false;
             int ref = JS_ValueRefCount(__cx, _obj);
             assert(ref > 0);
+            
+//            auto str = toString();
+            
+//            printf("Free ( %s ) %p\n", str.c_str(), this);
+            
             JS_FreeValue(__cx, _obj);
         }
     }
@@ -185,6 +191,9 @@ Object *Object::createArrayObject(size_t length) {
 }
 
 Object *Object::createArrayBufferObject(const void *data, size_t byteLength) {
+    if (byteLength == 11036) {
+        printf("cjh found ab: %d\n", (int)byteLength);
+    }
     Object *obj   = nullptr;
     JSValue jsobj = JS_NewArrayBufferCopy(__cx, reinterpret_cast<const uint8_t *>(data), byteLength);
     if (!JS_IsException(jsobj)) {
@@ -234,7 +243,7 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
         SE_LOGE("Don't pass se::Object::TypedArrayType::NONE to createTypedArray API!");
         return nullptr;
     }
-
+    
     JSTypedArrayEnum classId = JS_TYPED_ARRAY_UINT8C;
     int bytesPerElement = 0;
     
@@ -345,6 +354,7 @@ bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) 
     JS_FreeAtom(__cx, atom);
    
     internal::jsToSeValue(__cx, jsval, data);
+    
     JS_FreeValue(__cx, jsval);
     return ret;
 }
@@ -352,8 +362,18 @@ bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) 
 bool Object::setProperty(const char *name, const Value &v) {
     JSValue jsval = JS_UNDEFINED;
     internal::seToJsValue(__cx, v, &jsval);
+    int ref = 0;
+    if (0 == strcmp(name, "jsb")) {
+        ref = JS_ValueRefCount(__cx, jsval);
+    }
     JS_DupValue(__cx, jsval);
+    if (0 == strcmp(name, "jsb")) {
+        ref = JS_ValueRefCount(__cx, jsval);
+    }
     bool ret = 1 == JS_SetPropertyStr(__cx, _obj, name, jsval);
+    if (0 == strcmp(name, "jsb")) {
+        ref = JS_ValueRefCount(__cx, jsval);
+    }
     return ret;
 }
 
@@ -708,6 +728,11 @@ void Object::_unrootAll() {
     while (isRooted()) {
         unroot();
     }
+    
+    if (!_cls && _isCreateInCpp) {
+        JS_FreeValue(__cx, _obj);
+        _isCreateInCpp = false;
+    }
 }
 
 bool Object::isRooted() const {
@@ -762,9 +787,17 @@ bool Object::detachObject(Object *obj) {
 
 std::string Object::toString() const {
     std::string ret;
+//    if (isFunction()) {
+//        ret = "[object Function]";
+//    } else if (isArray()) {
+//        ret = "[object Array]";
+//    } else if (isTypedArray()) {
+//        ret = "[object TypedArray]";
+//    }
     if (isFunction() || isArray() || isTypedArray()) {
         internal::forceConvertJsValueToStdString(__cx, _obj, &ret);
-    } else if (isArrayBuffer()) {
+    }
+    else if (isArrayBuffer()) {
         ret = "[object ArrayBuffer]";
     } else {
         ret = "[object Object]";

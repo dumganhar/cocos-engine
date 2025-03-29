@@ -55,6 +55,7 @@ private:
     static AutoHandleScope* getCurrent();
     
     std::vector<JSValue> _jsValuesInScope;
+    bool _inCleanup{false};
     
     friend class Object;
     friend class Class;

@@ -225,6 +225,7 @@ AutoHandleScope::~AutoHandleScope() {
 }
 
 void AutoHandleScope::push(JSValue v) {
+    if (_inCleanup) return;
     JS_DupValue(ScriptEngine::getInstance()->_getContext(), v);
     _jsValuesInScope.emplace_back(v);
 }
@@ -317,8 +318,6 @@ bool ScriptEngine::init() {
 
     JS_FreeValue(_cx, globalObj);
     globalObj = JS_UNDEFINED;
-    
-    
 
     _isValid = true;
 
@@ -345,24 +344,44 @@ void ScriptEngine::cleanup() {
     }
     _beforeCleanupHookArray.clear();
     
-    _globalObj->setProperty("window", Value::Undefined);
-    _globalObj->setProperty("jsb", Value::Undefined);
+//    _globalObj->setProperty("window", Value::Undefined);
+//    _globalObj->setProperty("jsb", Value::Undefined);
 
     mainLoopUpdate();
-    delete _globalHandleScope;
-    _globalHandleScope = nullptr;
+    
+    
+    auto jsobj = _globalObj->_getJSObject();
+    int ref = JS_ValueRefCount(_cx, _globalObj->_getJSObject());
     
     Class::cleanup();
+    ref = JS_ValueRefCount(_cx, _globalObj->_getJSObject());
     Object::cleanup();
+    ref = JS_ValueRefCount(_cx, _globalObj->_getJSObject());
     
-    SAFE_DEC_REF(_globalObj);
+    _globalObj->unroot();
+    ref = JS_ValueRefCount(_cx, _globalObj->_getJSObject());
+    
+//    JS_FreeValue(_cx, jsobj);
+//    JS_FreeValue(_cx, jsobj);
+//    JS_FreeValue(_cx, jsobj);
+//    JS_FreeValue(_cx, jsobj);
+    
+    _globalObj->decRef();
+    _globalObj = nullptr;
+    
+    ref = JS_ValueRefCount(_cx, jsobj);
+    
+    _globalHandleScope->_inCleanup = true;
     
     JS_FreeContext(_cx);
     JS_FreeRuntime(_rt);
+    
+    _globalHandleScope->_jsValuesInScope.clear();
+    delete _globalHandleScope;
+    _globalHandleScope = nullptr;
 
     _rt        = nullptr;
     _cx        = nullptr;
-    _globalObj = nullptr;
     _isValid   = false;
 
     _registerCallbackArray.clear();
@@ -421,10 +440,7 @@ bool ScriptEngine::start() {
 
     if (isDebuggerEnabled() && _debugGlobalObj == nullptr) {
     }
-    
-    Value consoleVal;
-    _globalObj->getProperty("console", &consoleVal);
-    
+       
     bool ok    = false;
     _startTime = std::chrono::steady_clock::now();
 

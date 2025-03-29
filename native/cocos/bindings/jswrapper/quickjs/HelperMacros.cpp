@@ -122,17 +122,14 @@ SE_HOT void jsbFinalizeWrapper(JSRuntime *_rt, JSValue _thisVal, se_function_ptr
     
     se::Value seThisVal;
     se::internal::jsObjectToSeObject(_thisVal, &seThisVal);
-    se::Object *seObj = seThisVal.toObject();
+    se::Object *seObj = seThisVal.isObject() ? seThisVal.toObject() : nullptr;
+    CC_LOG_INFO("jsbFinalizeWrapper, %s, seObj: %p", funcName, seObj);
 
-    void *nativeObj = seObj->getPrivateData();
-    
-    CC_LOG_INFO("jsbFinalizeWrapper, %s, seObj: %p, nativeObj: %p", funcName, seObj, nativeObj);
-    if (0 == strcmp("js_delete_cc_scene_SkyboxInfo", funcName)) {
-        int a = 0;
-    }
     bool  ret       = false;
     if (seObj == nullptr)
         return;
+    
+    void *nativeObj = seObj->getPrivateData();
     se::State state(seObj);
     ret = func(state);
     if (!ret) {
@@ -141,7 +138,10 @@ SE_HOT void jsbFinalizeWrapper(JSRuntime *_rt, JSValue _thisVal, se_function_ptr
     if (seObj->isClearMappingInFinalizer() && nativeObj != nullptr) {       
         se::NativePtrToObjectMap::erase(nativeObj, seObj);
     }
-    seObj->decRef();
+    
+    if (nativeObj) {
+        seObj->decRef();
+    }
 }
 
 SE_HOT JSValue jsbConstructorWrapper(JSContext *_ctx, JSValueConst new_target, int argc, JSValueConst *argv,

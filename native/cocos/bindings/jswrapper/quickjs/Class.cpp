@@ -121,7 +121,7 @@ bool Class::install() {
 
     JS_SetPropertyFunctionList(__cx, ctorVal, _staticPropertiesOrStaticFuncs.data(), _staticPropertiesOrStaticFuncs.size());
 
-    JS_SetPropertyStr(__cx, JS_DupValue(__cx, _parent->_getJSObject()), _name, ctorVal);
+    JS_SetPropertyStr(__cx, _parent->_getJSObject(), _name, ctorVal);
 
     _proto = Object::_createJSObject(this, protoObj);
     _proto->root();
