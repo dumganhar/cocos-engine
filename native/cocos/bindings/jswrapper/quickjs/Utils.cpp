@@ -62,18 +62,17 @@ void jsToSeArgs(JSContext *cx, int argc, JSValueConst *argv, ValueArray &outArr)
     }
 }
 
-void seToJsArgs(JSContext *cx, const ValueArray &args, JSValue *outArr, bool* isFirstGetArr) {
+void seToJsArgs(JSContext *cx, const ValueArray &args, JSValue *outArr) {
     uint32_t i = 0;
     for (const auto &arg : args) {
         JSValue v;
-        seToJsValue(cx, arg, &v, &isFirstGetArr[i]);
+        seToJsValue(cx, arg, &v);
         outArr[i] = v;
         ++i;
     }
 }
 
-void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal, bool *isFirstGet) {
-    *isFirstGet = true;
+void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal) {
     switch (arg.getType()) {
         case Value::Type::Number: {
             *outVal = JS_NewFloat64(cx, arg.toDouble());
@@ -88,8 +87,7 @@ void seToJsValue(JSContext *cx, const Value &arg, JSValue *outVal, bool *isFirst
         } break;
 
         case Value::Type::Object: {
-            *outVal = arg.toObject()->_getJSObject(isFirstGet);
-//           JS_DupValue(cx, *outVal);
+            *outVal = arg.toObject()->_getJSObject();
         } break;
 
         case Value::Type::Null: {
@@ -165,6 +163,10 @@ void clearPrivate(JSValue obj) {
 }
 
 void jsObjectToSeObject(JSValueConst jsval, Value *v) {
+    if (!JS_IsObject(jsval)) {
+        v->setUndefined();
+        return;
+    }
     Object *seObj = static_cast<Object *>(getPrivate(jsval));
     if (seObj == nullptr) {
         seObj = Object::_createJSObject(nullptr, jsval);

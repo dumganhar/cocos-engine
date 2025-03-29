@@ -211,8 +211,6 @@ void test() {
 
 static std::stack<AutoHandleScope*> __scopeStack;
 
-AutoHandleScope __globalScope;
-
 AutoHandleScope::AutoHandleScope() {
     __scopeStack.push(this);
     _jsValuesInScope.reserve(1024);
@@ -222,8 +220,6 @@ AutoHandleScope::~AutoHandleScope() {
     for (auto &e : _jsValuesInScope) {
         JS_FreeValue(ScriptEngine::getInstance()->_getContext(), e);
     }
-    
-    ScriptEngine::getInstance()->executePendingJobs();
     
     __scopeStack.pop();
 }
@@ -237,7 +233,7 @@ AutoHandleScope* AutoHandleScope::getCurrent() {
     if (!__scopeStack.empty()) {
         return __scopeStack.top();
     }
-    return &__globalScope;
+    return nullptr;
 }
 
 ScriptEngine *ScriptEngine::getInstance() {
@@ -256,6 +252,8 @@ bool ScriptEngine::init() {
     cleanup();
     SE_LOGD("Initializing QuickJS, version: %s\n", "2021-03-27");
     ++_vmId;
+    
+    _globalHandleScope = new AutoHandleScope();
 
     for (const auto &hook : _beforeInitHookArray) {
         hook();
@@ -348,8 +346,11 @@ void ScriptEngine::cleanup() {
     _beforeCleanupHookArray.clear();
     
     _globalObj->setProperty("window", Value::Undefined);
-    
+    _globalObj->setProperty("jsb", Value::Undefined);
+
     mainLoopUpdate();
+    delete _globalHandleScope;
+    _globalHandleScope = nullptr;
     
     Class::cleanup();
     Object::cleanup();
@@ -544,15 +545,13 @@ void ScriptEngine::executePendingJobs() {
 void ScriptEngine::mainLoopUpdate() {
     executePendingJobs();
     
-    auto& scope = __globalScope;
-    if (!scope._jsValuesInScope.empty()) {
-        for (auto &e : scope._jsValuesInScope) {
+    auto* scope = AutoHandleScope::getCurrent();
+    if (scope && !scope->_jsValuesInScope.empty()) {
+        for (auto &e : scope->_jsValuesInScope) {
             JS_FreeValue(_cx, e);
         }
-        scope._jsValuesInScope.clear();
+        scope->_jsValuesInScope.clear();
     }
-    
-   // JS_RunGC(_rt);
 }
 
 std::string ScriptEngine::getCurrentStackTrace() const {

@@ -324,6 +324,8 @@ private:
 
     Object *_globalObj{nullptr};
     Object *_debugGlobalObj{nullptr};
+    
+    AutoHandleScope *_globalHandleScope{nullptr};
 
     FileOperationDelegate _fileOperationDelegate;
 

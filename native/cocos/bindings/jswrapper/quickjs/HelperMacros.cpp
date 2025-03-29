@@ -98,18 +98,22 @@ SE_HOT JSValue jsbFunctionWrapper(JSContext *_ctx, JSValueConst _thisVal, int ar
 
     se::Value seThisVal;
     se::internal::jsObjectToSeObject(_thisVal, &seThisVal);
-    se::Object *thisObject = seThisVal.toObject();
+    se::Object *thisObject = seThisVal.isObject() ? seThisVal.toObject() : nullptr;
+    
+    if (0 == strcmp(funcName, "JSBCore_os")) {
+        int a = 0;
+    }
 
     se::State state(thisObject, args);
     bool      ret = func(state);
     if (!ret) {
         SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
     } else {
-        bool isFirstGet = false;
-        se::internal::seToJsValue(_ctx, state.rval(), &_jsRet, &isFirstGet);
-        if (!isFirstGet && state.rval().isObject()) {
-            state.rval().toObject()->_jsFreeValue();
-        }
+        se::internal::seToJsValue(_ctx, state.rval(), &_jsRet);
+    }
+    
+    if (state.rval().isObject()) {
+        JS_DupValue(_ctx, _jsRet);
     }
     return _jsRet;
 }
@@ -178,6 +182,8 @@ SE_HOT JSValue jsbConstructorWrapper(JSContext *_ctx, JSValueConst new_target, i
         SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
     }
     
+    JS_DupValue(_ctx, jsobj);
+    
     return jsobj;
 }
 
@@ -195,11 +201,11 @@ SE_HOT JSValue jsbGetterWrapper(JSContext *_ctx, JSValueConst _thizObj,
     if (!ret) {
         SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", funcName, __FILE__, __LINE__);
     } else {
-        bool isFirstGet = false;
-        se::internal::seToJsValue(_ctx, state.rval(), &_jsRet, &isFirstGet);
-        if (!isFirstGet && state.rval().isObject()) {
-            state.rval().toObject()->_jsFreeValue();
-        }
+        se::internal::seToJsValue(_ctx, state.rval(), &_jsRet);
+    }
+    
+    if (state.rval().isObject()) {
+        JS_DupValue(_ctx, _jsRet);
     }
     return _jsRet;
 }

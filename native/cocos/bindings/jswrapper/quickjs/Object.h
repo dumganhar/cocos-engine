@@ -502,11 +502,9 @@ public:
     // Private API used in wrapper
     static Object *_createJSObject(Class *cls, JSValue obj);
     void           _setFinalizeCallback(JSClassFinalizer finalizeCb);
-    JSValue        _getJSObject(bool *isFirstGet) const;
+    JSValue        _getJSObject() const;
     Class *        _getClass() const { return _cls; }
-    void _freeValue();
-    void _jsFreeValue();
-    bool _isFirstGet() const { return _firstGet; }
+    void _unrootAll();
     
     //
 
@@ -533,7 +531,7 @@ private:
     uint32_t _currentVMId{0};
 
     bool _clearMappingInFinalizer{true};
-    bool _firstGet{true};
+    bool _isCreateInCpp{false};
 
     friend class ScriptEngine;
     friend class Class;

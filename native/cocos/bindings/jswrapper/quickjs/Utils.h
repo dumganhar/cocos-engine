@@ -43,8 +43,8 @@ void forceConvertJsValueToStdString(JSContext *cx, JSValue jsval, std::string *r
 
 void jsToSeArgs(JSContext *cx, int argc, JSValueConst *argv, ValueArray &outArr);
 void jsToSeValue(JSContext *cx, JSValueConst jsval, Value *v);
-void seToJsArgs(JSContext *cx, const ValueArray &args, JSValue *outArr, bool* isFirstGetArr);
-void seToJsValue(JSContext *cx, const Value &v, JSValue *outVal, bool *isFirstGet);
+void seToJsArgs(JSContext *cx, const ValueArray &args, JSValue *outArr);
+void seToJsValue(JSContext *cx, const Value &v, JSValue *outVal);
 
 bool  hasPrivate(JSValue obj);
 void *getPrivate(JSValue obj);

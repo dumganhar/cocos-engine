@@ -107,6 +107,14 @@ Object::~Object() {
         unroot();
     }
     
+    if (!_cls) {
+        if (_isCreateInCpp) {
+            int ref = JS_ValueRefCount(__cx, _obj);
+            assert(ref > 0);
+            JS_FreeValue(__cx, _obj);
+        }
+    }
+    
     delete _privateObject;
     _privateObject = nullptr;
 
@@ -123,13 +131,6 @@ bool Object::init(Class *cls, JSValue obj) {
     assert(__objectMap.find(this) == __objectMap.end());
     __objectMap.emplace(this, nullptr);
     
-    if (_cls) {
-//        printf("Create binding object: %p, %s\n", this, _cls->getName());
-        if (0 == strcmp(_cls->getName(), "ShadowsInfo")) {
-            int a = 0;
-        }
-    }
-
     AutoHandleScope::getCurrent()->push(_obj);
 
     return true;
@@ -147,12 +148,14 @@ Object *Object::_createJSObject(Class *cls, JSValue obj) {
 
 Object *Object::createPlainObject() {
     Object *obj = Object::_createJSObject(nullptr, JS_NewObject(__cx));
+    obj->_isCreateInCpp = true;
     return obj;
 }
 
 Object *Object::createObjectWithClass(Class *cls) {
     JSValue jsobj = Class::_createJSObjectWithClass(cls);
     Object *obj   = Object::_createJSObject(cls, jsobj);
+    obj->_isCreateInCpp = true;
     return obj;
 }
 
@@ -175,9 +178,9 @@ Object *Object::createArrayObject(size_t length) {
     JSValue jsobj = JS_NewArray(__cx);
     if (length > 0) {
         JS_SetLength(__cx, jsobj, length);
-        
     }
     Object *obj = Object::_createJSObject(nullptr, jsobj);
+    obj->_isCreateInCpp = true;
     return obj;
 }
 
@@ -186,6 +189,7 @@ Object *Object::createArrayBufferObject(const void *data, size_t byteLength) {
     JSValue jsobj = JS_NewArrayBufferCopy(__cx, reinterpret_cast<const uint8_t *>(data), byteLength);
     if (!JS_IsException(jsobj)) {
         obj = Object::_createJSObject(nullptr, jsobj);
+        obj->_isCreateInCpp = true;
     } else {
         ScriptEngine::getInstance()->clearException();
     }
@@ -218,6 +222,7 @@ Object *Object::createExternalArrayBufferObject(void *contents, size_t byteLengt
 
     if (!JS_IsException(jsobj)) {
         obj = Object::_createJSObject(nullptr, jsobj);
+        obj->_isCreateInCpp = true;
     } else {
         ScriptEngine::getInstance()->clearException();
     }
@@ -253,6 +258,7 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
         }
     }
     auto *ret = Object::_createJSObject(nullptr, typedArray);
+    ret->_isCreateInCpp = true;
     JS_FreeValue(__cx, ab);
     return ret;
 }
@@ -288,7 +294,9 @@ Object *Object::createTypedArrayWithBuffer(TypedArrayType type, const Object *ob
         JS_NewInt64(__cx, byteLength / bytesPerElement)
     };
     JSValue typedArray = JS_NewTypedArray(__cx, 3, argv, classId);
-    return Object::_createJSObject(nullptr, typedArray);
+    auto* ret = Object::_createJSObject(nullptr, typedArray);
+    ret->_isCreateInCpp = true;
+    return ret;
 }
 
 Object *Object::createUint8TypedArray(uint8_t *data, size_t dataCount) {
@@ -300,6 +308,7 @@ Object *Object::createJSONObject(const std::string &jsonStr) {
     JSValue jsval = JS_ParseJSON(__cx, jsonStr.c_str(), jsonStr.length(), "json_file");
     if (!JS_IsException(jsval)) {
         obj = Object::_createJSObject(nullptr, jsval);
+        obj->_isCreateInCpp = true;
     } else {
         ScriptEngine::getInstance()->clearException();
     }
@@ -342,12 +351,10 @@ bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) 
 
 bool Object::setProperty(const char *name, const Value &v) {
     JSValue jsval = JS_UNDEFINED;
-    bool isFirstGet = false;
-    internal::seToJsValue(__cx, v, &jsval, &isFirstGet);
+    internal::seToJsValue(__cx, v, &jsval);
+    JS_DupValue(__cx, jsval);
     bool ret = 1 == JS_SetPropertyStr(__cx, _obj, name, jsval);
-    if (!isFirstGet) {
-        JS_FreeValue(__cx, jsval);
-    }
+    return ret;
 }
 
 bool Object::defineProperty(const char *name, JSPropGetter getter, JSPropSetter setter) {
@@ -381,10 +388,8 @@ bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = n
     assert(isFunction());
     bool ret = false;
     JSValue *jsArgs = reinterpret_cast<JSValue *>(alloca(args.size() * sizeof(JSValue)));
-    bool *isFirstGetArr = reinterpret_cast<bool *>(alloca(args.size() * sizeof(bool)));
-    internal::seToJsArgs(__cx, args, jsArgs, isFirstGetArr);
-    bool isFirstGet = false;
-    JSValue jsRet = JS_Call(__cx, _obj, (thisObject != nullptr ? thisObject->_getJSObject(&isFirstGet) : JS_UNDEFINED), args.size(), jsArgs);
+    internal::seToJsArgs(__cx, args, jsArgs);
+    JSValue jsRet = JS_Call(__cx, _obj, (thisObject != nullptr ? thisObject->_getJSObject() : JS_UNDEFINED), args.size(), jsArgs);
     if (!JS_IsException(jsRet)) {
         if (rval) {
             internal::jsToSeValue(__cx, jsRet, rval);
@@ -396,15 +401,7 @@ bool Object::call(const ValueArray &args, Object *thisObject, Value *rval /* = n
     }
     
     JS_FreeValue(__cx, jsRet);
-    if (thisObject && isFirstGet) {
-        thisObject->_jsFreeValue();
-    }
-    for (size_t i = 0, len = args.size(); i < len; ++i) {
-        if (!isFirstGetArr[i]) {
-            JS_FreeValue(__cx, jsArgs[i]);
-        }
-    }
-    
+   
     return ret;
 }
 
@@ -448,12 +445,9 @@ bool Object::setArrayElement(uint32_t index, const Value &data) {
         return false;
 
     JSValue jsval = JS_UNDEFINED;
-    bool isFirstGet = false;
-    internal::seToJsValue(__cx, data, &jsval, &isFirstGet);
+    internal::seToJsValue(__cx, data, &jsval);
+    JS_DupValue(__cx, jsval);
     JS_SetPropertyUint32(__cx, _obj, index, jsval);
-    if (!isFirstGet) {
-        JS_FreeValue(__cx, jsval);
-    }
     return true;
 }
 
@@ -623,6 +617,8 @@ void Object::setPrivateObject(PrivateObjectBase *data) {
     internal::setPrivate(_obj, this);
     _privateObject = data;
     
+    JS_FreeValue(__cx, _obj);
+    
     if (data != nullptr) {
         _privateData = data->getRaw();
         NativePtrToObjectMap::emplace(_privateData, this);
@@ -658,7 +654,7 @@ void Object::tryFreeValues() {
     
     for (const auto &e : objectMapCopied) {
         if (__objectMap.find(e.first) != __objectMap.end()) {
-            e.first->_freeValue();
+            e.first->_unrootAll();
         } else {
             printf("Object %p was freed\n", e.first);
         }
@@ -692,19 +688,8 @@ void Object::cleanup() {
     });
 }
 
-JSValue Object::_getJSObject(bool *isFirstGet) const {
-    *isFirstGet = _firstGet;
-    if (_firstGet) {
-        const_cast<Object*>(this)->_firstGet = false;
-    }
-    else {
-        JS_DupValue(__cx, _obj);
-    }
+JSValue Object::_getJSObject() const {
     return _obj;
-}
-
-void Object::_jsFreeValue() {
-    //JS_FreeValue(__cx, _obj);
 }
 
 void Object::root() {
@@ -719,20 +704,10 @@ void Object::unroot() {
     }
 }
 
-void Object::_freeValue() {
+void Object::_unrootAll() {
     while (isRooted()) {
         unroot();
     }
-    
-//    if (JS_VALUE_HAS_REF_COUNT(_obj)) {
-//        JSRefCountHeader *p = (JSRefCountHeader *)JS_VALUE_GET_PTR(_obj);
-//        if (p->ref_count == 1) {
-//            printf("Free value: %p, cls: %s, ptr: %p\n", this, _cls ? _cls->getName() : "[no name]", _obj.u.ptr);
-//            JS_FreeValue(__cx, _obj);
-//        }
-//    }
-    
-//    JS_FreeValue(__cx, _obj);
 }
 
 bool Object::isRooted() const {
