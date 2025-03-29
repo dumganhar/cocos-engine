@@ -133,13 +133,13 @@ bool Class::install() {
 }
 
 bool Class::defineFunction(const char *name, JSCFunction *func) {
-    JSCFunctionListEntry cb = JS_CFUNC_DEF(name, 0, func);
+    JSCFunctionListEntry cb = SE_JS_CFUNC_DEF(name, 0, func);
     _propertiesOrFuncs.emplace_back(cb);
     return true;
 }
 
 bool Class::defineProperty(const char *name, JSPropGetter getter, JSPropSetter setter) {
-    JSCFunctionListEntry cb = JS_CGETSET_DEF(name, getter, setter);
+    JSCFunctionListEntry cb = SE_JS_CGETSET_DEF(name, getter, setter);
     _propertiesOrFuncs.emplace_back(cb);
     return true;
 }
@@ -153,13 +153,13 @@ bool Class::defineProperty(const std::initializer_list<const char *> &names, JSP
 }
 
 bool Class::defineStaticFunction(const char *name, JSCFunction *func) {
-    JSCFunctionListEntry cb = JS_CFUNC_DEF(name, 0, func);
+    JSCFunctionListEntry cb = SE_JS_CFUNC_DEF(name, 0, func);
     _staticPropertiesOrStaticFuncs.emplace_back(cb);
     return true;
 }
 
 bool Class::defineStaticProperty(const char *name, JSPropGetter getter, JSPropSetter setter) {
-    JSCFunctionListEntry cb = JS_CGETSET_DEF(name, getter, setter);
+    JSCFunctionListEntry cb = SE_JS_CGETSET_DEF(name, getter, setter);
     _staticPropertiesOrStaticFuncs.emplace_back(cb);
     return true;
 }
@@ -167,7 +167,7 @@ bool Class::defineStaticProperty(const char *name, JSPropGetter getter, JSPropSe
 bool Class::defineStaticProperty(const char *name, const Value &value, PropertyAttribute attribute /* = PropertyAttribute::NONE */) {
 //    JSValue jsVal;
 //    internal::seToJsValue(_ctx, value, &jsVal);
-//    JSCFunctionListEntry cb = JS_CGETSET_DEF(name, [](JSContext *ctx, JSValueConst this_val) -> JSValue {
+//    JSCFunctionListEntry cb = SE_JS_CGETSET_DEF(name, [](JSContext *ctx, JSValueConst this_val) -> JSValue {
 //        //TODO:
 //        return JS_UNDEFINED;
 //    }, nullptr);

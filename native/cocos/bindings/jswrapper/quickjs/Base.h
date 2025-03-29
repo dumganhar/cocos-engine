@@ -30,6 +30,10 @@
 using JSPropGetter = JSValue (*)(JSContext *ctx, JSValueConst this_val);
 using JSPropSetter = JSValue (*)(JSContext *ctx, JSValueConst this_val, JSValueConst val);
 
+#define SE_JS_CFUNC_DEF(name, length, func1) { name, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE | JS_PROP_ENUMERABLE, JS_DEF_CFUNC, 0, .u = { .func = { length, JS_CFUNC_generic, { .generic = func1 } } } }
+
+#define SE_JS_CGETSET_DEF(name, fgetter, fsetter) { name, JS_PROP_CONFIGURABLE | JS_PROP_ENUMERABLE, JS_DEF_CGETSET, 0, .u = { .getset = { .get = { .getter = fgetter }, .set = { .setter = fsetter } } } }
+
 #include "../PrivateObject.h"
 #include "HelperMacros.h"
 

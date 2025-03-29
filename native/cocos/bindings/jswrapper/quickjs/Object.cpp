@@ -370,7 +370,7 @@ bool Object::setProperty(const char *name, const Value &v) {
 }
 
 bool Object::defineProperty(const char *name, JSPropGetter getter, JSPropSetter setter) {
-    JSCFunctionListEntry entry = JS_CGETSET_DEF(name, getter, setter);
+    JSCFunctionListEntry entry = SE_JS_CGETSET_DEF(name, getter, setter);
     JS_SetPropertyFunctionList(__cx, _obj, &entry, 1);
     return true;
 }
