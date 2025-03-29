@@ -275,10 +275,10 @@ bool ScriptEngine::init() {
 
     JS_SetMaxStackSize(_rt, 0xFFFFFFFF);
 
-//    JS_AddIntrinsicBigFloat(_cx);
-//    JS_AddIntrinsicBigDecimal(_cx);
-//    JS_AddIntrinsicOperators(_cx);
-//    JS_EnableBignumExt(_cx, 1);
+    JS_AddIntrinsicBigFloat(_cx);
+    JS_AddIntrinsicBigDecimal(_cx);
+    JS_AddIntrinsicOperators(_cx);
+    JS_EnableBignumExt(_cx, 1);
 
     NativePtrToObjectMap::init();
 
