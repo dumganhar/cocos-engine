@@ -110,8 +110,8 @@ Object::~Object() {
     if (!_cls) {
         if (_isCreateInCpp) {
             _isCreateInCpp = false;
-            int ref = JS_ValueRefCount(__cx, _obj);
-            assert(ref > 0);
+//            int ref = JS_ValueRefCount(__cx, _obj);
+//            assert(ref > 0);
             
 //            auto str = toString();
             
@@ -183,7 +183,10 @@ Object *Object::getObjectWithPtr(void *ptr) {
 Object *Object::createArrayObject(size_t length) {
     JSValue jsobj = JS_NewArray(__cx);
     if (length > 0) {
-        JS_SetLength(__cx, jsobj, length);
+//        JS_SetLength(__cx, jsobj, length);
+        for (size_t i = 0; i < length; ++i) {
+            JS_SetPropertyUint32(__cx, jsobj, i, JS_UNDEFINED);
+        }
     }
     Object *obj = Object::_createJSObject(nullptr, jsobj);
     obj->_isCreateInCpp = true;
@@ -191,9 +194,6 @@ Object *Object::createArrayObject(size_t length) {
 }
 
 Object *Object::createArrayBufferObject(const void *data, size_t byteLength) {
-    if (byteLength == 11036) {
-        printf("cjh found ab: %d\n", (int)byteLength);
-    }
     Object *obj   = nullptr;
     JSValue jsobj = JS_NewArrayBufferCopy(__cx, reinterpret_cast<const uint8_t *>(data), byteLength);
     if (!JS_IsException(jsobj)) {
@@ -362,18 +362,8 @@ bool Object::getProperty(const char *name, Value *data, bool cachePropertyName) 
 bool Object::setProperty(const char *name, const Value &v) {
     JSValue jsval = JS_UNDEFINED;
     internal::seToJsValue(__cx, v, &jsval);
-    int ref = 0;
-    if (0 == strcmp(name, "jsb")) {
-        ref = JS_ValueRefCount(__cx, jsval);
-    }
     JS_DupValue(__cx, jsval);
-    if (0 == strcmp(name, "jsb")) {
-        ref = JS_ValueRefCount(__cx, jsval);
-    }
     bool ret = 1 == JS_SetPropertyStr(__cx, _obj, name, jsval);
-    if (0 == strcmp(name, "jsb")) {
-        ref = JS_ValueRefCount(__cx, jsval);
-    }
     return ret;
 }
 
@@ -436,10 +426,15 @@ bool Object::getArrayLength(uint32_t *length) const {
     if (!isArray())
         return false;
 
-    int64_t length64 = 0;
-    int ret = JS_GetLength(__cx, _obj, &length64);
-    *length = length64;
-    return ret == 0;
+//    int64_t length64 = 0;
+//    int ret = JS_GetLength(__cx, _obj, &length64);
+//    *length = length64;
+//    return ret == 0;
+    JSValue lengthVal = JS_GetPropertyStr(__cx, _obj, "length");
+    assert(JS_IsNumber(lengthVal));
+    bool ret = 0 == JS_ToUint32(__cx, length, lengthVal);
+    JS_FreeValue(__cx, lengthVal);
+    return ret;
 }
 
 bool Object::getArrayElement(uint32_t index, Value *data) const {

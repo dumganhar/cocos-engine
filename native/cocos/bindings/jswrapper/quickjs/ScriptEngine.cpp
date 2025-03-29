@@ -152,60 +152,60 @@ bool JSB_console_timeEnd(State &s) {
 }
 SE_BIND_FUNC(JSB_console_timeEnd)
 
-void test() {
-    auto runtime = JS_NewRuntime();
-    JS_SetDumpFlags(runtime, JS_DUMP_LEAKS);
-    auto context = JS_NewContext(runtime);
-
-    std::string source =
-        "function foo() {}\n"
-        "foo.prototype.bar = function() {};\n"
-        "globalThis.helloworld = function(a, b, obj) { return a + b + obj.prop; }  \n"
-        "globalThis.ownvalue = function(obj) { globalThis.aaa = obj; return {a: 1}; } \n"
-    ;
-    auto ret = JS_Eval(context, source.c_str(), source.size(), "", JS_EVAL_TYPE_GLOBAL);
-    
-    JSValue global = JS_GetGlobalObject(context);
-    JSValue obj = JS_NewObject(context);
-    int ref = JS_ValueRefCount(context, obj);
-    JS_SetPropertyStr(context, global, "world_key", obj);
-    JSValue val = JS_NewString(context, "hello");
-    JS_SetPropertyStr(context, obj, "prop", val);
-    ref = JS_ValueRefCount(context, obj);
-    
-    {
-        JSValue val1 = JS_NewString(context, "hello111");
-        JSValue val2 = JS_NewString(context, "world222");
-        JSValue func = JS_GetPropertyStr(context, global, "helloworld");
-        JSValue argv[3] = {val1, val2, obj};;
-        JSValue ret = JS_Call(context, func, global, 3, argv);
-        ref = JS_ValueRefCount(context, obj);
-        const char * c = JS_ToCString(context, ret);
-        printf("result: %s\n", c);
-        JS_FreeCString(context, c);
-        JS_FreeValue(context, func);
-        JS_FreeValue(context, ret);
-        JS_FreeValue(context, val1);
-//        JS_FreeValue(context, val2);
-    }
-    
-    {
-        JSValue func = JS_GetPropertyStr(context, global, "ownvalue");
-        JSValue argv[1] = {obj};;
-        ref = JS_ValueRefCount(context, obj);
-        JSValue ret = JS_Call(context, func, global, 1, argv);
-        ref = JS_ValueRefCount(context, obj);
-        JS_FreeValue(context, func);
-        //JS_FreeValue(context, ret);
-    }
-    
-    JS_FreeValue(context, ret);
-    JS_FreeValue(context, global);
-    JS_FreeContext(context);
-    JS_FreeRuntime(runtime);
-    int a = 0;
-    printf("a: %d\n", a);
-}
+//void test() {
+//    auto runtime = JS_NewRuntime();
+//    JS_SetDumpFlags(runtime, JS_DUMP_LEAKS);
+//    auto context = JS_NewContext(runtime);
+//
+//    std::string source =
+//        "function foo() {}\n"
+//        "foo.prototype.bar = function() {};\n"
+//        "globalThis.helloworld = function(a, b, obj) { return a + b + obj.prop; }  \n"
+//        "globalThis.ownvalue = function(obj) { globalThis.aaa = obj; return {a: 1}; } \n"
+//    ;
+//    auto ret = JS_Eval(context, source.c_str(), source.size(), "", JS_EVAL_TYPE_GLOBAL);
+//    
+//    JSValue global = JS_GetGlobalObject(context);
+//    JSValue obj = JS_NewObject(context);
+//    int ref = JS_ValueRefCount(context, obj);
+//    JS_SetPropertyStr(context, global, "world_key", obj);
+//    JSValue val = JS_NewString(context, "hello");
+//    JS_SetPropertyStr(context, obj, "prop", val);
+//    ref = JS_ValueRefCount(context, obj);
+//    
+//    {
+//        JSValue val1 = JS_NewString(context, "hello111");
+//        JSValue val2 = JS_NewString(context, "world222");
+//        JSValue func = JS_GetPropertyStr(context, global, "helloworld");
+//        JSValue argv[3] = {val1, val2, obj};;
+//        JSValue ret = JS_Call(context, func, global, 3, argv);
+//        ref = JS_ValueRefCount(context, obj);
+//        const char * c = JS_ToCString(context, ret);
+//        printf("result: %s\n", c);
+//        JS_FreeCString(context, c);
+//        JS_FreeValue(context, func);
+//        JS_FreeValue(context, ret);
+//        JS_FreeValue(context, val1);
+////        JS_FreeValue(context, val2);
+//    }
+//    
+//    {
+//        JSValue func = JS_GetPropertyStr(context, global, "ownvalue");
+//        JSValue argv[1] = {obj};;
+//        ref = JS_ValueRefCount(context, obj);
+//        JSValue ret = JS_Call(context, func, global, 1, argv);
+//        ref = JS_ValueRefCount(context, obj);
+//        JS_FreeValue(context, func);
+//        //JS_FreeValue(context, ret);
+//    }
+//    
+//    JS_FreeValue(context, ret);
+//    JS_FreeValue(context, global);
+//    JS_FreeContext(context);
+//    JS_FreeRuntime(runtime);
+//    int a = 0;
+//    printf("a: %d\n", a);
+//}
 
 } // namespace
 
@@ -265,7 +265,7 @@ bool ScriptEngine::init() {
     if (nullptr == _rt)
         return false;
     
-    JS_SetDumpFlags(_rt, JS_DUMP_LEAKS);
+//cjh    JS_SetDumpFlags(_rt, JS_DUMP_LEAKS);
 
     _cx = JS_NewContext(_rt);
     if (nullptr == _cx) {
@@ -344,32 +344,14 @@ void ScriptEngine::cleanup() {
     }
     _beforeCleanupHookArray.clear();
     
-//    _globalObj->setProperty("window", Value::Undefined);
-//    _globalObj->setProperty("jsb", Value::Undefined);
-
     mainLoopUpdate();
     
-    
-    auto jsobj = _globalObj->_getJSObject();
-    int ref = JS_ValueRefCount(_cx, _globalObj->_getJSObject());
-    
     Class::cleanup();
-    ref = JS_ValueRefCount(_cx, _globalObj->_getJSObject());
     Object::cleanup();
-    ref = JS_ValueRefCount(_cx, _globalObj->_getJSObject());
     
     _globalObj->unroot();
-    ref = JS_ValueRefCount(_cx, _globalObj->_getJSObject());
-    
-//    JS_FreeValue(_cx, jsobj);
-//    JS_FreeValue(_cx, jsobj);
-//    JS_FreeValue(_cx, jsobj);
-//    JS_FreeValue(_cx, jsobj);
-    
     _globalObj->decRef();
     _globalObj = nullptr;
-    
-    ref = JS_ValueRefCount(_cx, jsobj);
     
     _globalHandleScope->_inCleanup = true;
     
