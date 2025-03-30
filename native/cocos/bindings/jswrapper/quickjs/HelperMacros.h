@@ -28,7 +28,7 @@
 #include "../ValueArrayPool.h"
 #include "../config.h"
 
-#include "quickjs.h"
+#include "Base.h"
 
 //#define RECORD_JSB_INVOKING
 

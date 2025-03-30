@@ -249,8 +249,12 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
     
     seTypedArrayTypeToQuickJSTypeArrayType(type, classId, bytesPerElement);
 
+#ifdef USE_PRIMJS
+    JSValue typedArray = JS_NewTypedArray(__cx, byteLength / bytesPerElement, classId);
+#else
     JSValue argv[1] = { JS_NewInt64(__cx, byteLength / bytesPerElement) };
     JSValue typedArray = JS_NewTypedArray(__cx, 1, argv, classId);
+#endif
     size_t byte_offset = 0;
     size_t byte_length = 0;
     size_t bytes_per_element = 0;
@@ -297,12 +301,17 @@ Object *Object::createTypedArrayWithBuffer(TypedArrayType type, const Object *ob
     
     seTypedArrayTypeToQuickJSTypeArrayType(type, classId, bytesPerElement);
     
+#if USE_PRIMJS   
+    JSValue typedArray = LEPUS_NewTypedArrayWithBuffer(__cx, obj->_obj, offset, byteLength / bytesPerElement, classId);
+#else
     JSValue argv[3] = {
         obj->_obj,
         JS_NewInt64(__cx, offset),
         JS_NewInt64(__cx, byteLength / bytesPerElement)
     };
+
     JSValue typedArray = JS_NewTypedArray(__cx, 3, argv, classId);
+#endif
     auto* ret = Object::_createJSObject(nullptr, typedArray);
     ret->_isCreateInCpp = true;
     return ret;

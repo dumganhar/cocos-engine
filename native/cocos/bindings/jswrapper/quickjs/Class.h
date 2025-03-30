@@ -31,7 +31,7 @@
 #if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_QUICKJS
 
 #include "../Define.h"
-    #include "Base.h"
+#include "Base.h"
 
 #include "base/std/optional.h"
 
