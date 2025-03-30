@@ -54,8 +54,8 @@ private:
     
     static AutoHandleScope* getCurrent();
     
-    std::vector<JSValue> _jsValuesInScope;
-    bool _inCleanup{false};
+//    std::vector<JSValue> _jsValuesInScope;
+//    bool _inCleanup{false};
     
     friend class Object;
     friend class Class;
@@ -319,6 +319,7 @@ public:
 private:
     
     void executePendingJobs();
+    void releaseScopedJSValues();
     
     JSRuntime *_rt{nullptr};
     JSContext *_cx{nullptr};
@@ -326,7 +327,7 @@ private:
     Object *_globalObj{nullptr};
     Object *_debugGlobalObj{nullptr};
     
-    AutoHandleScope *_globalHandleScope{nullptr};
+//    AutoHandleScope *_globalHandleScope{nullptr};
 
     FileOperationDelegate _fileOperationDelegate;
 

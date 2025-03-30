@@ -213,23 +213,30 @@ SE_BIND_FUNC(JSB_console_timeEnd)
 
 static std::stack<AutoHandleScope*> __scopeStack;
 
+static constexpr size_t RELEASE_SCOPED_VALUES_THRESHOLD = 2048;
+static constexpr size_t SCOPED_VALUES_RESERVE_SIZE = 10240;
+static std::vector<JSValue> __scopedJSValues;
+
 AutoHandleScope::AutoHandleScope() {
-    __scopeStack.push(this);
-    _jsValuesInScope.reserve(1024);
+//    __scopeStack.push(this);
+//    _jsValuesInScope.reserve(1024);
 }
 
 AutoHandleScope::~AutoHandleScope() {
-    for (auto &e : _jsValuesInScope) {
-        JS_FreeValue(ScriptEngine::getInstance()->_getContext(), e);
-    }
+//    for (auto &e : _jsValuesInScope) {
+//        JS_FreeValue(ScriptEngine::getInstance()->_getContext(), e);
+//    }
     
-    __scopeStack.pop();
+//    __scopeStack.pop();
+    
+    ScriptEngine::getInstance()->executePendingJobs();
 }
 
 void AutoHandleScope::push(JSValue v) {
-    if (_inCleanup) return;
+//    if (_inCleanup) return;
     JS_DupValue(ScriptEngine::getInstance()->_getContext(), v);
-    _jsValuesInScope.emplace_back(v);
+//    _jsValuesInScope.emplace_back(v);
+    __scopedJSValues.emplace_back(v);
 }
 
 AutoHandleScope* AutoHandleScope::getCurrent() {
@@ -256,7 +263,10 @@ bool ScriptEngine::init() {
     SE_LOGD("Initializing QuickJS, version: %s\n", "2021-03-27");
     ++_vmId;
     
-    _globalHandleScope = new AutoHandleScope();
+    __scopedJSValues.reserve(SCOPED_VALUES_RESERVE_SIZE);
+    __scopedJSValues.clear();
+    
+//    _globalHandleScope = new AutoHandleScope();
 
     for (const auto &hook : _beforeInitHookArray) {
         hook();
@@ -355,15 +365,15 @@ void ScriptEngine::cleanup() {
     _globalObj->decRef();
     _globalObj = nullptr;
     
-    _globalHandleScope->_inCleanup = true;
+//    _globalHandleScope->_inCleanup = true;
     
     JS_FreeContext(_cx);
     JS_FreeRuntime(_rt);
     
-    _globalHandleScope->_jsValuesInScope.clear();
-    delete _globalHandleScope;
-    _globalHandleScope = nullptr;
-
+//    _globalHandleScope->_jsValuesInScope.clear();
+//    delete _globalHandleScope;
+//    _globalHandleScope = nullptr;
+    
     _rt        = nullptr;
     _cx        = nullptr;
     _isValid   = false;
@@ -375,6 +385,7 @@ void ScriptEngine::cleanup() {
     }
     _afterCleanupHookArray.clear();
     _isInCleanup = false;
+    __scopedJSValues.clear();
 
     NativePtrToObjectMap::destroy();
 }
@@ -542,16 +553,27 @@ void ScriptEngine::executePendingJobs() {
     }
 }
 
-void ScriptEngine::mainLoopUpdate() {
-    executePendingJobs();
-    
-    auto* scope = AutoHandleScope::getCurrent();
-    if (scope && !scope->_jsValuesInScope.empty()) {
-        for (auto &e : scope->_jsValuesInScope) {
+void ScriptEngine::releaseScopedJSValues() {
+    //    auto* scope = AutoHandleScope::getCurrent();
+    //    if (scope && !scope->_jsValuesInScope.empty()) {
+    //        for (auto &e : scope->_jsValuesInScope) {
+    //            JS_FreeValue(_cx, e);
+    //        }
+    //        scope->_jsValuesInScope.clear();
+    //    }
+        
+    if (_isInCleanup || __scopedJSValues.size() > RELEASE_SCOPED_VALUES_THRESHOLD) {
+        CC_LOG_INFO("releaseScopedJSValues, size: %d", (int)__scopedJSValues.size());
+        for (auto & e : __scopedJSValues) {
             JS_FreeValue(_cx, e);
         }
-        scope->_jsValuesInScope.clear();
+        __scopedJSValues.clear();
     }
+}
+
+void ScriptEngine::mainLoopUpdate() {
+    executePendingJobs();
+    releaseScopedJSValues();
 }
 
 std::string ScriptEngine::getCurrentStackTrace() const {
