@@ -3015,11 +3015,11 @@ if(USE_SE_SM)
 endif()
 
 if(USE_SE_QUICKJS)
-    include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/primjs-src/include)
-    include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/primjs-src/src)
-    include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter)
-    # include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/quickjs-src)
-    add_definitions(-DCONFIG_VERSION=\"2024-02-14\" -DCONFIG_BIGNUM=1)
+    # include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/primjs-src/include)
+    # include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/primjs-src/src)
+    # include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter)
+    include_directories(${CWD}/cocos/bindings/jswrapper/quickjs/quickjs-src)
+    add_definitions(-DCONFIG_VERSION=\"2024-02-14\" -DCONFIG_BIGNUM=1 -DENABLE_COMPATIBLE_MM=1 -DENABLE_TRACING_GC=1)
 
     cocos_source_files(MODULE ccbindings
                     cocos/bindings/jswrapper/quickjs/Base.h
@@ -3036,58 +3036,58 @@ if(USE_SE_QUICKJS)
                     cocos/bindings/jswrapper/quickjs/Utils.h
     )
 
-    # cocos_source_files(MODULE ccbindings
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/cutils.c
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/cutils.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/libbf.c
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/libbf.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp-opcode.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp.c
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode-table.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode.c
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/list.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-atom.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-libc.c
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-libc.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-opcode.h
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs.c
-    #                 cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs.h
-    # )
-
     cocos_source_files(MODULE ccbindings
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/allocator.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/base_export.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/cutils.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/global-handles.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/libregexp.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/libunicode.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/list.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/persistent-handle.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/quickjs-libc.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/quickjs-tag.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/quickjs.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/include/trace-gc.h
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/basic/log/logging.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/allocator.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/collector.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/global-handles.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/qjsvaluevalue-space.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/sweeper.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/thread_pool.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/collector.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/cutils.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/libregexp.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/libunicode.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/primjs_monitor.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs_gc.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs_queue.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs_version.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs-libc.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs.cc
-        cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/libbf.cc    
+        cocos/bindings/jswrapper/quickjs/quickjs-src/cutils.c
+        cocos/bindings/jswrapper/quickjs/quickjs-src/cutils.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/libbf.c
+        cocos/bindings/jswrapper/quickjs/quickjs-src/libbf.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp-opcode.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp.c
+        cocos/bindings/jswrapper/quickjs/quickjs-src/libregexp.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode-table.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode.c
+        cocos/bindings/jswrapper/quickjs/quickjs-src/libunicode.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/list.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-atom.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-libc.c
+        cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-libc.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs-opcode.h
+        cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs.c
+        cocos/bindings/jswrapper/quickjs/quickjs-src/quickjs.h
     )
+
+    # cocos_source_files(MODULE ccbindings
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/allocator.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/base_export.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/cutils.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/global-handles.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/libregexp.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/libunicode.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/list.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/persistent-handle.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/quickjs-libc.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/quickjs-tag.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/quickjs.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/include/trace-gc.h
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/basic/log/logging.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/allocator.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/collector.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/global-handles.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/qjsvaluevalue-space.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/sweeper.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/thread_pool.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/gc/collector.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/cutils.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/libregexp.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/libunicode.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/primjs_monitor.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs_gc.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs_queue.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs_version.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs-libc.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/quickjs.cc
+    #     cocos/bindings/jswrapper/quickjs/primjs-src/src/interpreter/quickjs/source/libbf.cc    
+    # )
 
 endif()
 

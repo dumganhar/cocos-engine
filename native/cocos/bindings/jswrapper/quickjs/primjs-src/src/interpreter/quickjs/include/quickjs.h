@@ -50,7 +50,7 @@
 #define printf(...) __android_log_print(ANDROID_LOG_ERROR, "LYNX", __VA_ARGS__);
 #endif
 #else
-#define printf(...)
+//#define printf(...)
 #endif
 
 #ifdef __cplusplus

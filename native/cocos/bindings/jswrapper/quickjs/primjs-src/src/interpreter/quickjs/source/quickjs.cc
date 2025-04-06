@@ -10419,7 +10419,7 @@ int skip_spaces(const char *pc) {
 #define BF_ATOF_THROW (1 << 29)
 #define BF_ATOF_FLOAT64 (1 << 28)
 
-static LEPUSValue js_atof(LEPUSContext *ctx, const char *p, const char **pp,
+LEPUSValue js_atof(LEPUSContext *ctx, const char *p, const char **pp,
                           int radix, int flags) {
   bf_t a_s, *a = &a_s;
   int res;
@@ -11452,7 +11452,7 @@ static inline char *js_ftoa1(LEPUSContext *ctx, LEPUSValueConst val1, int radix,
   return str;
 }
 
-static LEPUSValue js_ftoa(LEPUSContext *ctx, LEPUSValueConst val1, int radix,
+LEPUSValue js_ftoa(LEPUSContext *ctx, LEPUSValueConst val1, int radix,
                           limb_t prec, bf_flags_t flags) {
   char *str = js_ftoa1(ctx, val1, radix, prec, flags);
   if (!str) return LEPUS_EXCEPTION;
@@ -35068,11 +35068,14 @@ QJS_STATIC void JS_SetConstructor2(LEPUSContext *ctx, LEPUSValueConst func_obj,
   set_cycle_flag(ctx, proto);
 }
 
+#ifndef ENABLE_COMPATIBLE_MM
+
 void JS_SetConstructor(LEPUSContext *ctx, LEPUSValueConst func_obj,
                                   LEPUSValueConst proto) {
   JS_SetConstructor2(ctx, func_obj, proto, 0,
                      LEPUS_PROP_WRITABLE | LEPUS_PROP_CONFIGURABLE);
 }
+#endif
 
 QJS_STATIC void JS_NewGlobalCConstructor2(LEPUSContext *ctx,
                                           LEPUSValue func_obj, const char *name,

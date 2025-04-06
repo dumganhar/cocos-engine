@@ -310,6 +310,12 @@ bool check_valid_ptr(void *runtime, void *ptr) {
 }
 #endif
 
+LEPUSValue js_atof(LEPUSContext *ctx, const char *p, const char **pp,
+  int radix, int flags);
+
+LEPUSValue js_ftoa(LEPUSContext *ctx, LEPUSValueConst val1, int radix,
+                   limb_t prec, bf_flags_t flags);
+
 QJS_STATIC inline BOOL __JS_AtomIsConst(JSAtom v) {
 #if defined(DUMP_LEAKS) && DUMP_LEAKS > 1
   return (int32_t)v <= 0;
@@ -7046,17 +7052,17 @@ static double js_pow(double a, double b) {
 
 #ifdef CONFIG_BIGNUM
 
-LEPUSValue LEPUS_NewBigInt64(LEPUSContext *ctx, int64_t v) {
-  BOOL is_bignum = is_bignum_mode(ctx);
-  if (is_bignum && v == (int32_t)v) {
-    return LEPUS_NewInt32(ctx, v);
-  } else {
-    bf_t a_s, *a = &a_s;
-    bf_init(ctx->bf_ctx, a);
-    bf_set_si(a, v);
-    return JS_NewBigInt2(ctx, a, TRUE);
-  }
-}
+// LEPUSValue LEPUS_NewBigInt64(LEPUSContext *ctx, int64_t v) {
+//   BOOL is_bignum = is_bignum_mode(ctx);
+//   if (is_bignum && v == (int32_t)v) {
+//     return LEPUS_NewInt32(ctx, v);
+//   } else {
+//     bf_t a_s, *a = &a_s;
+//     bf_init(ctx->bf_ctx, a);
+//     bf_set_si(a, v);
+//     return JS_NewBigInt2(ctx, a, TRUE);
+//   }
+// }
 
 LEPUSValue JS_NewBigUint64_GC(LEPUSContext *ctx, uint64_t v) {
   BOOL is_bignum = is_bignum_mode(ctx);
@@ -15367,7 +15373,7 @@ static void JS_SetConstructor2(LEPUSContext *ctx, LEPUSValueConst func_obj,
   set_cycle_flag(ctx, proto);
 }
 
-static void JS_SetConstructor(LEPUSContext *ctx, LEPUSValueConst func_obj,
+void JS_SetConstructor(LEPUSContext *ctx, LEPUSValueConst func_obj,
                               LEPUSValueConst proto) {
   JS_SetConstructor2(ctx, func_obj, proto, 0,
                      LEPUS_PROP_WRITABLE | LEPUS_PROP_CONFIGURABLE);
@@ -30074,11 +30080,11 @@ static LEPUSValue js_TA_get_uint32(LEPUSContext *ctx, const void *a) {
 
 #ifdef CONFIG_BIGNUM
 static LEPUSValue js_TA_get_int64(LEPUSContext *ctx, const void *a) {
-  return LEPUS_NewBigInt64(ctx, *reinterpret_cast<int64_t *>(a));
+  return LEPUS_NewBigInt64(ctx, *((int64_t *)a));
 }
 
 static LEPUSValue js_TA_get_uint64(LEPUSContext *ctx, const void *a) {
-  return JS_NewBigUint64_GC(ctx, *reinterpret_cast<uint64_t *>(a));
+  return JS_NewBigUint64_GC(ctx, *((uint64_t *)a));
 }
 #endif
 

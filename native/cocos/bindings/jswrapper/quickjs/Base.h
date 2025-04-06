@@ -27,9 +27,17 @@
 
 #include "quickjs.h"
 
-#define USE_PRIMJS 1
+#define USE_PRIMJS 0
 
 #if USE_PRIMJS
+
+#ifndef ENABLE_COMPATIBLE_MM
+#error "ENABLE_COMPATIBLE_MM was not defined!"
+#endif
+
+#if ENABLE_COMPATIBLE_MM != 1
+#error "ENABLE_COMPATIBLE_MM was not enabled!"
+#endif
 
 #include "quickjs/include/quickjs-inner.h"
 
@@ -76,7 +84,7 @@ static inline LEPUS_BOOL LEPUS_IsBigInt(LEPUSContext *ctx, LEPUSValueConst v)
 //#define JS_SetConstructor LEPUS_SetConstructor
 #define JS_SetClassProto LEPUS_SetClassProto
 #define JS_SetPropertyStr LEPUS_SetPropertyStr
-#define JS_FreeValue LEPUS_FreeValue
+#define JS_FreeValue(...) // LEPUS_FreeValue
 #define JS_DupValue LEPUS_DupValue
 #define JS_Call LEPUS_Call
 
@@ -84,7 +92,7 @@ static inline LEPUS_BOOL LEPUS_IsBigInt(LEPUSContext *ctx, LEPUSValueConst v)
 #define JS_ThrowSyntaxError LEPUS_ThrowSyntaxError
 #define JS_SetOpaque LEPUS_SetOpaque
 #define JS_ToCString LEPUS_ToCString
-#define JS_FreeCString LEPUS_FreeCString
+#define JS_FreeCString(...) //LEPUS_FreeCString
 #define JS_NewFloat64 LEPUS_NewFloat64
 #define JS_NewStringLen LEPUS_NewStringLen
 #define JS_NewBool LEPUS_NewBool
@@ -127,12 +135,12 @@ static inline LEPUS_BOOL LEPUS_IsBigInt(LEPUSContext *ctx, LEPUSValueConst v)
 #define JS_GetTypedArrayBuffer LEPUS_GetTypedArrayBuffer
 #define JS_GetOwnPropertyNames LEPUS_GetOwnPropertyNames
 #define JS_AtomToCString LEPUS_AtomToCString
-#define js_free lepus_free
+#define js_free(...) //lepus_free
 #define JS_ParseJSON LEPUS_ParseJSON
 #define JS_NewAtom LEPUS_NewAtom
 #define JS_HasProperty LEPUS_HasProperty
 #define JS_GetProperty LEPUS_GetProperty
-#define JS_FreeAtom LEPUS_FreeAtom
+#define JS_FreeAtom(...) //LEPUS_FreeAtom
 #define JS_DefinePropertyValueStr LEPUS_DefinePropertyValueStr
 #define JS_PROP_WRITABLE LEPUS_PROP_WRITABLE
 #define JS_PROP_CONFIGURABLE LEPUS_PROP_CONFIGURABLE
