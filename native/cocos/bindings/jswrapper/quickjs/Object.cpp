@@ -249,7 +249,7 @@ Object *Object::createTypedArray(TypedArrayType type, const void *data, size_t b
     
     seTypedArrayTypeToQuickJSTypeArrayType(type, classId, bytesPerElement);
 
-#ifdef USE_PRIMJS
+#if USE_PRIMJS
     JSValue typedArray = JS_NewTypedArray(__cx, byteLength / bytesPerElement, classId);
 #else
     JSValue argv[1] = { JS_NewInt64(__cx, byteLength / bytesPerElement) };
