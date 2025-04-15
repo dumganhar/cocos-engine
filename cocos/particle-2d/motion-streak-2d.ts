@@ -74,6 +74,7 @@ export class MotionStreak extends UIRenderer {
 
     constructor () {
         super();
+        this._useVertexOpacity = true;
     }
 
     /**

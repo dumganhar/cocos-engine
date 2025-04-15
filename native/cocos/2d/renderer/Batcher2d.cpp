@@ -82,10 +82,20 @@ CC_FORCE_INLINE void fillOpacity(RenderEntity* entity, RenderDrawInfo* drawInfo)
     uint32_t size = drawInfo->getVbCount() * stride;
     float* vbBuffer = drawInfo->getVbBuffer();
     
+    bool isMotionStreakNode = false;
+    if (entity->getNode()->getName() == "MotionStreak") {
+        isMotionStreakNode = true;
+        printf("--------- \n");
+    }
+    
+    
     uint32_t offset = 0;
     for (int i = 0; i < size; i += stride) {
         offset = i + 5;
         vbBuffer[offset+3] = entity->getOpacity();
+        if (isMotionStreakNode) {
+            printf("opacity: %f\n", vbBuffer[offset+3]);
+        }
     }
 }
 
@@ -180,6 +190,12 @@ void Batcher2d::walk(Node* node, float parentOpacity, bool parentOpacityDirty) {
     float finalOpacity = finalOpacityWithoutColorAlpha;
     
     if (entity) {
+        bool isMotionStreakNode = false;
+        if (entity->getNode()->getName() == "MotionStreak") {
+            isMotionStreakNode = true;
+            printf("---------111 \n");
+        }
+        
         if (entity->getColorDirty() || isCurrentOpacityDirty) {
             float localColorAlpha = entity->getColorAlpha();
             finalOpacity = finalOpacityWithoutColorAlpha * localColorAlpha;

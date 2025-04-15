@@ -41,7 +41,7 @@ import { TextureBase } from '../../asset/assets/texture-base';
 import { IBatcher } from './i-batcher';
 import { StaticVBAccessor } from './static-vb-accessor';
 import { getAttributeStride, vfmt, vfmtPosUvColor } from './vertex-format';
-import { updateOpacity } from '../assembler/utils';
+import { multipyOpacity, updateOpacity } from '../assembler/utils';
 import { BaseRenderData, MeshRenderData } from './render-data';
 import { UIMeshRenderer } from '../components/ui-mesh-renderer';
 import { NativeBatcher2d } from './native-2d';
@@ -808,6 +808,8 @@ export class Batcher2D implements IBatcher {
         // TODO Set opacity to ui property's opacity before remove it
         uiProps.setOpacity(opacity);
         if (!approx(opacity, 0, EPSILON)) {
+            const renderData = render ? render.renderData : null;
+            const vertexCount = renderData ? renderData.vertexCount : 0;
             if (uiProps.colorDirty) {
             // Cascade color dirty state
                 this._opacityDirty++;
@@ -819,10 +821,14 @@ export class Batcher2D implements IBatcher {
             }
 
             // Update cascaded opacity to vertex buffer
-            if (this._opacityDirty && render && !render.useVertexOpacity && render.renderData && render.renderData.vertexCount > 0) {
-            // HARD COUPLING
-                updateOpacity(render.renderData, opacity);
-                const buffer = render.renderData.getMeshBuffer();
+            if (this._opacityDirty && render && vertexCount > 0) {
+                if (render.useVertexOpacity) {
+                    multipyOpacity(renderData!, opacity);
+                } else {
+                    // HARD COUPLING
+                    updateOpacity(renderData!, opacity);
+                }
+                const buffer = renderData!.getMeshBuffer();
                 if (buffer) {
                     buffer.setDirty();
                 }
@@ -836,7 +842,7 @@ export class Batcher2D implements IBatcher {
             }
 
             if (uiProps.colorDirty) {
-            // Reduce cascaded color dirty state
+                // Reduce cascaded color dirty state
                 this._opacityDirty--;
                 // Reset color dirty
                 uiProps.colorDirty = false;
