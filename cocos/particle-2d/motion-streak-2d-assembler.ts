@@ -167,12 +167,14 @@ class MotionStreakAssembler implements IAssembler {
     }
 
     private updateWorldVertexAllData (comp: MotionStreak): void {
+        if (!JSB) return;
         const renderData = comp.renderData;
         if (!renderData) return;
         const stride = renderData.floatStride;
         const dataList = renderData.data;
         const vData = renderData.chunk.vb;
-        for (let i  = 0; i < dataList.length; i++) {
+        const vertexCount = renderData.vertexCount;
+        for (let i  = 0; i < vertexCount; i++) {
             const offset = i * stride;
             vData[offset + 0] = dataList[i].x;
             vData[offset + 1] = dataList[i].y;
@@ -184,6 +186,7 @@ class MotionStreakAssembler implements IAssembler {
     }
 
     private createQuadIndices (comp: MotionStreak, indexCount: number): void {
+        if (!JSB) return;
         const renderData = comp.renderData;
         if (!renderData) return;
         const chunk = renderData.chunk;

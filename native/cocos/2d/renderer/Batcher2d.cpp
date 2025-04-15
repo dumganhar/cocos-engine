@@ -122,8 +122,15 @@ void Batcher2d::walk(Node* node, float parentOpacity, bool parentOpacityDirty) {
     float finalOpacity = finalOpacityWithoutColorAlpha;
     
     if (entity) {
+        if (entity->getNode()->getName() == "MotionStreak") {
+            int a = 0;
+        }
+        
         if (entity->getColorDirty() || isCurrentOpacityDirty) {
             float localColorAlpha = entity->getColorAlpha();
+            if (entity->getNode()->getName() == "MotionStreak") {
+//                printf("localColorAlpha: %f\n", localColorAlpha);
+            }
             finalOpacity = finalOpacityWithoutColorAlpha * localColorAlpha;
             entity->setOpacity(finalOpacity);
             entity->setColorDirty(false);
