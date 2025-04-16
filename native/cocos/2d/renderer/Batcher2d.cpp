@@ -76,8 +76,6 @@ CC_FORCE_INLINE void setIndexRange(RenderDrawInfo* drawInfo) { // NOLINT(readabi
 }
 
 CC_FORCE_INLINE void fillOpacity(RenderEntity* entity, RenderDrawInfo* drawInfo) { // NOLINT(readability-convert-member-functions-to-static)
-    Color temp = entity->getColor();
-    
     uint8_t stride = drawInfo->getStride();
     uint32_t size = drawInfo->getVbCount() * stride;
     float* vbBuffer = drawInfo->getVbBuffer();
@@ -86,6 +84,18 @@ CC_FORCE_INLINE void fillOpacity(RenderEntity* entity, RenderDrawInfo* drawInfo)
     for (int i = 0; i < size; i += stride) {
         offset = i + 5;
         vbBuffer[offset+3] = entity->getOpacity();
+    }
+}
+
+CC_FORCE_INLINE void multiplyOpacity(RenderEntity* entity, RenderDrawInfo* drawInfo) { // NOLINT(readability-convert-member-functions-to-static)
+    uint8_t stride = drawInfo->getStride();
+    uint32_t size = drawInfo->getVbCount() * stride;
+    float* vbBuffer = drawInfo->getVbBuffer();
+    
+    uint32_t offset = 0;
+    for (int i = 0; i < size; i += stride) {
+        offset = i + 5;
+        vbBuffer[offset+3] = entity->getColorAlpha() * entity->getOpacity();
     }
 }
 
@@ -282,7 +292,18 @@ CC_FORCE_INLINE void Batcher2d::handleComponentDraw(RenderEntity* entity, Render
         }
 
         if (entity->getVBColorDirty()) {
-            fillOpacity(entity, drawInfo);
+            switch (entity->getOpacityType()) {
+                case UIOpacityType::COLOR: {
+                    fillOpacity(entity, drawInfo);
+                    break;
+                }
+                case UIOpacityType::MULTIPLY: {
+                    multiplyOpacity(entity, drawInfo);
+                    break;
+                }
+                default:
+                    break;
+            }
         }
 
         fillIndexBuffers(drawInfo);

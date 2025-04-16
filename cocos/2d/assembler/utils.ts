@@ -81,6 +81,7 @@ export function fillMeshVertices3D (node: Node, renderer: IBatcher, renderData: 
 export function updateOpacity (renderData: RenderData, opacity: number): void {
     const vfmt = renderData.vertexFormat;
     const vb = renderData.chunk.vb;
+    const uint32vb = new Uint32Array(vb.buffer, vb.byteOffset, vb.length);
     let attr; let format; let stride;
     // Color component offset
     let offset = 0;
@@ -92,13 +93,44 @@ export function updateOpacity (renderData: RenderData, opacity: number): void {
             if (format.size / format.count === 1) {
                 const alpha = ~~clamp(Math.round(opacity * 255), 0, 255);
                 // Uint color RGBA8
-                for (let color = offset; color < vb.length; color += stride) {
-                    vb[color] = ((vb[color] & 0xffffff00) | alpha) >>> 0;
+                for (let color = offset; color < uint32vb.length; color += stride) {
+                    uint32vb[color] = ((uint32vb[color] & 0x00ffffff) | (alpha << 24)) >>> 0;
                 }
             } else if (format.size / format.count === 4) {
                 // RGBA32 color, alpha at position 3
                 for (let alpha = offset + 3; alpha < vb.length; alpha += stride) {
                     vb[alpha] = opacity;
+                }
+            }
+        }
+        offset += format.size >> 2;
+    }
+}
+
+export function multiplyOpacity (renderData: RenderData, opacity: number): void {
+    const vfmt = renderData.vertexFormat;
+    const vb = renderData.chunk.vb;
+    const uint32vb = new Uint32Array(vb.buffer, vb.byteOffset, vb.length);
+    let attr; let format; let stride;
+    // Color component offset
+    let offset = 0;
+    for (let i = 0; i < vfmt.length; ++i) {
+        attr = vfmt[i];
+        format = FormatInfos[attr.format];
+        if (format.hasAlpha) {
+            stride = renderData.floatStride;
+            if (format.size / format.count === 1) {
+                const alpha = ~~clamp(Math.round(opacity * 255), 0, 255);
+                // Uint color RGBA8
+                for (let color = offset; color < uint32vb.length; color += stride) {
+                    const oldAlpha = uint32vb[color] & 0x000000FF;
+                    const newAlpha = oldAlpha * (alpha / 255);
+                    uint32vb[color] = ((uint32vb[color] & 0x00ffffff) | (newAlpha << 24)) >>> 0;
+                }
+            } else if (format.size / format.count === 4) {
+                // RGBA32 color, alpha at position 3
+                for (let alpha = offset + 3; alpha < vb.length; alpha += stride) {
+                    vb[alpha] *= opacity;
                 }
             }
         }

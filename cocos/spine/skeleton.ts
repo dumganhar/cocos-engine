@@ -37,7 +37,7 @@ import { MaterialInstance } from '../render-scene';
 import { assetManager, builtinResMgr } from '../asset/asset-manager';
 import { legacyCC } from '../core/global-exports';
 import { SkeletonSystem } from './skeleton-system';
-import { RenderEntity, RenderEntityType } from '../2d/renderer/render-entity';
+import { RenderEntity, RenderEntityType, RenderEntityOpacityType } from '../2d/renderer/render-entity';
 import { AttachUtil } from './attach-util';
 import spine from './lib/spine-core';
 import { VertexEffectDelegate } from './vertex-effect-delegate';
@@ -330,7 +330,8 @@ export class Skeleton extends UIRenderer {
 
     constructor () {
         super();
-        this._useVertexOpacity = true;
+        // this._useVertexOpacity = true;
+        this.setOpacityType(RenderEntityOpacityType.MULTIPLY);
         this._startEntry = { animation: { name: '' }, trackIndex: 0 } as spine.TrackEntry;
         this._endEntry = { animation: { name: '' }, trackIndex: 0 } as spine.TrackEntry;
         this._startSlotIndex = -1;
@@ -1706,14 +1707,14 @@ export class Skeleton extends UIRenderer {
     /**
      * @engineInternal
      */
-    public _updateColor (): void {
+    public override _updateColor (): void {
         const self = this;
         const uiProps = self.node._uiProps;
         const tempColor = self._tempColor;
         const color = self._color;
-        const parentOpacity = self.node.parent ? self.node.parent._uiProps.opacity : 1.0;
+        // const parentOpacity = self.node.parent ? self.node.parent._uiProps.opacity : 1.0;
         //Calculate the final opacity here, because the first frame affected by parent's opacity
-        const a = uiProps.localOpacity * parentOpacity * color.a / 255;
+        const a = color.a / 255;// uiProps.localOpacity * parentOpacity * color.a / 255;
 
         if (tempColor.r === color.r && tempColor.g === color.g && tempColor.b === color.b && tempColor.a === a) {
             return;
@@ -1722,7 +1723,7 @@ export class Skeleton extends UIRenderer {
         tempColor.r = color.r;
         tempColor.g = color.g;
         tempColor.b = color.b;
-        tempColor.a = a;
+        tempColor.a = color.a;
         const r = color.r / 255.0;
         const g = color.g / 255.0;
         const b = color.b / 255.0;

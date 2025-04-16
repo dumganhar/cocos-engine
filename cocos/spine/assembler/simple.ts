@@ -34,7 +34,6 @@ import { director } from '../../game';
 import spine from '../lib/spine-core';
 import { Color, EPSILON, Vec3 } from '../../core';
 import type { MaterialInstance } from '../../render-scene';
-import type { IBatcher } from '../../2d/renderer/i-batcher';
 
 const _slotColor = new Color(0, 0, 255, 255);
 const _boneColor = new Color(255, 0, 0, 255);
@@ -281,8 +280,8 @@ function cacheTraverse (comp: Skeleton): void {
     vUint8Buf.set(model.vData as TypedArray);
 
     const nodeColor = comp.color;
-    const opacity = comp.node._uiProps.opacity;
-    if ((1 - opacity) > EPSILON || Color.toUint32(nodeColor) !== 0xffffffff ||  _premultipliedAlpha) {
+    const opacity = nodeColor.a;// comp.node._uiProps.opacity;
+    if ((1 - opacity) > EPSILON || Color.toUint32(nodeColor) !== 0xffffffff || _premultipliedAlpha) {
         _nodeR = nodeColor.r / 255;
         _nodeG = nodeColor.g / 255;
         _nodeB = nodeColor.b / 255;

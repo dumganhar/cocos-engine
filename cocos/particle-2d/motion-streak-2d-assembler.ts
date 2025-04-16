@@ -153,6 +153,9 @@ class MotionStreakAssembler implements IAssembler {
         indexCount = vertexCount <= 2 ? 0 : (vertexCount - 2) * 3;
 
         renderData.resize(vertexCount, indexCount); // resize
+
+        node._uiProps.colorDirty = true;
+
         if (JSB) {
             const indexCount = renderData.indexCount;
             this.createQuadIndices(comp, indexCount);
