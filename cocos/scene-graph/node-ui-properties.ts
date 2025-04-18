@@ -105,6 +105,12 @@ export class NodeUIProperties {
     public _uiSkewComp: UISkew | null = null;
     private declare _node: Node;
 
+    /**
+     * @engineInternal
+     * @mangle
+     */
+    public _priority = 0;
+
     constructor (node: Node) {
         this._node = node;
     }

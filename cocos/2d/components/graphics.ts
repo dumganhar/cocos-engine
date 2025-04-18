@@ -39,6 +39,7 @@ import { vfmtPosColor, getAttributeStride, getComponentPerVertex } from '../rend
 import { NativeUIModelProxy } from '../renderer/native-2d';
 import { RenderEntity, RenderEntityType } from '../renderer/render-entity';
 import type { GraphicsAssembler } from '../assembler/graphics/webgl/graphics-assembler';
+import { RenderDrawInfoType } from '../renderer/render-draw-info';
 
 const attributes = vfmtPosColor.concat([
     new Attribute('a_dist', Format.R32F),
@@ -264,6 +265,17 @@ export class Graphics extends UIRenderer {
     public onEnable (): void {
         super.onEnable();
         this._updateMtlForGraphics();
+
+        if (JSB && this.impl) {
+            const renderDataList = this.impl.getRenderDataList();
+            renderDataList.forEach((renderData) => {
+                if (this._renderEntity.renderDrawInfoArr.length === 0) {
+                    this._renderEntity.addDynamicRenderDrawInfo(renderData.renderDrawInfo);
+                }
+            });
+            this._markForUpdateRenderData();
+            this._isNeedUploadData = true;
+        }
     }
 
     public onDestroy (): void {

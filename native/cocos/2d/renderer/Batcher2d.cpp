@@ -183,6 +183,9 @@ void Batcher2d::walk(Node* node, float parentOpacity, bool parentOpacityDirty) {
     const float localOpacity = node->_getLocalOpacity();
     const float finalOpacityWithoutColorAlpha = parentOpacity * localOpacity;
     float finalOpacity = finalOpacityWithoutColorAlpha;
+    if (node->getName() == "Mask") {
+        int a = 0;
+    }
     
     if (entity) {
         if (entity->getColorDirty() || isCurrentOpacityDirty) {
