@@ -91,19 +91,13 @@ void UIModelProxy::uploadData() {
         gfx::BufferList vBuffers = ia->getVertexBuffers();
         if (!vBuffers.empty()) {
             auto size = drawInfo->getVertexOffset() * _stride;
-            // if (size > vBuffers[0]->getSize()) {
-            vBuffers[0]->resize(size);
-            // }
-            vBuffers[0]->update(drawInfo->getVDataBuffer()); // vdata
+            vBuffers[0]->update(drawInfo->getVDataBuffer(), size); // vdata
         }
         ia->setVertexCount(drawInfo->getVertexOffset()); // count
 
         gfx::Buffer* iBuffer = ia->getIndexBuffer();
         auto size = drawInfo->getIndexOffset() * 2;
-        // if (size > iBuffer->getSize()) {
-        iBuffer->resize(size);
-        // }
-        iBuffer->update(drawInfo->getIDataBuffer());   // idata
+        iBuffer->update(drawInfo->getIDataBuffer(), size);   // idata
         ia->setIndexCount(drawInfo->getIndexOffset()); // indexCount
         // drawInfo->setModel(_model); // hack, render by model
     }
