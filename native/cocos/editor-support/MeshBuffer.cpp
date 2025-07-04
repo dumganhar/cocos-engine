@@ -141,7 +141,7 @@ void MeshBuffer::addUIMeshBuffer() {
     } else {
         attrs = ATTRIBUTES_V3F_T2F_C4B_C4B;
     }
-    uiMeshBuffer->initialize(std::move(attrs), true);
+    uiMeshBuffer->initialize(std::move(attrs));
     _uiMeshBufferArr.push_back(uiMeshBuffer);
 }
 

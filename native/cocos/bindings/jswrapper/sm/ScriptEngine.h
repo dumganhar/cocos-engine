@@ -299,10 +299,10 @@ public:
     void _setGarbageCollecting(bool isGarbageCollecting);
     void _debugProcessInput(const std::string &str);
     //
-private:
+
     ScriptEngine();
     ~ScriptEngine();
-
+private:
     static void onWeakPointerCompartmentCallback(JSTracer *trc, JS::Compartment *comp, void *data);
     static void onWeakPointerZoneGroupCallback(JSTracer *trc, void *data);
 

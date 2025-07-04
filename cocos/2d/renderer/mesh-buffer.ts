@@ -27,6 +27,7 @@ import { Device, BufferUsageBit, MemoryUsageBit, Attribute, Buffer, BufferInfo, 
 import { getAttributeStride } from './vertex-format';
 import { sys, getError, warnID, assertIsTrue } from '../../core';
 import { NativeUIMeshBuffer } from './native-2d';
+import { createExternalFloat32Array, createExternalUint16Array } from '../../misc/external-arraybuffer';
 
 interface IIARef {
     ia: InputAssembler;
@@ -212,18 +213,8 @@ export class MeshBuffer {
      */
     public initSharedBuffer (): void {
         if (JSB) {
-            this._sharedBuffer = new Uint32Array(MeshBufferSharedBufferView.count);
-        }
-    }
-
-    /**
-     * @en Synchronized native shared buffer.
-     * @zh 同步原生共享缓冲。
-     * @deprecated since v3.7.0, this is an engine private interface that will be removed in the future.
-     */
-    public syncSharedBufferToNative (): void {
-        if (JSB) {
-            this._nativeObj.syncSharedBufferToNative(this._sharedBuffer);
+            const buffer = this._nativeObj._getSharedArrayBufferObject();
+            this._sharedBuffer = new Uint32Array(buffer);
         }
     }
 
@@ -231,7 +222,6 @@ export class MeshBuffer {
         if (JSB) {
             this._nativeObj = new NativeUIMeshBuffer();
             this.initSharedBuffer();
-            this.syncSharedBufferToNative();
         }
     }
 
@@ -254,8 +244,8 @@ export class MeshBuffer {
         assertIsTrue(this._initVDataCount / this._floatsPerVertex < 65536, getError(9005));
 
         if (!this.vData || !this.iData) {
-            this.vData = new Float32Array(this._initVDataCount);
-            this.iData = new Uint16Array(this._initIDataCount);
+            this.vData = createExternalFloat32Array(this._initVDataCount);
+            this.iData = createExternalUint16Array(this._initIDataCount);
         }
         // Initialize the first ia
         this._iaPool.push(this.createNewIA(device));

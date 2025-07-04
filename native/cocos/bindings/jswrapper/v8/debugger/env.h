@@ -389,7 +389,7 @@ public:
     };
 
 private:
-    inline void ThrowError(v8::Local<v8::Value> (*fun)(v8::Local<v8::String>),
+    inline void ThrowError(v8::Local<v8::Value> (*fun)(v8::Local<v8::String>, v8::Local<v8::Value>),
                            const char *errmsg);
 
     v8::Isolate *const isolate_;
@@ -521,22 +521,22 @@ inline void Environment::SetMethod(v8::Local<v8::Object> that,
 }
 
 inline void Environment::ThrowError(const char *errmsg) {
-    ThrowError(v8::Exception::Error, errmsg);
+//    ThrowError(v8::Exception::Error, errmsg);
 }
 
 inline void Environment::ThrowTypeError(const char *errmsg) {
-    ThrowError(v8::Exception::TypeError, errmsg);
+//    ThrowError(v8::Exception::TypeError, errmsg);
 }
 
 inline void Environment::ThrowRangeError(const char *errmsg) {
-    ThrowError(v8::Exception::RangeError, errmsg);
+//    ThrowError(v8::Exception::RangeError, errmsg);
 }
 
 inline void Environment::ThrowError(
-    v8::Local<v8::Value> (*fun)(v8::Local<v8::String>),
+    v8::Local<v8::Value> (*fun)(v8::Local<v8::String>, v8::Local<v8::Value>),
     const char *errmsg) {
     v8::HandleScope handle_scope(isolate());
-    isolate()->ThrowException(fun(OneByteString(isolate(), errmsg)));
+    isolate()->ThrowException(fun(OneByteString(isolate(), errmsg), {}));
 }
 
 inline void Environment::ThrowErrnoException(int errorno,

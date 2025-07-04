@@ -714,7 +714,7 @@ struct ReadFileDoJobReturnType {
 
 template <>
 struct ReadFileDoJobReturnType<ccstd::string, true> {
-#if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_NAPI
+#if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_NAPI || SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_SM
     using value = std::shared_ptr<ccstd::string>;
 #else
     using value = std::shared_ptr<std::u16string>;
@@ -741,13 +741,15 @@ static bool js_readFile_doJob(const ccstd::string &fullPath, typename ReadFileDo
 
     if constexpr (std::is_same_v<T, ccstd::string> && isJson) {
 // TODO(cjh): OpenHarmony NAPI support
-#if SCRIPT_ENGINE_TYPE != SCRIPT_ENGINE_NAPI
+#if SCRIPT_ENGINE_TYPE != SCRIPT_ENGINE_NAPI && SCRIPT_ENGINE_TYPE != SCRIPT_ENGINE_SM
         auto u16str = std::make_shared<std::u16string>();
         if (!cc::StringUtils::UTF8ToUTF16(*content, *u16str)) {
             CC_LOG_ERROR("UTF8ToUTF16 failed, file: %s", fullPath.c_str());
             return false;
         }
         outValue = u16str;
+#else
+        outValue = content;
 #endif
     } else {
         outValue = content;
@@ -773,7 +775,7 @@ static void js_readFile_invokeCallback(bool doJobSucceed, const typename ReadFil
 
     if constexpr (std::is_same_v<T, ccstd::string>) {
         if constexpr (isJson) {
-#if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_NAPI
+#if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_NAPI || SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_SM
             se::HandleObject jsonObj(se::Object::createJSONObject(*content));
 #else
             se::HandleObject jsonObj(se::Object::createJSONObject(std::move(*content)));

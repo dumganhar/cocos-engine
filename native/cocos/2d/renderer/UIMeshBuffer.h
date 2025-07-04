@@ -29,19 +29,20 @@
 #include "renderer/gfx-base/GFXInputAssembler.h"
 #include "renderer/gfx-base/GFXDef-common.h"
 #include "renderer/gfx-base/GFXBuffer.h"
+#include "bindings/utils/BindingUtils.h"
 
 namespace cc {
 
 struct MeshBufferLayout {
-    uint32_t byteOffset;
-    uint32_t vertexOffset;
-    uint32_t indexOffset;
-    uint32_t dirtyMark;
+    uint32_t byteOffset{0};
+    uint32_t vertexOffset{0};
+    uint32_t indexOffset{0};
+    uint32_t dirtyMark{0};
 };
 
 class UIMeshBuffer final {
 public:
-    UIMeshBuffer() = default;
+    UIMeshBuffer();
     ~UIMeshBuffer();
 
     inline float* getVData() const { return _vData; }
@@ -49,30 +50,30 @@ public:
     inline uint16_t* getIData() const { return _iData; }
     void setIData(uint16_t* iData);
 
-    void initialize(ccstd::vector<gfx::Attribute>&& attrs, bool needCreateLayout = false);
+    void initialize(ccstd::vector<gfx::Attribute>&& attrs);
     void reset();
     void destroy();
     void setDirty();
     void uploadBuffers();
-    void syncSharedBufferToNative(uint32_t* buffer);
     void resetIA();
     void recycleIA(gfx::InputAssembler* ia);
-    void parseLayout();
 
     gfx::InputAssembler* requireFreeIA(gfx::Device* device);
     gfx::InputAssembler* createNewIA(gfx::Device* device);
 
-    inline uint32_t getByteOffset() const { return _meshBufferLayout->byteOffset; }
+    inline uint32_t getByteOffset() const { return _meshBufferLayout.byteOffset; }
     void setByteOffset(uint32_t byteOffset);
-    inline uint32_t getVertexOffset() const { return _meshBufferLayout->vertexOffset; }
+    inline uint32_t getVertexOffset() const { return _meshBufferLayout.vertexOffset; }
     void setVertexOffset(uint32_t vertexOffset);
-    inline uint32_t getIndexOffset() const { return _meshBufferLayout->indexOffset; }
+    inline uint32_t getIndexOffset() const { return _meshBufferLayout.indexOffset; }
     void setIndexOffset(uint32_t indexOffset);
-    inline bool getDirty() const { return _meshBufferLayout->dirtyMark != 0; }
-    void setDirty(bool dirty) const;
+    inline bool getDirty() const { return _meshBufferLayout.dirtyMark != 0; }
+    void setDirty(bool dirty);
     inline const ccstd::vector<gfx::Attribute>& getAttributes() const {
         return _attributes;
     }
+    
+    inline se::Object *_getSharedArrayBufferObject() const { return _sharedMemoryActor.getSharedArrayBufferObject(); } // NOLINT
 
 protected:
     CC_DISALLOW_COPY_MOVE_ASSIGN(UIMeshBuffer);
@@ -80,9 +81,9 @@ protected:
 private:
     float* _vData{nullptr};
     uint16_t* _iData{nullptr};
+    cc::bindings::NativeMemorySharedToScriptActor _sharedMemoryActor;
 
-    MeshBufferLayout* _meshBufferLayout{nullptr};
-    uint32_t* _sharedBuffer{nullptr};
+    MeshBufferLayout _meshBufferLayout;
 
     uint32_t _vertexFormatBytes{0};
     uint32_t _initVDataCount{0};
@@ -94,7 +95,5 @@ private:
     IntrusivePtr<gfx::Buffer> _ib;
 
     bool _dirty{false};
-    bool _needDeleteVData{false};
-    bool _needDeleteLayout{false};
 };
 } // namespace cc

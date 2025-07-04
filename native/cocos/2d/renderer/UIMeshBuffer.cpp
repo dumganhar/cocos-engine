@@ -36,6 +36,10 @@ static uint32_t getAttributesStride(ccstd::vector<gfx::Attribute>& attrs) {
     return stride;
 }
 
+UIMeshBuffer::UIMeshBuffer() {
+    _sharedMemoryActor.initialize(&_meshBufferLayout, sizeof(_meshBufferLayout));
+}
+
 UIMeshBuffer::~UIMeshBuffer() {
     destroy();
 }
@@ -48,13 +52,9 @@ void UIMeshBuffer::setIData(uint16_t* iData) {
     _iData = iData;
 }
 
-void UIMeshBuffer::initialize(ccstd::vector<gfx::Attribute>&& attrs, bool needCreateLayout) {
+void UIMeshBuffer::initialize(ccstd::vector<gfx::Attribute>&& attrs) {
     _attributes = attrs;
-    _vertexFormatBytes = getAttributesStride(attrs);
-    if (needCreateLayout) {
-        _meshBufferLayout = new MeshBufferLayout();
-    }
-    _needDeleteLayout = needCreateLayout;
+    _vertexFormatBytes = getAttributesStride(attrs);    
 }
 
 void UIMeshBuffer::reset() {
@@ -70,17 +70,10 @@ void UIMeshBuffer::destroy() {
     _attributes.clear();
     _vb = nullptr;
     _ib = nullptr;
-    if (_needDeleteVData) {
-        delete _vData;
-        delete _iData;
-    }
     _vData = nullptr;
     _iData = nullptr;
     // Destroy InputAssemblers
     _ia = nullptr;
-    if (_needDeleteLayout) {
-        CC_SAFE_DELETE(_meshBufferLayout);
-    }
 }
 
 void UIMeshBuffer::setDirty() {
@@ -94,12 +87,15 @@ gfx::InputAssembler* UIMeshBuffer::requireFreeIA(gfx::Device* device) {
 void UIMeshBuffer::uploadBuffers() {
     uint32_t byteOffset = getByteOffset();
     bool dirty = getDirty();
-    if (_meshBufferLayout == nullptr || byteOffset == 0 || !dirty || !_ia) {
+    if (byteOffset == 0 || !dirty || !_ia) {
         return;
     }
 
     uint32_t indexCount = getIndexOffset();
     uint32_t byteCount = getByteOffset();
+    if (byteCount == 19008) {
+        int a = 0;
+    }
 
     gfx::BufferList vBuffers = _ia->getVertexBuffers();
     if (!vBuffers.empty()) {
@@ -150,29 +146,20 @@ gfx::InputAssembler* UIMeshBuffer::createNewIA(gfx::Device* device) {
     return _ia;
 }
 
-void UIMeshBuffer::syncSharedBufferToNative(uint32_t* buffer) {
-    _sharedBuffer = buffer;
-    parseLayout();
-}
-
-void UIMeshBuffer::parseLayout() {
-    _meshBufferLayout = reinterpret_cast<MeshBufferLayout*>(_sharedBuffer);
-}
-
 void UIMeshBuffer::setByteOffset(uint32_t byteOffset) {
-    _meshBufferLayout->byteOffset = byteOffset;
+    _meshBufferLayout.byteOffset = byteOffset;
 }
 
 void UIMeshBuffer::setVertexOffset(uint32_t vertexOffset) {
-    _meshBufferLayout->vertexOffset = vertexOffset;
+    _meshBufferLayout.vertexOffset = vertexOffset;
 }
 
 void UIMeshBuffer::setIndexOffset(uint32_t indexOffset) {
-    _meshBufferLayout->indexOffset = indexOffset;
+    _meshBufferLayout.indexOffset = indexOffset;
 }
 
-void UIMeshBuffer::setDirty(bool dirty) const {
-    _meshBufferLayout->dirtyMark = dirty ? 1 : 0;
+void UIMeshBuffer::setDirty(bool dirty) {
+    _meshBufferLayout.dirtyMark = dirty ? 1 : 0;
 }
 
 } // namespace cc

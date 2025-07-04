@@ -28,6 +28,7 @@ import { MeshBuffer } from './mesh-buffer';
 import { BufferAccessor } from './buffer-accessor';
 import { assertID, errorID, Pool, macro, assertIsTrue } from '../../core';
 import { director } from '../../game';
+import { createExternalUint16Array } from '../../misc/external-arraybuffer';
 
 interface IFreeEntry {
     offset: number;
@@ -58,7 +59,7 @@ export class StaticVBChunk {
         public indexCount: number,
     ) {
         if (JSB) {
-            this._ib = new Uint16Array(indexCount); // JSB
+            this._ib = createExternalUint16Array(indexCount); // JSB
         }
         assertIsTrue(meshBuffer === vertexAccessor.getMeshBuffer(bufferId));
     }
@@ -149,7 +150,7 @@ export class StaticVBAccessor extends BufferAccessor {
             const needLength = buf.indexOffset + indices.length;
             if (buf.iData.length < needLength) {
                 const expansionLength = Math.floor(1.25 * needLength);
-                const newIData = new Uint16Array(expansionLength);
+                const newIData = createExternalUint16Array(expansionLength);
                 newIData.set(buf.iData);
                 buf.iData = newIData;
             }

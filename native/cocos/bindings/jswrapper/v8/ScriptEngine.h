@@ -50,6 +50,7 @@ namespace se {
 class Object;
 class Class;
 class Value;
+class BytecodeManager;
 
 /**
  * A stack-allocated class that governs a number of local handles.
@@ -64,6 +65,48 @@ public:
 
 private:
     v8::HandleScope _handleScope;
+};
+
+/**
+ * Collection of script engine heap information.
+ */
+class HeapStatistics final
+{
+public:
+    HeapStatistics() {}
+    size_t getTotalHeapSize() { return _totalHeapSize; }
+    size_t getTotalHeapSizeExecutable() { return _totalHeapSizeExecutable; }
+    size_t getTotalPhysicalSize() { return _totalPhysicalSize; }
+    size_t getTotalAvailableSize() { return _totalAvailableSize; }
+    size_t getUsedHeapSize() { return _usedHeapSize; }
+    size_t getHeapSizeLimit() { return _heapSizeLimit; }
+    size_t getMallocedMemory() { return _mallocedMemory; }
+    size_t getExternalMemory() { return _externalMemory; }
+    size_t getPeakMallocedMemory() { return _peakMallocedMemory; }
+    size_t getNumberOfNativeContexts() { return _numberOfNativeContexts; }
+    size_t getNumberOfDetachedContexts() { return _numberOfDetachedContexts; }
+
+    /**
+     * Returns a 0/1 boolean, which signifies whether the V8 overwrite heap
+     * garbage with a bit pattern.
+     */
+    size_t getDoesZapGarbage() { return _doesZapGarbage; }
+
+private:
+    size_t _totalHeapSize = 0;
+    size_t _totalHeapSizeExecutable = 0;
+    size_t _totalPhysicalSize = 0;
+    size_t _totalAvailableSize = 0;
+    size_t _usedHeapSize = 0;
+    size_t _heapSizeLimit = 0;
+    size_t _mallocedMemory = 0;
+    size_t _externalMemory = 0;
+    size_t _peakMallocedMemory = 0;
+    size_t _doesZapGarbage = 0;
+    size_t _numberOfNativeContexts = 0;
+    size_t _numberOfDetachedContexts = 0;
+
+    friend class ScriptEngine;
 };
 
 /**
@@ -289,6 +332,11 @@ public:
     void setJSExceptionCallback(const ExceptionCallback &cb);
 
     /**
+     * Get statistics about the heap memory usage.
+     */
+    void getHeapStatistics(HeapStatistics* heapStatistics);
+
+    /**
      *  @brief Gets the start time of script engine.
      *  @return The start time of script engine.
      */
@@ -415,6 +463,8 @@ private:
     Object *_globalObj{nullptr};
     Value _gcFuncValue;
     Object *_gcFunc = nullptr;
+    
+    BytecodeManager* _bytecodeManager = nullptr;
 
     FileOperationDelegate _fileOperationDelegate;
     ExceptionCallback _nativeExceptionCallback = nullptr;

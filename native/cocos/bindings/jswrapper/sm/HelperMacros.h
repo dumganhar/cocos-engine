@@ -104,7 +104,7 @@ void printJSBInvokeAtFrame(int n);
             se::internal::jsToSeArgs(_cx, argc, _argv, args);                                                                        \
             se::PrivateObjectBase *privateObject = static_cast<se::PrivateObjectBase *>(se::internal::getPrivate(_cx, _thizObj, 0)); \
             se::Object *thisObject = reinterpret_cast<se::Object *>(se::internal::getPrivate(_cx, _thizObj, 1));                     \
-            se::State state(thisObject, privateObject, args);                                                                        \
+            se::State state(thisObject, args);                                                                        \
             ret = funcName(state);                                                                                                   \
             if (!ret) {                                                                                                              \
                 SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__);                            \
@@ -125,17 +125,17 @@ void printJSBInvokeAtFrame(int n);
         }
 
     #define SE_DECLARE_FINALIZE_FUNC(funcName) \
-        void funcName##Registry(JSFreeOp *_fop, JSObject *_obj);
+        void funcName##Registry(JS::GCContext* _gcx, JSObject *_obj);
 
     #define SE_BIND_FINALIZE_FUNC(funcName)                                                                                       \
-        void funcName##Registry(JSFreeOp *_fop, JSObject *_obj) {                                                                 \
+        void funcName##Registry(JS::GCContext* _gcx, JSObject *_obj) {                                                                 \
             JsbInvokeScope(#funcName);                                                                                            \
             se::PrivateObjectBase *privateObject = static_cast<se::PrivateObjectBase *>(se::internal::SE_JS_GetPrivate(_obj, 0)); \
             se::Object *seObj = static_cast<se::Object *>(se::internal::SE_JS_GetPrivate(_obj, 1));                               \
             bool ret = false;                                                                                                     \
             if (privateObject == nullptr)                                                                                         \
                 return;                                                                                                           \
-            se::State state(privateObject);                                                                                       \
+            se::State state(seObj);                                                                                       \
             ret = funcName(state);                                                                                                \
             if (!ret) {                                                                                                           \
                 SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__);                         \
@@ -184,7 +184,7 @@ void printJSBInvokeAtFrame(int n);
             _argv.computeThis(_cx, &_thizObj);                                                                                       \
             se::PrivateObjectBase *privateObject = static_cast<se::PrivateObjectBase *>(se::internal::getPrivate(_cx, _thizObj, 0)); \
             se::Object *thisObject = reinterpret_cast<se::Object *>(se::internal::getPrivate(_cx, _thizObj, 1));                     \
-            se::State state(thisObject, privateObject);                                                                              \
+            se::State state(thisObject);                                                                              \
             ret = funcName(state);                                                                                                   \
             if (!ret) {                                                                                                              \
                 SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__);                            \
@@ -210,7 +210,7 @@ void printJSBInvokeAtFrame(int n);
             se::CallbackDepthGuard depthGuard{args, se::gValueArrayPool._depth, needDeleteValueArray};                               \
             se::Value &data{args[0]};                                                                                                \
             se::internal::jsToSeValue(_cx, _argv[0], &data);                                                                         \
-            se::State state(thisObject, privateObject, args);                                                                        \
+            se::State state(thisObject, args);                                                                        \
             ret = funcName(state);                                                                                                   \
             if (!ret) {                                                                                                              \
                 SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", #funcName, __FILE__, __LINE__);                            \

@@ -1001,6 +1001,54 @@ static bool jsb_createExternalArrayBuffer(se::State &s) { // NOLINT
 }
 SE_BIND_FUNC(jsb_createExternalArrayBuffer)
 
+#if (SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8)
+static void updateHeapStatistics(se::Object* heapObj)
+{
+    auto se = se::ScriptEngine::getInstance();
+
+    se::HeapStatistics stats;
+    se->getHeapStatistics(&stats);
+
+    heapObj->setProperty("totalHeapSize", se::Value((uint32_t)stats.getTotalHeapSize()));
+    heapObj->setProperty("totalHeapSizeExecutable", se::Value((uint32_t)stats.getTotalHeapSizeExecutable()));
+    heapObj->setProperty("totalPhysicalSize", se::Value((uint32_t)stats.getTotalPhysicalSize()));
+    heapObj->setProperty("totalAvailableSize", se::Value((uint32_t)stats.getTotalAvailableSize()));
+    heapObj->setProperty("usedHeapSize", se::Value((uint32_t)stats.getUsedHeapSize()));
+    heapObj->setProperty("heapSizeLimit", se::Value((uint32_t)stats.getHeapSizeLimit()));
+    heapObj->setProperty("mallocedMemory", se::Value((uint32_t)stats.getMallocedMemory()));
+    heapObj->setProperty("externalMemory", se::Value((uint32_t)stats.getExternalMemory()));
+    heapObj->setProperty("peakMallocedMemory", se::Value((uint32_t)stats.getPeakMallocedMemory()));
+    heapObj->setProperty("doesZapGarbage", se::Value((uint32_t)stats.getDoesZapGarbage()));
+    heapObj->setProperty("numberOfNativeContexts", se::Value((uint32_t)stats.getNumberOfNativeContexts()));
+    heapObj->setProperty("numberOfDetachedContexts", se::Value((uint32_t)stats.getNumberOfDetachedContexts()));
+}
+#endif
+
+static bool JSB_getHeapStatistics(se::State& s)
+{
+#if (SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8)
+    static const char* HEAP_STATS = "_heapStatistics";
+    se::Value heapVal;
+    if (__jsbObj->getProperty(HEAP_STATS, &heapVal) && heapVal.isObject())
+    {
+        updateHeapStatistics(heapVal.toObject());
+        s.rval().setObject(heapVal.toObject());
+    }
+    else
+    {
+        se::HandleObject heapObj(se::Object::createPlainObject());
+        updateHeapStatistics(heapObj.get());
+        __jsbObj->setProperty(HEAP_STATS, se::Value(heapObj));
+        s.rval().setObject(heapObj);
+    }
+
+#else
+    s.rval().setNull();
+#endif
+    return true;
+}
+SE_BIND_FUNC(JSB_getHeapStatistics)
+
 static bool JSB_zipUtils_inflateMemory(se::State &s) { // NOLINT
     const auto &args = s.args();
     size_t argc = args.size();
@@ -1583,6 +1631,8 @@ bool jsb_register_global_variables(se::Object *global) { // NOLINT
     __jsbObj->defineFunction("setCursorEnabled", _SE(JSB_setCursorEnabled));
     __jsbObj->defineFunction("saveByteCode", _SE(JSB_saveByteCode));
     __jsbObj->defineFunction("createExternalArrayBuffer", _SE(jsb_createExternalArrayBuffer));
+    
+    __jsbObj->defineFunction("getHeapStatistics", _SE(JSB_getHeapStatistics));
 
     // Create process object
     se::HandleObject processObj{se::Object::createPlainObject()};

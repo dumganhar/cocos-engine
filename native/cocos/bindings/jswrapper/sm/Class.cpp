@@ -51,7 +51,7 @@ Class::Class()
 : _parent(nullptr),
   _proto(nullptr),
   _parentProto(nullptr),
-  _ctor(nullptr),
+  _constructor(nullptr),
   _finalizeOp(nullptr) {
     memset(&_jsCls, 0, sizeof(_jsCls));
     memset(&_classOps, 0, sizeof(_classOps));
@@ -73,14 +73,14 @@ Class *Class::create(const char *className, Object *obj, Object *parentProto, JS
 
 Class *Class::create(const std::initializer_list<const char *> &classPath, se::Object *parent, Object *parentProto, JSNative ctor) {
     se::AutoHandleScope scope;
-    se::Object *currentParent = parent;
-    se::Value tmp;
+    se::Value currentParent{parent};
     for (auto i = 0; i < classPath.size() - 1; i++) {
-        bool ok = currentParent->getProperty(*(classPath.begin() + i), &tmp);
+        se::Value tmp;
+        bool ok = currentParent.toObject()->getProperty(*(classPath.begin() + i), &tmp);
         CC_ASSERT(ok); // class or namespace in path is not defined
-        currentParent = tmp.toObject();
+        currentParent = tmp;
     }
-    return create(*(classPath.end() - 1), currentParent, parentProto, ctor);
+    return create(*(classPath.end() - 1), currentParent.toObject(), parentProto, ctor);
 }
 
 bool Class::init(const char *clsName, Object *parent, Object *parentProto, JSNative ctor) {
@@ -94,13 +94,22 @@ bool Class::init(const char *clsName, Object *parent, Object *parentProto, JSNat
     if (_parentProto != nullptr)
         _parentProto->incRef();
 
-    _ctor = ctor;
-    if (_ctor == nullptr) {
-        _ctor = empty_constructor;
+    _constructor = ctor;
+    if (_constructor == nullptr) {
+        _constructor = empty_constructor;
     }
 
     //        SE_LOGD("Class init ( %s ) ...\n", clsName);
     return true;
+}
+
+void Class::_setCtor(Object *obj) {
+    assert(!_ctor.has_value());
+    _ctor = obj;
+    if (obj != nullptr) {
+        obj->root();
+        obj->incRef();
+    }
 }
 
 void Class::destroy() {
@@ -127,7 +136,7 @@ bool Class::install() {
     if (_finalizeOp != nullptr) {
         _classOps.finalize = _finalizeOp;
     } else {
-        _classOps.finalize = [](JSFreeOp *fop, JSObject *obj) {};
+        _classOps.finalize = [](JS::GCContext *gtx, JSObject *obj) {};
     }
 
     _classOps.trace = Class::onTraceCallback;
@@ -142,8 +151,8 @@ bool Class::install() {
     _properties.push_back(JS_PS_END);
     _staticFuncs.push_back(JS_FS_END);
     _staticProperties.push_back(JS_PS_END);
-
-    JS::RootedObject jsobj(__cx, JS_InitClass(__cx, parent, parentProto, &_jsCls, _ctor, 0, _properties.data(), _funcs.data(), _staticProperties.data(), _staticFuncs.data()));
+    
+    JS::RootedObject jsobj(__cx, JS_InitClass(__cx, parent, &_jsCls, parentProto, _name, _constructor, 0, _properties.data(), _funcs.data(), _staticProperties.data(), _staticFuncs.data()));
     if (jsobj != nullptr) {
         _proto = Object::_createJSObject(nullptr, jsobj);
         //            SE_LOGD("_proto: %p, name: %s\n", _proto, _name);
@@ -183,6 +192,23 @@ bool Class::defineStaticFunction(const char *name, JSNative func) {
 bool Class::defineStaticProperty(const char *name, JSNative getter, JSNative setter) {
     JSPropertySpec property = JS_PSGS(name, getter, setter, JSPROP_ENUMERATE);
     _staticProperties.push_back(property);
+    return true;
+}
+
+/*
+ static constexpr JSPropertySpec int32Value(const char* name,
+                                            uint8_t attributes, int32_t n) {
+   return JSPropertySpec(name, attributes, Kind::Value,
+                         AccessorsOrValue::fromValue(
+                             JSPropertySpec::ValueWrapper::int32Value(n)));
+ }
+ */
+
+bool Class::defineStaticProperty(const char *name, const Value &value, PropertyAttribute attribute/* = PropertyAttribute::NONE*/) {
+//cjh    JSPropertySpec property{name, attributes, JS::Kind::Value,
+//        AccessorsOrValue::fromValue(
+//                                    JSPropertySpec::ValueWrapper::int32Value(n))};
+//    _staticProperties.push_back(property);
     return true;
 }
 

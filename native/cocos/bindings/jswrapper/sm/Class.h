@@ -28,8 +28,9 @@
 #include "../config.h"
 
 #if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_SM
-
+    #include "../Define.h"
     #include "Base.h"
+    #include "base/std/optional.h"
 
 namespace se {
 
@@ -88,6 +89,15 @@ public:
     bool defineStaticProperty(const char *name, JSNative getter, JSNative setter);
 
     /**
+     *  @brief Defines a static property with a value. Only JavaScript constructor object will have this property.
+     *  @param[in] name A null-terminated UTF8 string containing the property name.
+     *  @param[in] value A value to be set on the constructor.
+     *  @param[in] attribute An attribute to describe the property.
+     *  @return true if succeed, otherwise false.
+     */
+    bool defineStaticProperty(const char *name, const Value &value, PropertyAttribute attribute = PropertyAttribute::NONE);
+    
+    /**
          *  @brief Defines the finalize function with a callback.
          *  @param[in] func The callback to invoke when a JavaScript object is garbage collected.
          *  @return true if succeed, otherwise false.
@@ -116,6 +126,8 @@ public:
 
     // Private API used in wrapper
     JSFinalizeOp _getFinalizeCb() const;
+    void _setCtor(Object *obj);                                                // NOLINT(readability-identifier-naming)
+    inline const ccstd::optional<Object *> &_getCtor() const { return _ctor; } // NOLINT(readability-identifier-naming)
     //
 private:
     Class();
@@ -136,8 +148,9 @@ private:
     Object *_parent;
     Object *_proto;
     Object *_parentProto;
+    ccstd::optional<Object *> _ctor;
 
-    JSNative _ctor;
+    JSNative _constructor;
 
     JSClass _jsCls;
     JSClassOps _classOps;

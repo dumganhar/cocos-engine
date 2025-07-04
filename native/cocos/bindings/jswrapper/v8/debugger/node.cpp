@@ -753,12 +753,12 @@ void SetupProcessObject(Environment *env,
     Local<Object> process = env->process_object();
 
     auto title_string = FIXED_ONE_BYTE_STRING(env->isolate(), "title");
-    CHECK(process->SetAccessor(env->context(),
-                               title_string,
-                               ProcessTitleGetter,
-                               ProcessTitleSetter,
-                               env->as_external())
-              .FromJust());
+//    CHECK(process->SetAccessor(env->context(),
+//                               title_string,
+//                               ProcessTitleGetter,
+//                               ProcessTitleSetter,
+//                               env->as_external())
+//              .FromJust());
 
     // process.version
     READONLY_PROPERTY(process,

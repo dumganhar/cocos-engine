@@ -44,6 +44,31 @@ inline gfx::MarkerInfo makeMarkerInfo(const char* str, const gfx::Color& color) 
 }
 
 struct RenderGraphVisitorContext {
+    RenderGraphVisitorContext(
+            NativeRenderContext& context,
+            LayoutGraphData& lg,
+            const RenderGraph& g,
+            ResourceGraph& resourceGraph,
+            const FrameGraphDispatcher& fgd,
+            const ccstd::pmr::vector<bool>& validPasses,
+            gfx::Device* device,
+            gfx::CommandBuffer* cmdBuff,
+            NativePipeline* ppl,
+            ProgramLibrary* programLib,
+            ccstd::pmr::vector<ccstd::optional<gfx::Viewport>>& viewportStack,
+            CustomRenderGraphContext customContext,
+            boost::container::pmr::memory_resource* scratch,
+            uint32_t subpassIndex = 0,
+            RenderGraph::vertex_descriptor currentInFlightPassID = RenderGraph::null_vertex(),
+            boost::container::static_vector<bool, 2> passShowStatistics = {})
+            : context(context), lg(lg), g(g), resourceGraph(resourceGraph),
+              fgd(fgd), validPasses(validPasses), device(device),
+              cmdBuff(cmdBuff), ppl(ppl), programLib(programLib),
+              viewportStack(viewportStack), customContext(std::move(customContext)),
+              scratch(scratch), subpassIndex(subpassIndex), currentInFlightPassID(currentInFlightPassID),
+              passShowStatistics(passShowStatistics)
+    {}
+    
     RenderGraphVisitorContext(RenderGraphVisitorContext&&) = delete;
     RenderGraphVisitorContext(RenderGraphVisitorContext const&) = delete;
     RenderGraphVisitorContext& operator=(RenderGraphVisitorContext&&) = delete;

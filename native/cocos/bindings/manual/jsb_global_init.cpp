@@ -26,7 +26,10 @@
 #include "base/Macros.h"
 // clang-format: off
 #include "base/std/container/string.h"
+#include "bindings/jswrapper/SeApi.h"
+#if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
 #include "uv.h"
+#endif
 // clang-format on
 
 #include "jsb_global_init.h"
@@ -66,6 +69,7 @@ static ccstd::string removeFileExt(const ccstd::string &filePath) {
 }
 
 static int selectPort(int port) {
+#if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
     struct sockaddr_in addr;
     static uv_tcp_t server;
     uv_loop_t loop;
@@ -103,6 +107,9 @@ static int selectPort(int port) {
     }
     uv_loop_close(&loop);
     return startPort;
+#else
+    return 0;
+#endif
 }
 
 void jsb_init_file_operation_delegate() { //NOLINT

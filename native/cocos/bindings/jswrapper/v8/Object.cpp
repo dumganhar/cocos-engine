@@ -255,10 +255,14 @@ Object *Object::createExternalArrayBufferObject(void *contents, size_t byteLengt
                           .As<v8::TypedArray>();
     v8::Local<v8::ArrayBuffer> jsobj = nodeBuffer.As<v8::TypedArray>()->Buffer();
     #else
-    std::shared_ptr<v8::BackingStore> backingStore = v8::ArrayBuffer::NewBackingStore(contents, byteLength, freeFunc, freeUserData);
-    v8::Local<v8::ArrayBuffer> jsobj = v8::ArrayBuffer::New(__isolate, backingStore);
+//    CC_LOG_INFO("cjh createExternalArrayBufferObject, before %p", contents);
+    std::unique_ptr<v8::BackingStore> backingStore = v8::ArrayBuffer::NewBackingStore(contents, byteLength, freeFunc, freeUserData);
+    v8::Local<v8::ArrayBuffer> jsobj = v8::ArrayBuffer::New(__isolate, std::move(backingStore));
+//    jsobj->IsExternal()
+//    CC_ASSERT(jsobj->IsExternal());
+//    CC_LOG_INFO("cjh createExternalArrayBufferObject, after %p", contents);
     #endif
-
+//
     if (!jsobj.IsEmpty()) {
         obj = Object::_createJSObject(nullptr, jsobj);
     }
@@ -331,8 +335,7 @@ Object *Object::createTypedArrayWithBuffer(TypedArrayType type, const Object *ob
 
 Object *Object::createTypedArrayWithBuffer(TypedArrayType type, const Object *obj, size_t offset) {
     size_t byteLength{0};
-    uint8_t *skip{nullptr};
-    obj->getArrayBufferData(&skip, &byteLength);
+    obj->getArrayBufferData(nullptr, &byteLength);
     return Object::createTypedArrayWithBuffer(type, obj, offset, byteLength - offset);
 }
 
@@ -660,7 +663,9 @@ bool Object::getArrayBufferData(uint8_t **ptr, size_t *length) const {
     v8::Local<v8::ArrayBuffer> jsobj = _getJSObject().As<v8::ArrayBuffer>();
     auto obj = v8::Int8Array::New(jsobj, 0, jsobj->ByteLength());
     char *data = node::Buffer::Data(obj.As<v8::Value>());
-    *ptr = reinterpret_cast<uint8_t *>(data);
+    if (ptr != nullptr) {
+        *ptr = reinterpret_cast<uint8_t *>(data);
+    }
     if (length) {
         *length = node::Buffer::Length(obj.As<v8::Value>());
     }
@@ -668,7 +673,9 @@ bool Object::getArrayBufferData(uint8_t **ptr, size_t *length) const {
     v8::Local<v8::Object> obj = const_cast<Object *>(this)->_obj.handle(__isolate);
     v8::Local<v8::ArrayBuffer> arrBuf = v8::Local<v8::ArrayBuffer>::Cast(obj);
     const auto &backingStore = arrBuf->GetBackingStore();
-    *ptr = static_cast<uint8_t *>(backingStore->Data());
+    if (ptr != nullptr) {
+        *ptr = static_cast<uint8_t *>(backingStore->Data());
+    }
     if (length) {
         *length = backingStore->ByteLength();
     }

@@ -24,6 +24,7 @@
 
 #include "ScriptEngine.h"
 #include "engine/EngineEvents.h"
+#include "../BytecodeManager.h"
 
 #if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
 
@@ -51,6 +52,7 @@
     #define EXPOSE_GC "__jsb_gc__"
 
 const unsigned int JSB_STACK_FRAME_LIMIT = 20;
+const std::string& V8_CACHE_FILE_NAME = "v8Cache.cfg";
 
     #ifdef CC_DEBUG
 unsigned int jsbInvocationCount = 0;
@@ -240,9 +242,9 @@ public:
         // https://github.com/cocos/cocos-engine/issues/13342
         flags.append(" --no-turbo-escape");
 
-        #if (CC_PLATFORM == CC_PLATFORM_IOS || CC_PLATFORM == CC_PLATFORM_OPENHARMONY)
+//        #if (CC_PLATFORM == CC_PLATFORM_IOS || CC_PLATFORM == CC_PLATFORM_OPENHARMONY)
         flags.append(" --jitless");
-        #endif
+//        #endif
         if (!flags.empty()) {
             v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.length()));
         }
@@ -432,6 +434,10 @@ bool ScriptEngine::init() {
 
 bool ScriptEngine::init(v8::Isolate *isolate) {
     cleanup();
+    const char* vmVersion = v8::V8::GetVersion();
+    _bytecodeManager = BytecodeManager::create();
+    _bytecodeManager->init(cc::FileUtils::getInstance()->getWritablePath(), V8_CACHE_FILE_NAME, vmVersion, false);
+
     SE_LOGD("Initializing V8, version: %s\n", v8::V8::GetVersion());
     ++_vmId;
 
@@ -471,6 +477,7 @@ void ScriptEngine::cleanup() {
 
     SE_LOGD("ScriptEngine::cleanup begin ...\n");
     _isInCleanup = true;
+    _bytecodeManager->destroy();
 
     cc::events::ScriptEngine::broadcast(cc::ScriptEngineEvent::BEFORE_CLEANUP);
 
@@ -546,6 +553,11 @@ void ScriptEngine::cleanup() {
     _gcFuncValue.setUndefined();
     _gcFunc = nullptr;
     cc::events::ScriptEngine::broadcast(cc::ScriptEngineEvent::AFTER_CLEANUP);
+    if (_bytecodeManager != nullptr)
+    {
+        _bytecodeManager->release();
+        _bytecodeManager = nullptr;
+    }
     SE_LOGD("ScriptEngine::cleanup end ...\n");
 }
 
@@ -670,7 +682,7 @@ bool ScriptEngine::isValid() const {
 }
 
 bool ScriptEngine::evalString(const char *script, uint32_t length /* = 0 */, Value *ret /* = nullptr */, const char *fileName /* = nullptr */) {
-    if (_engineThreadId != std::this_thread::get_id()) {
+    if (_engineThreadId != std::this_thread::get_id()) {//
         // `evalString` should run in main thread
         CC_ABORT();
         return false;
@@ -709,7 +721,94 @@ bool ScriptEngine::evalString(const char *script, uint32_t length /* = 0 */, Val
     }
 
     v8::ScriptOrigin origin(_isolate, originStr.ToLocalChecked());
-    v8::MaybeLocal<v8::Script> maybeScript = v8::Script::Compile(_context.Get(_isolate), source.ToLocalChecked(), &origin);
+    v8::MaybeLocal<v8::Script> maybeScript;
+//    v8::MaybeLocal<v8::Script> maybeScript = v8::Script::Compile(_context.Get(_isolate), source.ToLocalChecked(), &origin);
+    
+    BytecodeManager::V8CachedData* v8CachedData = nullptr;
+
+    std::string fullPath;
+
+    if (fileName == nullptr)
+    {
+        fileName = "(no filename)";
+    }
+    else
+    {
+        fullPath = _fileOperationDelegate.onGetFullPath(fileName);
+        if (!fullPath.empty())
+        {
+//            if (std::find(_loadedScriptPaths.begin(), _loadedScriptPaths.end(), fullPath) != _loadedScriptPaths.end())
+//            {
+//                CC_LOG_WARNING("ScriptEngine::evalString fileName: %s is already loaded!", fullPath.c_str());
+//                return true;
+//            }
+//
+//            _loadedScriptPaths.push_back(fullPath);
+        }
+    }
+    
+   std::string pathMD5;
+   std::string scriptContentMD5;
+   if (!fullPath.empty())
+   {
+       v8CachedData = _bytecodeManager->readCachedData(fullPath, script, (size_t)length, &pathMD5, &scriptContentMD5);
+   }
+
+   auto compileScriptSource = [&](){
+       v8::ScriptCompiler::Source compilerSource(source.ToLocalChecked(), origin);
+       maybeScript = v8::ScriptCompiler::Compile(_context.Get(_isolate), &compilerSource, v8::ScriptCompiler::kNoCompileOptions);
+
+       if (!pathMD5.empty() && !maybeScript.IsEmpty())
+       {
+           CC_LOG_INFO("[v8] Could not find v8 cache for (%s), try to create it!\n", fileName);
+           v8::ScriptCompiler::CachedData* c = v8::ScriptCompiler::CreateCodeCache(maybeScript.ToLocalChecked()->GetUnboundScript());
+           if (c != nullptr)
+           {
+               std::chrono::steady_clock::time_point oldTime = std::chrono::steady_clock::now();
+
+//               if (_isAsyncWriteBytecode)
+//               {
+//                   _bytecodeManager->saveCachedDataAsync(pathMD5, scriptContentMD5, c->data, (size_t)c->length, script, (size_t)length, [sourceUrl, oldTime](bool saveCachedDataSucceed){
+//                       long long milliSec = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - oldTime).count();
+//                       const char* saveCachedDataRet = saveCachedDataSucceed ? "succeed" : "failed";
+//                       SE_LOGW("[v8] saveCachedDataAsync(%s) %s, wastes: %lldms", sourceUrl.c_str(), saveCachedDataRet, milliSec);
+//                   });
+//               }
+//               else
+               {
+                   bool saveCachedDataSucceed = _bytecodeManager->saveCachedData(pathMD5, scriptContentMD5, c->data, (size_t)c->length, script, (size_t)length);
+                   long long milliSec = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - oldTime).count();
+                   const char* saveCachedDataRet = saveCachedDataSucceed ? "succeed" : "failed";
+                   CC_LOG_WARNING("[v8] saveCachedData(%s) %s, wastes: %lldms", sourceUrl.c_str(), saveCachedDataRet, milliSec);
+               }
+#if _WIN32
+               v8::ScriptCompiler::DestroyCodeCache(&c);
+#else
+               // BytecodeManager::saveCachedData will copy binary, so it's safe to delete c here.
+               delete c;
+#endif
+           }
+       }
+   };
+
+   if (v8CachedData == nullptr)
+   {
+       compileScriptSource();
+   }
+   else
+   {
+       CC_LOG_INFO("[v8] Found cache data for (%s)\n", fileName);
+       v8::ScriptCompiler::CachedData* cache = new v8::ScriptCompiler::CachedData((const uint8_t*)v8CachedData->getData(), v8CachedData->getLength(), v8::ScriptCompiler::CachedData::BufferNotOwned);
+       v8::ScriptCompiler::Source compilerSource(source.ToLocalChecked(), origin, cache);
+       maybeScript = v8::ScriptCompiler::Compile(_context.Get(_isolate), &compilerSource, v8::ScriptCompiler::kConsumeCodeCache);
+       _bytecodeManager->releaseCachedData(&v8CachedData);
+
+       if (maybeScript.IsEmpty())
+       {
+           CC_LOG_WARNING("[v8] Consume code cache failed, fallback to compile source code");
+           compileScriptSource();
+       }
+   }
 
     bool success = false;
 
@@ -959,6 +1058,25 @@ void ScriptEngine::setExceptionCallback(const ExceptionCallback &cb) {
 
 void ScriptEngine::setJSExceptionCallback(const ExceptionCallback &cb) {
     _jsExceptionCallback = cb;
+}
+    
+void ScriptEngine::getHeapStatistics(HeapStatistics* heapStatistics) {
+    v8::HeapStatistics v8HeapStat;
+    _isolate->GetHeapStatistics(&v8HeapStat);
+    if (heapStatistics != nullptr) {
+        heapStatistics->_totalHeapSize = v8HeapStat.total_heap_size();
+        heapStatistics->_totalHeapSizeExecutable = v8HeapStat.total_heap_size_executable();
+        heapStatistics->_totalPhysicalSize = v8HeapStat.total_physical_size();
+        heapStatistics->_totalAvailableSize = v8HeapStat.total_available_size();
+        heapStatistics->_usedHeapSize = v8HeapStat.used_heap_size();
+        heapStatistics->_heapSizeLimit = v8HeapStat.heap_size_limit();
+        heapStatistics->_mallocedMemory = v8HeapStat.malloced_memory();
+        heapStatistics->_externalMemory = v8HeapStat.external_memory();
+        heapStatistics->_peakMallocedMemory = v8HeapStat.peak_malloced_memory();
+        heapStatistics->_doesZapGarbage = v8HeapStat.does_zap_garbage();
+        heapStatistics->_numberOfNativeContexts = v8HeapStat.number_of_native_contexts();
+        heapStatistics->_numberOfDetachedContexts = v8HeapStat.number_of_detached_contexts();
+    }
 }
 
 v8::Local<v8::Context> ScriptEngine::_getContext() const { // NOLINT(readability-identifier-naming)

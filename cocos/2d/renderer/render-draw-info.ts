@@ -29,6 +29,7 @@ import { Node } from '../../scene-graph';
 import { Sampler, Texture } from '../../gfx';
 import { Model } from '../../render-scene/scene';
 import { Material } from '../../asset/assets';
+import { createExternalFloat32Array } from '../../misc/external-arraybuffer';
 
 const bitIndexForIsMeshBuffer = 0;
 const bitIndexForIsVertexPositionInWorld = 1;
@@ -323,7 +324,7 @@ export class RenderDrawInfo {
 
     public initRender2dBuffer (): void {
         if (JSB) {
-            this._render2dBuffer = new Float32Array(this._vbCount * this._stride);
+            this._render2dBuffer = createExternalFloat32Array(this._vbCount * this._stride);
             this._nativeObj.setRender2dBufferToNative(this._render2dBuffer);
         }
     }

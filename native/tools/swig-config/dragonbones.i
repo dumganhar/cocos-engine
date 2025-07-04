@@ -362,7 +362,6 @@
 %rename (armature) dragonBones::CCArmatureDisplay::getArmature;
 
 
-
 // ----- Module Macro Section ------
 // Brief: Generated code should be wrapped inside a macro
 // Usage:
@@ -393,7 +392,7 @@
 //  4. 'Attribute Section' should be placed before 'Import Section' and 'Include Section'
 //
 
-
+%attribute(dragonBones::Armature, dragonBones::Animation*, animation, getAnimation);
 
 // ----- Import Section ------
 // Brief: Import header files which are depended by 'Include Section'

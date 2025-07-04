@@ -301,66 +301,66 @@ void Disconnect(const FunctionCallbackInfo<Value> &info) {
 }
 
 void ConnectJSBindingsSession(const FunctionCallbackInfo<Value> &info) {
-    Environment *env = Environment::GetCurrent(info);
-    if (!info[0]->IsFunction()) {
-        env->ThrowError("Message callback is required");
-        return;
-    }
-    Agent *inspector = env->inspector_agent();
-    if (inspector->delegate() != nullptr) {
-        env->ThrowError("Session is already attached");
-        return;
-    }
-    Local<Object> session = Object::New(env->isolate());
-    env->SetMethod(session, "dispatch", Dispatch);
-    env->SetMethod(session, "disconnect", Disconnect);
-    info.GetReturnValue().Set(session);
-
-    JsBindingsSessionDelegate *delegate =
-        new JsBindingsSessionDelegate(env, session, info.Holder(),
-                                      info[0].As<Function>());
-    inspector->Connect(delegate);
-    SetDelegate(env, session, delegate);
+//    Environment *env = Environment::GetCurrent(info);
+//    if (!info[0]->IsFunction()) {
+//        env->ThrowError("Message callback is required");
+//        return;
+//    }
+//    Agent *inspector = env->inspector_agent();
+//    if (inspector->delegate() != nullptr) {
+//        env->ThrowError("Session is already attached");
+//        return;
+//    }
+//    Local<Object> session = Object::New(env->isolate());
+//    env->SetMethod(session, "dispatch", Dispatch);
+//    env->SetMethod(session, "disconnect", Disconnect);
+//    info.GetReturnValue().Set(session);
+//
+//    JsBindingsSessionDelegate *delegate =
+//        new JsBindingsSessionDelegate(env, session, info.Holder(),
+//                                      info[0].As<Function>());
+//    inspector->Connect(delegate);
+//    SetDelegate(env, session, delegate);
 }
 
 void InspectorConsoleCall(const v8::FunctionCallbackInfo<Value> &info) {
-    Isolate *isolate = info.GetIsolate();
-    HandleScope handle_scope(isolate);
-    Local<Context> context = isolate->GetCurrentContext();
-    CHECK_LT(2, info.Length());
-    std::vector<Local<Value>> call_args;
-    for (int i = 3; i < info.Length(); ++i) {
-        call_args.push_back(info[i]);
-    }
-    Environment *env = Environment::GetCurrent(isolate);
-    if (env->inspector_agent()->enabled()) {
-        Local<Value> inspector_method = info[0];
-        CHECK(inspector_method->IsFunction());
-        Local<Value> config_value = info[2];
-        CHECK(config_value->IsObject());
-        Local<Object> config_object = config_value.As<Object>();
-        Local<String> in_call_key = FIXED_ONE_BYTE_STRING(isolate, "in_call");
-        if (!config_object->Has(context, in_call_key).FromMaybe(false)) {
-            CHECK(config_object->Set(context,
-                                     in_call_key,
-                                     v8::True(isolate))
-                      .FromJust());
-            CHECK(!inspector_method.As<Function>()->Call(context,
-                                                         info.Holder(),
-                                                         static_cast<int>(call_args.size()),
-                                                         call_args.data())
-                       .IsEmpty());
-        }
-        CHECK(config_object->Delete(context, in_call_key).FromJust());
-    }
-
-    Local<Value> node_method = info[1];
-    CHECK(node_method->IsFunction());
-    node_method.As<Function>()->Call(context,
-                                     info.Holder(),
-                                     static_cast<int>(call_args.size()),
-                                     call_args.data())
-        .FromMaybe(Local<Value>());
+//    Isolate *isolate = info.GetIsolate();
+//    HandleScope handle_scope(isolate);
+//    Local<Context> context = isolate->GetCurrentContext();
+//    CHECK_LT(2, info.Length());
+//    std::vector<Local<Value>> call_args;
+//    for (int i = 3; i < info.Length(); ++i) {
+//        call_args.push_back(info[i]);
+//    }
+//    Environment *env = Environment::GetCurrent(isolate);
+//    if (env->inspector_agent()->enabled()) {
+//        Local<Value> inspector_method = info[0];
+//        CHECK(inspector_method->IsFunction());
+//        Local<Value> config_value = info[2];
+//        CHECK(config_value->IsObject());
+//        Local<Object> config_object = config_value.As<Object>();
+//        Local<String> in_call_key = FIXED_ONE_BYTE_STRING(isolate, "in_call");
+//        if (!config_object->Has(context, in_call_key).FromMaybe(false)) {
+//            CHECK(config_object->Set(context,
+//                                     in_call_key,
+//                                     v8::True(isolate))
+//                      .FromJust());
+//            CHECK(!inspector_method.As<Function>()->Call(context,
+//                                                         info.Holder(),
+//                                                         static_cast<int>(call_args.size()),
+//                                                         call_args.data())
+//                       .IsEmpty());
+//        }
+//        CHECK(config_object->Delete(context, in_call_key).FromJust());
+//    }
+//
+//    Local<Value> node_method = info[1];
+//    CHECK(node_method->IsFunction());
+//    node_method.As<Function>()->Call(context,
+//                                     info.Holder(),
+//                                     static_cast<int>(call_args.size()),
+//                                     call_args.data())
+//        .FromMaybe(Local<Value>());
 }
 
 void CallAndPauseOnStart(

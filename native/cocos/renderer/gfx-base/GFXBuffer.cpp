@@ -45,6 +45,10 @@ void Buffer::initialize(const BufferInfo &info) {
     _flags = info.flags;
     _stride = std::max(info.stride, 1U);
     _count = _size / _stride;
+    
+    if (_size > 10000000) {
+        int a = 0;
+    }
 
     doInit(info);
 
@@ -59,6 +63,9 @@ void Buffer::initialize(const BufferViewInfo &info) {
     _flags = info.buffer->getFlags();
     _offset = info.offset;
     _size = _stride = info.range;
+    if (_size > 10000000) {
+        int a = 0;
+    }
     _count = 1U;
     _isBufferView = true;
 
@@ -77,6 +84,9 @@ void Buffer::resize(uint32_t size) {
         doResize(size, count);
 
         _size = size;
+        if (_size > 10000000) {
+            int a = 0;
+        }
         _count = count;
     }
 }

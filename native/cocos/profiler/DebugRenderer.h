@@ -54,8 +54,6 @@ struct DebugRendererInfo {
 };
 
 struct DebugTextInfo {
-    DebugTextInfo() = default;
-
     gfx::Color color{1.0F, 1.0F, 1.0F, 1.0F};
     bool bold{false};
     bool italic{false};

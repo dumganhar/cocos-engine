@@ -36,6 +36,7 @@ import { RenderDrawInfo, RenderDrawInfoType } from './render-draw-info';
 import { Batcher2D } from './batcher-2d';
 import { RenderEntity, RenderEntityType } from './render-entity';
 import type { MeshBuffer } from './mesh-buffer';
+import { createExternalFloat32Array, createExternalUint16Array } from '../../misc/external-arraybuffer';
 
 /**
  * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
@@ -609,8 +610,8 @@ export class MeshRenderData extends BaseRenderData {
 
     constructor (vertexFormat = vfmtPosUvColor) {
         super(vertexFormat);
-        this.vData = new Float32Array(256 * this.stride);
-        this.iData = new Uint16Array(256 * 6);
+        this.vData = createExternalFloat32Array(256 * this.stride);
+        this.iData = createExternalUint16Array(256 * 6);
     }
 
     public request (vertexCount: number, indexCount: number): boolean {
@@ -731,8 +732,8 @@ export class MeshRenderData extends BaseRenderData {
             this._vertexBuffers = [];
         }
         this._iaInfo = null!;
-        this.vData = new Float32Array(256 * this.stride);
-        this.iData = new Uint16Array(256 * 6);
+        this.vData = createExternalFloat32Array(256 * this.stride);
+        this.iData = createExternalUint16Array(256 * 6);
     }
 
     protected _initIAInfo (device: Device): void {
@@ -764,12 +765,12 @@ export class MeshRenderData extends BaseRenderData {
     protected _reallocBuffer (vCount: number, iCount: number): void {
         // copy old data
         const oldVData = this.vData;
-        this.vData = new Float32Array(vCount);
+        this.vData = createExternalFloat32Array(vCount);
         if (oldVData) {
             this.vData.set(oldVData, 0);
         }
         const oldIData = this.iData;
-        this.iData = new Uint16Array(iCount);
+        this.iData = createExternalUint16Array(iCount);
         if (oldIData) {
             this.iData.set(oldIData, 0);
         }

@@ -232,9 +232,9 @@ void Profiler::printStats() {
     float leftLines = 1.0F;
     float rightLines = 1.0F;
 
-    const DebugTextInfo coreInfo = {{1.0F, 0.0F, 0.0F, 1.0F}, true, false, true, 1U, {0.0F, 0.0F, 0.0F, 1.0F}, 1.0F};
-    const DebugTextInfo titleInfo = {{1.0F, 1.0F, 0.0F, 1.0F}, true, false, true, 1U, {0.0F, 0.0F, 0.0F, 1.0F}, 1.0F};
-    const DebugTextInfo textInfos[2] = {
+    const DebugTextInfo coreInfo {{1.0F, 0.0F, 0.0F, 1.0F}, true, false, true, 1U, {0.0F, 0.0F, 0.0F, 1.0F}, 1.0F};
+    const DebugTextInfo titleInfo {{1.0F, 1.0F, 0.0F, 1.0F}, true, false, true, 1U, {0.0F, 0.0F, 0.0F, 1.0F}, 1.0F};
+    const DebugTextInfo textInfos[2] {
         {{1.0F, 1.0F, 1.0F, 1.0F}, false, false, true, 1U, {0.0F, 0.0F, 0.0F, 1.0F}, 1.0F},
         {{0.8F, 0.8F, 0.8F, 1.0F}, false, false, true, 1U, {0.0F, 0.0F, 0.0F, 1.0F}, 1.0F},
     };

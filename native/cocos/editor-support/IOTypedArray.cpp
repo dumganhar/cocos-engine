@@ -38,7 +38,11 @@ IOTypedArray::IOTypedArray(se::Object::TypedArrayType arrayType, std::size_t def
         _typeArray = TypedArrayPool::getInstance()->pop(_arrayType, _bufferSize);
     } else {
         se::AutoHandleScope hs;
-        _typeArray = se::Object::createTypedArray(_arrayType, nullptr, _bufferSize);
+        uint8_t *contents = (uint8_t *)malloc(_bufferSize);
+        se::HandleObject buffer(se::Object::createExternalArrayBufferObject(contents, _bufferSize, [](void *contents, size_t byteLength, void *userData){
+            free(contents);
+        }, nullptr));
+        _typeArray = se::Object::createTypedArrayWithBuffer(_arrayType, buffer);
         _typeArray->root();
     }
 

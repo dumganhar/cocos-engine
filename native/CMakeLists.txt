@@ -3064,6 +3064,8 @@ cocos_source_files(MODULE ccbindings
                  cocos/bindings/jswrapper/Value.h
                  cocos/bindings/jswrapper/ValueArrayPool.cpp
                  cocos/bindings/jswrapper/ValueArrayPool.h
+                 cocos/bindings/jswrapper/BytecodeManager.cpp
+                 cocos/bindings/jswrapper/BytecodeManager.h
 )
 
 cocos_source_files(

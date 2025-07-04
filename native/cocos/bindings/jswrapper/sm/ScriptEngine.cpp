@@ -72,7 +72,6 @@ const JSClassOps global_classOps = {
     nullptr,                  // mayResolve
     nullptr,                  // finalize
     nullptr,                  // call
-    nullptr,                  // hasInstance
     nullptr,                  // construct
     JS_GlobalObjectTraceHook, // trace
 };
@@ -86,7 +85,7 @@ void reportWarning(JSContext *cx, JSErrorReport *report) {
     MOZ_RELEASE_ASSERT(report);
     //    MOZ_RELEASE_ASSERT(report->isWarning());
 
-    SE_LOGE("%s:%u:%s\n", report->filename ? report->filename : "<no filename>",
+    SE_LOGE("%s:%u:%s\n", report->filename.c_str() ? report->filename.c_str() : "<no filename>",
             (unsigned int)report->lineno,
             report->message().c_str());
 }
@@ -116,22 +115,6 @@ bool __log(JSContext *cx, uint32_t argc, JS::Value *vp) {
     return true;
 }
 
-// Private data class
-bool privateDataContructor(JSContext *cx, uint32_t argc, JS::Value *vp) {
-    return true;
-}
-
-void privateDataFinalize(JSFreeOp *fop, JSObject *obj) {
-    internal::PrivateData *p = (internal::PrivateData *)internal::SE_JS_GetPrivate(obj, 0);
-    if (p == nullptr)
-        return;
-
-    internal::SE_JS_SetPrivate(obj, 0, p->data);
-    if (p->finalizeCb != nullptr)
-        p->finalizeCb(fop, obj);
-    free(p);
-}
-
 // ------------------------------------------------------- ScriptEngine
 
 void on_garbage_collect(JSContext *cx, JSGCStatus status, JS::GCReason reason, void *data) {
@@ -141,9 +124,9 @@ void on_garbage_collect(JSContext *cx, JSGCStatus status, JS::GCReason reason, v
              * garbage collected. */
     if (status == JSGC_BEGIN) {
         ScriptEngine::getInstance()->_setGarbageCollecting(true);
-        SE_LOGD("on_garbage_collect: begin, Native -> JS map count: %d, all objects: %d\n", (int)NativePtrToObjectMap::size(), (int)__objectMap.size());
+        SE_LOGD("on_garbage_collect, reason: %d, begin, Native -> JS map count: %d, all objects: %d\n", (int)reason, (int)NativePtrToObjectMap::size(), (int)__objectMap.size());
     } else if (status == JSGC_END) {
-        SE_LOGD("on_garbage_collect: end, Native -> JS map count: %d, all objects: %d\n", (int)NativePtrToObjectMap::size(), (int)__objectMap.size());
+        SE_LOGD("on_garbage_collect, reason: %d, end, Native -> JS map count: %d, all objects: %d\n", (int)reason, (int)NativePtrToObjectMap::size(), (int)__objectMap.size());
         ScriptEngine::getInstance()->_setGarbageCollecting(false);
     }
 }
@@ -257,10 +240,6 @@ AutoHandleScope::~AutoHandleScope() {
 }
 
 ScriptEngine *ScriptEngine::getInstance() {
-    if (__instance == nullptr) {
-        __instance = ccnew ScriptEngine();
-    }
-
     return __instance;
 }
 
@@ -281,6 +260,7 @@ ScriptEngine::ScriptEngine()
   _isValid(false),
   _isInCleanup(false),
   _isErrorHandleWorking(false) {
+      __instance = this;
     bool ok = JS_Init();
     assert(ok);
 }
@@ -321,6 +301,8 @@ void ScriptEngine::onWeakPointerZoneGroupCallback(JSTracer *trc, void *data) {
 bool ScriptEngine::init() {
     cleanup();
     SE_LOGD("Initializing SpiderMonkey, version: %s\n", JS_GetImplementationVersion());
+    auto maxMovableSize = JS_MaxMovableTypedArraySize();
+    SE_LOGD("Max movable typed array size: %u", static_cast<uint32_t>(maxMovableSize));
     ++_vmId;
 
     for (const auto &hook : _beforeInitHookArray) {
@@ -1000,7 +982,7 @@ void ScriptEngine::clearException() {
         JS::RootedObject exceptionObj(_cx, exceptionValue.toObjectOrNull());
         JSErrorReport *report = JS_ErrorFromException(_cx, exceptionObj);
         const char *message = report->message().c_str();
-        const std::string filePath = report->filename != nullptr ? report->filename : "(no filename)";
+        const std::string filePath = report->filename.c_str() != nullptr ? report->filename.c_str() : "(no filename)";
         char line[50] = {0};
         snprintf(line, sizeof(line), "%u", report->lineno);
         char column[50] = {0};

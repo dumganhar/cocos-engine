@@ -94,7 +94,7 @@ export declare class NativeUIMeshBuffer {
     get iData(): Uint16Array;
     set iData(val: Uint16Array);
 
-    syncSharedBufferToNative(data: TypedArray);
+    _getSharedArrayBufferObject(): ArrayBufferLike;
 
     initialize(attrs: Attribute[]);
     reset();

@@ -73,7 +73,9 @@ void *ObjectWrap::unwrap(v8::Local<v8::Object> handle, uint32_t fieldIndex) {
 void ObjectWrap::wrap(void *nativeObj, uint32_t fieldIndex) {
     CC_ASSERT(handle()->InternalFieldCount() > 0);
     CC_ASSERT(fieldIndex >= 0 && fieldIndex < 1);
+//    CC_LOG_INFO("cjh ObjectWrap(%p)::wrap, before set internal field, nativeObj: %p", this, nativeObj);
     handle()->SetAlignedPointerInInternalField(static_cast<int>(fieldIndex), nativeObj);
+//    CC_LOG_INFO("cjh ObjectWrap(%p)::wrap, after set internal field, nativeObj: %p", this, nativeObj);
     if (nativeObj) {
         persistent().SetWrapperClassId(MAGIC_CLASS_ID_JSB);
     } else {
